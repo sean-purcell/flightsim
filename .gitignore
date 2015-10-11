@@ -1,1 +1,6 @@
 .*.sw*
+*.pdf
+*.log
+*.aux
+*.out
+*.auxlock
