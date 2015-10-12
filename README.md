@@ -7,6 +7,10 @@ se101-lab
 
 #### To do
 1. Write proposal.
+	- Full name, ID numbers, and quest IDs
+	- Timeline showing breakdown of milestones leading up to project completion.
+	- Detailed description of hardware components
+	- Expected challenges
 
 #### Schedule
 - Oct 16, 2015 23:59: Proposal due.
@@ -14,4 +18,5 @@ se101-lab
 - Nov 26, 2015: Project demo due.
 
 #### References
+- Lab 2 Specifications: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1313255/View?ou=220517
 - TM4C123 Guide: http://energia.nu/pin-maps/guide_tm4c123launchpad/
