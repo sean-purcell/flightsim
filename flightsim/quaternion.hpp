@@ -25,20 +25,29 @@ class Quaternion{
 			y = ny;
 			z = nz;
 		}
+
+		// Creates a new quaternion with the given angle and axis
+		Quaternion(float rot, Quaternion axis) {
+			axis.normalize();
+			axis = axis * std::sin(rot/2);
+
+			*this = axis;
+			this->w = std::cos(rot/2);
+		}
 		
-		Quaternion operator+(Quaternion b){
+		Quaternion operator+(Quaternion b) const {
 			return Quaternion(w+b.w, x+b.x, y+b.y, z+b.z);
 		}
 		
-		Quaternion operator-(Quaternion b){
+		Quaternion operator-(Quaternion b) const {
 			return Quaternion(w-b.w, x-b.x, y-b.y, z-b.z);
 		}	
 		
-		Quaternion operator*(float b){
+		Quaternion operator*(float b) const {
 			return Quaternion(b*w, b*x, b*y, b*z);
 		}
 		
-		Quaternion operator*(Quaternion b){
+		Quaternion operator*(Quaternion b) const {
 			/*
 			 * float nw = w*b.w - x*bx - y*by - z*bz;
 			 * float nx = w*bx + x*b.w + y*bz - z*by;
@@ -51,15 +60,15 @@ class Quaternion{
 								w*b.z + x*b.y - y*b.x + z*b.w );
 		}
 		
-		Quaternion operator/(float b){
+		Quaternion operator/(float b) const {
 			return Quaternion(w/b, x/b, y/b, z/b);
 		}
 		
-		Quaternion inverse(){
+		Quaternion inverse() const {
 			return Quaternion(w,-x,-y,-z)/get_magnitude();
 		}
 		
-		float get_magnitude(){
+		float get_magnitude() const{
 			return std::pow( std::pow(w,2) + std::pow(x,2) + std::pow(y,2) + std::pow(z,2) , 0.5);
 		}
 		
@@ -77,7 +86,7 @@ class Quaternion{
 			set_magnitude(1.);
 		}
 		
-		Quaternion normalized(){
+		Quaternion normalized() const {
 			Quaternion Q(w, x, y, z);
 			Q.normalize();
 			return Q;
@@ -89,6 +98,14 @@ class Quaternion{
 			return sf::Vector2f(
 				ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0),
 				ratio*(screenheight/2.0)*y/z + (screenheight/2.0) );
+		}
+
+		Quaternion transform(Quaternion p) {
+			return *this * (p * this->inverse());
+		}
+
+		Quaternion invtransform(Quaternion p) {
+			return this->inverse() * (p * *this);
 		}
 };
 

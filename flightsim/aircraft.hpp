@@ -5,6 +5,16 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 	//IT DOESN'T INHERIT FROM SPHERE BECAUSE IT WILL EVENTUALLY NOT BE A SPHERE (hopefully)
 {
 	public:
+		float mass;
+		float thrust;
+		float aoi;
+		float maxaileron;
+		float wingarea;
+		float aileronarea;
+		float aileronradius;
+		float elevatorarea;
+		float elevatorradius;
+
 		Quaternion pos, facing, velocity;
 		
 		Aircraft(){
@@ -49,6 +59,27 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		
 		void draw(sf::RenderWindow &window){
 			window.draw(shape);
+		}
+
+		void computeForces() {
+			Quaternion netF(0, 0, 0, 0);
+			Quaternion netT(0, 0, 0, 0);
+
+			netF += fGravity();
+			netF += fWing();
+			netF += fAileron();
+			netF += fThrust();
+
+			netT += tAileron();
+			netT += tElevator();
+		}
+
+		Quaternion fGravity() {
+			return Quaternion(0, 0, 9.8 * mass, 0);
+		}
+
+		Quaternion fWing(Quaternion up, Quaternion rgt, Quaternion for) {
+			return Quaternion(0, 0, 0, 0);
 		}
 		
 	private:
