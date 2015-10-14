@@ -19,7 +19,7 @@ class Sphere: public Drawable
 		void predraw(Quaternion camerapos, Quaternion camerarotation){	//
 			draw_pos = camerarotation * ((pos-camerapos)* camerarotation.inverse());
 			
-			distanceFromCamera = draw_pos.get_magnitude();
+			distanceFromCamera = draw_pos.z;
 			
 			render_radius = ratio * (screenwidth / 2) * radius/distanceFromCamera;
 			
@@ -78,7 +78,7 @@ class Line: public Drawable
 				shouldDraw = true;
 			}
 	
-			distanceFromCamera = ((drawStart+drawEnd)/2).get_magnitude();
+			distanceFromCamera = ((drawStart+drawEnd)/2).z;
 			
 			vertices[0].position = drawStart.getScreenPos();
 
@@ -124,7 +124,7 @@ class Triangle: public Drawable
 			else
 				shouldDraw = true;
 				
-			distanceFromCamera = ((a_draw + b_draw + c_draw)/3).get_magnitude();
+			distanceFromCamera = ((a_draw + b_draw + c_draw)/3).z;
 			
 			
 			
