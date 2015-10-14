@@ -21,7 +21,11 @@ class Drawable{
 		}
 		
 		virtual void insert(Drawable* item){
-			item->next = next;
+			Drawable* iter = item;
+			while ((iter->next)!=NULL){
+				iter = iter->next;
+			}
+			iter->next = next;
 			next = item;
 		}
 		
