@@ -18,6 +18,7 @@ const sf::Vector2i size(screenwidth, screenheight);
 #include "shapes.hpp"
 
 #include "aircraft.hpp"
+#include "terrain.cpp"
 
 void update_list(Drawable* &start, float dt){
 	Drawable* iter = start;
@@ -51,8 +52,6 @@ void draw_list(Drawable* start, sf::RenderWindow &window){
 	}
 }
 
-
-
 int main()
 {
     sf::ContextSettings settings;
@@ -74,11 +73,13 @@ int main()
 	Aircraft* aircraft = new Aircraft();
 	objects->insert(aircraft);	
 	
-	for (int i=0; i<20; i++){
+	/*for (int i=0; i<20; i++){
 		for (int j=0; j<20; j++){
 		objects->insert(new Sphere(Quaternion(0, i, 0,j),0.05, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
 		}
-	}
+	}*/
+	
+	objects->insert(generateTerrainBox(0, 0, 10, 10, 5));
 	
 	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
 	objects->insert(new Sphere(Quaternion(0,10,0),500,sf::Color(0,255,255)));

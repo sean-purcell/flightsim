@@ -29,12 +29,11 @@ Drawable* generateTerrainBox(float x, float z, float width, float depth, int fra
 	Triangle* iter;
 	float var = 3;
 	for (int i=0; i<fractalIterations; i++){
-		iter = splitTriangle(head,var);
-		head = iter;
-		iter = (Triangle*)iter->next->next->next->next;
-		while (iter!=NULL){
-			iter = splitTriangle(iter, var);
-			iter = (Triangle*)iter->next->next->next->next;
+		head = splitTriangle(head,var);
+		iter = head;
+		while (iter->next->next->next!=NULL){
+			iter->next->next->next = (Drawable*)splitTriangle((Triangle*)iter->next->next->next, var);
+			iter = (Triangle*)iter->next->next->next;
 		}
 		var/=2;
 	}
