@@ -19,11 +19,11 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		
 		Aircraft(){
 			pos = Quaternion(0, 1, 1, 1);		//real component must be zero
-			facing = Quaternion (0, 0, 1, 0);	//orientation
+			facing = Quaternion (1, 0, 0, 0);	//orientation
 			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
 			
 			//bunch of sphere stuff that will be obsolete eventually
-			radius = 50;
+			radius = 0.05;
 			color = sf::Color(255,255,255);
 			
 			next = NULL;
@@ -40,7 +40,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			
 			distanceFromCamera = draw_pos.get_magnitude();
 			
-			render_radius = radius/distanceFromCamera;
+			render_radius = ratio * (screenwidth / 2) * radius/distanceFromCamera;
 			
 			shape.setFillColor(color);
 

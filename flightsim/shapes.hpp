@@ -20,7 +20,7 @@ class Sphere: public Drawable
 			
 			distanceFromCamera = draw_pos.get_magnitude();
 			
-			render_radius = radius/distanceFromCamera;
+			render_radius = ratio * (screenwidth / 2) * radius/distanceFromCamera;
 			
 			shape.setFillColor(color);
 

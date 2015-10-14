@@ -1,3 +1,6 @@
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <cmath>
 #include <SFML/Window.hpp>
@@ -73,7 +76,7 @@ int main()
 	
 	for (int i=0; i<20; i++){
 		for (int j=0; j<20; j++){
-		objects->insert(new Sphere(Quaternion(0, i, 0,j),50, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
+		objects->insert(new Sphere(Quaternion(0, i, 0,j),0.05, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
 		}
 	}
 	
@@ -110,25 +113,38 @@ int main()
 		//so uh we do input in an interesting way
 		//this will probably be rewritten for ports or something but yeah
 		//not only does it look like rubbish, it is in fact rubbish
-		aircraft->velocity = aircraft->velocity + camerarotation.inverse() * (Quaternion(0,0,0, 0.01 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
-		aircraft->velocity = aircraft->velocity + camerarotation.inverse() * (Quaternion(0,0,0, -0.01 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
+		aircraft->velocity = aircraft->velocity + aircraft->facing.transform(
+			Quaternion(0.0, 0,0, 0.01 *
+			(float)sf::Keyboard::isKeyPressed(sf::Keyboard::E)));
+		aircraft->velocity = aircraft->velocity + aircraft->facing.transform(
+			Quaternion(0.0, 0,0, -0.01 *
+			(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Q)));
 		
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))	//air brakes are totally a real thing
 			aircraft->velocity = aircraft->velocity * 0.95;
 		
+		float pitchang = (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)
+			+ (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+		Quaternion pitch(pitchang, aircraft->facing.transform(
+			Quaternion(1, 0, 0)));
+		aircraft->velocity = pitch.transform(aircraft->velocity);
+		aircraft->facing = pitch * aircraft->facing;
+
+		float rollang = (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A)
+			+ (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+		Quaternion roll(rollang, aircraft->facing.transform(Quaternion(0, 0, 1)));
+		aircraft->velocity = roll.transform(aircraft->velocity);
+		aircraft->facing = roll * aircraft->facing;
 		//dcamerapos.x=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::D)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		//dcamerapos.y=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Z)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::X);
 		//dcamerapos.z=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::S);
 
 		//dcamerapos=dcamerapos*0.1;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-			camerarotation=Quaternion(1, 0, 0 , 0.01).normalized()*camerarotation;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)){
-			camerarotation=Quaternion(1, 0, 0, -0.01).normalized()*camerarotation;
-		}
-		
+		camerapos = aircraft->pos - aircraft->facing.transform(
+			Quaternion(0, 0, 5));
+		camerarotation = aircraft->facing.inverse();
+
 		window.clear(sf::Color(0, 0, 0));
 		
 		update_list(objects, 0.033);	//can add time clocking later, right now simulation time is set to frame speed

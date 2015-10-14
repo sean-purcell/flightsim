@@ -97,7 +97,7 @@ class Quaternion{
 				return sf::Vector2f(-1000,-1000);
 			return sf::Vector2f(
 				ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0),
-				ratio*(screenheight/2.0)*y/z + (screenheight/2.0) );
+				ratio*(screenwidth/2.0)*y/z + (screenheight/2.0) );
 		}
 
 		Quaternion transform(Quaternion p) {
@@ -119,6 +119,16 @@ Quaternion clipLineToScreen(Quaternion A, Quaternion B){
 	}
 }
 
+std::string toString(Quaternion q) {
+	std::ostringstream os;
+	os << std::setprecision(6) << std::fixed;
+	os << "(" << q.w << "," << q.x << "," << q.y << "," << q.z << ")";
+	return os.str();
+}
+
+std::ostream & operator<<(std::ostream &out, Quaternion const &q) {
+	return out << (toString(q));
+}
 
 #endif
 
