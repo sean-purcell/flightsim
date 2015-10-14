@@ -19,11 +19,11 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		
 		Aircraft(){
 			pos = Quaternion(0, 1, 1, 1);		//real component must be zero
-			facing = Quaternion (0, 1, 0, 0);	//orientation
+			facing = Quaternion (0, 0, 1, 0);	//orientation
 			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
 			
 			//bunch of sphere stuff that will be obsolete eventually
-			radius = 1;
+			radius = 50;
 			color = sf::Color(255,255,255);
 			
 			next = NULL;
@@ -65,21 +65,32 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			Quaternion netF(0, 0, 0, 0);
 			Quaternion netT(0, 0, 0, 0);
 
+#ifdef UNDEFINED
 			netF += fGravity();
 			netF += fWing();
 			netF += fAileron();
+			netF += fElevator();
 			netF += fThrust();
 
 			netT += tAileron();
 			netT += tElevator();
+#endif
 		}
 
 		Quaternion fGravity() {
 			return Quaternion(0, 0, 9.8 * mass, 0);
 		}
 
-		Quaternion fWing(Quaternion up, Quaternion rgt, Quaternion for) {
+		Quaternion fWing() {
+			Quaternion wingang(aoi, Quaternion(0, 0, 1));
+			Quaternion wp = facing.transform(wingang.transform(Quaternion(1, 0, 0)));
+			Quaternion wn = facing.transform(wingang.transform(Quaternion(0, 1, 0)));
 			return Quaternion(0, 0, 0, 0);
+		}
+
+		Quaternion fThrust() {
+			Quaternion fw = facing.transform(Quaternion(1, 0, 0));
+			return fw * thrust;
 		}
 		
 	private:

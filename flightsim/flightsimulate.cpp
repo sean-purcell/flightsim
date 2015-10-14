@@ -71,8 +71,10 @@ int main()
 	Aircraft* aircraft = new Aircraft();
 	objects->insert(aircraft);	
 	
-	for (int i=0; i<100; i++){
-		objects->insert(new Sphere(Quaternion(std::rand()%100,std::rand()%100,std::rand()%100),500, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
+	for (int i=0; i<20; i++){
+		for (int j=0; j<20; j++){
+		objects->insert(new Sphere(Quaternion(0, i, 0,j),50, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
+		}
 	}
 	
 	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
@@ -87,7 +89,7 @@ int main()
 	//objects.push_back(new Line(Quaternion(0,10,10), Quaternion(0,0,0) ,sf::Color(0,255,255)));
 	//objects->insert(new Triangle(Quaternion(2,8,2), Quaternion(2,2,8), Quaternion(8,2,2), sf::Color(255,255,0)));
 	//objects->insert(new Triangle(Quaternion(12,8,2), Quaternion(24,-23,58), Quaternion(18,22,22), sf::Color(255,100,100)));
-	objects->insert(new Triangle(Quaternion(0,-8,59), Quaternion(0,-23,58), Quaternion(0,-22,22), sf::Color(100,100,200)));
+	//objects->insert(new Triangle(Quaternion(0,-8,59), Quaternion(0,-23,58), Quaternion(0,-22,22), sf::Color(100,100,200)));
 	
 	Quaternion camerapos(0, 0, 0, 0);
 	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
