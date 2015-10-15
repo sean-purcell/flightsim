@@ -12,22 +12,23 @@ Triangle* splitTriangle(Triangle* tri, float hvarbound){
 	Quaternion midpoint = (tri->a + tri->b + tri->c)/3;
 	Quaternion var = Quaternion(0,0,hvarbound*(std::rand()%2 - 1),0);
 	midpoint = midpoint + var;
-	Triangle* ret = new Triangle(tri->a, tri->b, midpoint, getRandomColor());
-	ret->next = 	new Triangle(tri->a, midpoint, tri->c, getRandomColor());
-	ret->next->next=new Triangle(midpoint, tri->b, tri->c, getRandomColor());
+	Triangle* ret = new Triangle(tri->a, tri->b, midpoint, tri->color);
+	ret->next = 	new Triangle(tri->a, midpoint, tri->c, tri->color);
+	ret->next->next=new Triangle(midpoint, tri->b, tri->c, tri->color);
 	ret->next->next->next = next;
 	//delete tri;
 	return ret;
 }
 
-Drawable* generateTerrainBox(float x, float z, float width, float depth, int fractalIterations){
+Drawable* generateTerrainBox(float x, float z, float width, float depth, float startY, int fractalIterations){
 	//generates random terrain from (x to x+width) and (z to z+depth)
-	Quaternion q = Quaternion(0,x,0,z);
-	Triangle* head = new Triangle(Quaternion(0,0,0,0)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, getRandomColor());
-	head->insert(new Triangle(Quaternion(0,width,0,depth)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, getRandomColor()));
+	sf::Color color = sf::Color::Green;
+	Quaternion q = Quaternion(0,x,startY,z);
+	Triangle* head = new Triangle(Quaternion(0,0,0,0)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color);
+	head->insert(new Triangle(Quaternion(0,width,0,depth)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color));
 	
 	Triangle* iter;
-	float var = 3;
+	float var = 2.5;
 	for (int i=0; i<fractalIterations; i++){
 		head = splitTriangle(head,var);
 		iter = head;
@@ -35,7 +36,7 @@ Drawable* generateTerrainBox(float x, float z, float width, float depth, int fra
 			iter->next->next->next = (Drawable*)splitTriangle((Triangle*)iter->next->next->next, var);
 			iter = (Triangle*)iter->next->next->next;
 		}
-		var/=2;
+		var/=1.5;
 	}
 	
 	
