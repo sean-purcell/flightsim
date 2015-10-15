@@ -1,9 +1,9 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKWIDTH 10
-#define BLOCKHEIGHT 10
-
+#define BLOCKWIDTH 20
+#define BLOCKHEIGHT 20
+#define TERRAINCOLOR sf::Color(50,200,50)
 
 sf::Color getRandomColor(){
 	return sf::Color(std::rand()%255,std::rand()%255,std::rand()%255);
@@ -27,7 +27,7 @@ Triangle* splitTriangle(Triangle* tri, float hvarbound){
 
 Drawable* generateTerrainBox(float x, float z, float width, float depth, float startY, int fractalIterations){
 	//generates random terrain from (x to x+width) and (z to z+depth)
-	sf::Color color = sf::Color::Green;
+	sf::Color color = TERRAINCOLOR;
 	Quaternion q = Quaternion(0,x,startY,z);
 	Triangle* head = new Triangle(Quaternion(0,0,0,0)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color);
 	head->insert(new Triangle(Quaternion(0,width,0,depth)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color));
@@ -72,14 +72,14 @@ float lerp(float a, float b, float w){
 	return (1.0-w)*a + w*b;
 }
 
-float dotGridGradient(float gradient[BLOCKWIDTH][BLOCKHEIGHT][2], int ix, int iy, float x, float y){
+float dotGridGradient(float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2], int ix, int iy, float x, float y){
 	float dx = x-(float)ix;
 	float dy = y-(float)iy;
 	
 	return (dx*gradient[iy][ix][0] + dy*gradient[iy][ix][1]);
 }
 
-float perlin(float gradient[BLOCKWIDTH][BLOCKHEIGHT][2], float x, float y){
+float perlin(float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2], float x, float y){
 	int x0 = (x>0.0 ? (int)x : (int)x-1);
 	int x1 = x0+1;
 	int y0 = (y>0.0 ? (int)y : (int)y-1);
@@ -102,24 +102,29 @@ float perlin(float gradient[BLOCKWIDTH][BLOCKHEIGHT][2], float x, float y){
 }
 
 void generatePerlin(float array[BLOCKWIDTH][BLOCKHEIGHT]){
-	float gradient[BLOCKWIDTH][BLOCKHEIGHT][2];
+	float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2];
 	float theta;
-	for (int i=0; i<BLOCKWIDTH; i++){
-		for (int j=0; j<BLOCKHEIGHT; j++){
+	for (int i=0; i<BLOCKWIDTH+1; i++){
+		for (int j=0; j<BLOCKHEIGHT+1; j++){
 			theta = ((float)rand()/RAND_MAX)*(2*M_PI);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
 	}
 	
+	std::cout<<"lmao start"<<std::endl;
 	for (int i=0; i<BLOCKWIDTH; i++){
 		for (int j=0; j<BLOCKHEIGHT; j++){
-			array[i][j]=perlin(gradient, i,j);
+			array[i][j]=perlin(gradient, i+0.5,j+0.5);
+			std::cout<<array[i][j]<<" ";
 		}
+		std::cout<<std::endl;
 	}
+	std::cout<<"lmao end"<<std::endl;
 }
 
 Drawable* perlinTerrain(int startX, int startY){
+	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
 	float array[BLOCKWIDTH][BLOCKHEIGHT];
@@ -127,15 +132,20 @@ Drawable* perlinTerrain(int startX, int startY){
 	
 	for (int i=0; i<BLOCKWIDTH; i++){
 		for (int j=0; j<BLOCKHEIGHT; j++){
-			std::cout<<array[i][j]<<" ";
+			array[i][j]=sqrt(fabs(array[i][j]));
 		}
-		std::cout<<std::endl;
 	}
 	
 	for (int i=0; i<BLOCKWIDTH-1; i++){
 		for (int j=0; j<BLOCKHEIGHT-1; j++){
-			iter->next = new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), sf::Color::Green);
-			iter->next->next = new Triangle(Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), sf::Color::Green);
+			if (rand()>(RAND_MAX/2)){
+				iter->next = 		new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
+				iter->next->next =  new Triangle(Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
+			}
+			else{
+				iter->next = 		new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
+				iter->next->next =  new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i+1, array[i+1][j], j), TERRAINCOLOR);				
+			}
 			iter = iter->next->next;
 		}
 	}

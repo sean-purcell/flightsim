@@ -51,7 +51,9 @@ void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotat
 void draw_list(Drawable* start, sf::RenderWindow &window){
 	Drawable* iter = start;
 	while (iter!=NULL){
-		iter->draw(window);
+		if (iter->shouldDraw){
+			iter->draw(window);
+		}
 		iter = iter->next;
 	}
 }
