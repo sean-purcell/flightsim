@@ -83,8 +83,9 @@ int main()
 		}
 	}*/
 	
-	objects->insert(generateTerrainBox(0, 0, 10, 10, 3, 2));
-	
+	//objects->insert(generateTerrainBox(0, 0, 10, 10, 3, 2));
+	//objects->insert(iterateSplitTriangle(new Triangle(Quaternion(0,-15,0,-15), Quaternion(0,20,0,0), Quaternion(0,0,0,20), sf::Color::Green) , 2.0, 0.5, 5));
+	objects->insert(perlinTerrain(0,0));
 	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
 	objects->insert(new Sphere(Quaternion(0,10,0),500,sf::Color(0,255,255)));
 	objects->insert(new Sphere(Quaternion(10,0,0),500,sf::Color(0,255,255)));
