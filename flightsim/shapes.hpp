@@ -114,6 +114,10 @@ class Triangle: public Drawable
 			child = NULL;
 		}
 		
+		Quaternion getNormal(){
+			return ((b-a).cross(c-a)).normalized();
+		}
+		
 		void predraw(Quaternion camerapos, Quaternion camerarotation){
 			a_draw = camerarotation * ((a-camerapos)* camerarotation.inverse());
 			b_draw = camerarotation * ((b-camerapos)* camerarotation.inverse());
@@ -136,7 +140,8 @@ class Triangle: public Drawable
 			shape.setPoint(4, clipLineToScreen(c_draw,a_draw).getScreenPos() );
 			shape.setPoint(5, clipLineToScreen(a_draw,c_draw).getScreenPos() );
 			
-			shape.setFillColor(color);
+			int lmao = 255*(fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
+			shape.setFillColor(color*sf::Color(lmao, lmao, lmao));
 			
 		
 		}
