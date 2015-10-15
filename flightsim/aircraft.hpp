@@ -38,7 +38,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		void predraw(Quaternion camerapos, Quaternion camerarotation){	//how does one draw a plane? by pretending it's a sphere. yoloooo
 			draw_pos = camerarotation * ((pos-camerapos)* camerarotation.inverse());
 			
-			distanceFromCamera = draw_pos.get_magnitude();
+			distanceFromCamera = draw_pos.z;
 			
 			render_radius = ratio * (screenwidth / 2) * radius/distanceFromCamera;
 			

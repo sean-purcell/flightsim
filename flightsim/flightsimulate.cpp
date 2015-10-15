@@ -14,11 +14,15 @@ const int screenheight=850;
 const sf::Vector2i size(screenwidth, screenheight);
 
 #include "quaternion.hpp"
+
+Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
+
 #include "drawable.hpp"
 #include "shapes.hpp"
 
 #include "aircraft.hpp"
 #include "terrain.cpp"
+
 
 void update_list(Drawable* &start, float dt){
 	Drawable* iter = start;
@@ -79,7 +83,7 @@ int main()
 		}
 	}*/
 	
-	objects->insert(generateTerrainBox(0, 0, 10, 10, 5));
+	objects->insert(generateTerrainBox(0, 0, 10, 10, 3, 2));
 	
 	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
 	objects->insert(new Sphere(Quaternion(0,10,0),500,sf::Color(0,255,255)));

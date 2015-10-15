@@ -92,6 +92,16 @@ class Quaternion{
 			return Q;
 		}
 
+		float dot(Quaternion other){
+			return w*other.w + x*other.x + y*other.y + z*other.z;
+		}
+		
+		Quaternion cross(Quaternion other){
+			Quaternion tmp = (*this)*other;
+			tmp.w=0;
+			return tmp;
+		}
+
 		sf::Vector2f getScreenPos(){
 			if (z==0)
 				return sf::Vector2f(-1000,-1000);
