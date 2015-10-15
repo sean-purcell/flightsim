@@ -107,7 +107,7 @@ class Quaternion{
 				return sf::Vector2f(-1000,-1000);
 			return sf::Vector2f(
 				ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0),
-				ratio*(screenwidth/2.0)*y/z + (screenheight/2.0) );
+				-ratio*(screenwidth/2.0)*y/z + (screenheight/2.0) );
 		}
 
 		Quaternion transform(Quaternion p) {
