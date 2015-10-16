@@ -140,7 +140,7 @@ class Triangle: public Drawable
 			shape.setPoint(4, clipLineToScreen(c_draw,a_draw).getScreenPos() );
 			shape.setPoint(5, clipLineToScreen(a_draw,c_draw).getScreenPos() );
 			
-			int lmao = 255*(fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
+			int lmao = 255*(0.4+0.6*fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
 			shape.setFillColor(color*sf::Color(lmao, lmao, lmao));
 			
 		
