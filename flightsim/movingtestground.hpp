@@ -1,5 +1,5 @@
-#define MOVGRIDWID 10
-#define MOVGRIDHEI 10
+#define MOVGRIDWID 20
+#define MOVGRIDHEI 20
 #define SCALE 1000
 
 #include <cstdlib>

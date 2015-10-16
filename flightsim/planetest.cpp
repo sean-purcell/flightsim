@@ -27,6 +27,7 @@ Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 float up, down, left, right;
 
 void update_list(Drawable* &start, float dt){
+	std::cout << dt << std::endl;
 	Drawable* iter = start;
 	int length=0;
 
@@ -88,6 +89,8 @@ int main()
 	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
 	Quaternion temprotation(0, 0, 0, 0);
 	sf::Mouse::setPosition(sf::Vector2i(screenwidth/2, screenheight/2),window);
+
+	sf::Clock gameClock;
 	
 	while (window.isOpen()) {
 		while (window.pollEvent(event)) {
@@ -109,7 +112,7 @@ int main()
 
 		window.clear(sf::Color(0, 0, 0));
 		
-		update_list(objects, 0.033);	//can add time clocking later, right now simulation time is set to frame speed
+		update_list(objects, (gameClock.restart()).asSeconds());	//can add time clocking later, right now simulation time is set to frame speed
 		updateMovTerrain(aircraft->pos);
 		
 		camerapos = aircraft->pos - aircraft->facing.transform(
