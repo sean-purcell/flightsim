@@ -22,6 +22,7 @@ Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 
 #include "aircraft.hpp"
 #include "terrain.cpp"
+#include "movingtestground.hpp"
 
 
 void update_list(Drawable* &start, float dt){
@@ -86,7 +87,9 @@ int main()
 	
 	//objects->insert(generateTerrainBox(0, 0, 10, 10, 3, 2));
 	//objects->insert(iterateSplitTriangle(new Triangle(Quaternion(0,-15,0,-15), Quaternion(0,20,0,0), Quaternion(0,0,0,20), sf::Color::Green) , 2.0, 0.5, 5));
-	objects->insert(perlinTerrain(0,0));
+	Drawable *terrain = initializeTestTerrain();
+
+	objects->insert(terrain);
 	
 	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
 	objects->insert(new Sphere(Quaternion(0,10,0),500,sf::Color(0,255,255)));
@@ -152,6 +155,7 @@ int main()
 		window.clear(sf::Color(0, 0, 0));
 		
 		update_list(objects, 0.033);	//can add time clocking later, right now simulation time is set to frame speed
+		updateMovTerrain(aircraft->pos);
 		
 		camerapos = aircraft->pos - aircraft->facing.transform(
 			Quaternion(0, 0, 5));

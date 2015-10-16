@@ -1,2 +1,4 @@
 flightsim
 a.out
+*.dSYM
+planetest
