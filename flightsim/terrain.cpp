@@ -15,8 +15,13 @@ sf::Color getRandomColor(){
 }
 
 float srandTheta(int i, int j){
-	srand(i*66666+j);
+	srand(i*65537+j);
 	return ((float)rand()/RAND_MAX)*2*M_PI;
+}
+
+sf::Color getColor(int x, int z, int q) {
+	srand((x * 65537 + z) * (q ? 1 : -1));
+	return sf::Color(rand() % 256, rand() % 256, rand() % 256);
 }
 
 //implemented based on pseudocode on en.wikipedia.org/wiki/Perlin_noise
@@ -58,7 +63,7 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
 	float theta;
 	for (int i=0; i<BLOCKCOUNT_X+2; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+2; j++){
-			theta = srandTheta((x*BLOCKCOUNT_X)+i,(z*BLOCKCOUNT_Z)+j);
+			theta = srandTheta((x*5)+i,(z*5)+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
@@ -104,13 +109,12 @@ Drawable* perlinTerrain(int x, int z){
 			q4=q4+start;
 			
 			if (rand()>(RAND_MAX/2)){
-				
-				iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
-				iter->next->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
+				iter->next = 		new Triangle(q1, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
+				iter->next->next =  new Triangle(q4, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));
 			}
 			else{
-				iter->next = 		new Triangle(q1, q4, q3, TERRAINCOLOR);
-				iter->next->next =  new Triangle(q1, q4, q2, TERRAINCOLOR);				
+				iter->next = 		new Triangle(q1, q4, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
+				iter->next->next =  new Triangle(q1, q4, q2, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));				
 			}
 			iter = iter->next->next;
 		}
