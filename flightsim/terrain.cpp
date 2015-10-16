@@ -1,17 +1,18 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKCOUNT_X 10	//how many triangles wide makeup a block 
-#define BLOCKCOUNT_Z 10	//same but for z-values
-#define BLOCKWIDTH 5. //difference between highest and lowest x-value in a terrain block
-#define BLOCKHEIGHT 5. //same but for z-width
+#define BLOCKCOUNT_X 5	//how many triangles wide makeup a block 
+#define BLOCKCOUNT_Z 5	//same but for z-values
+#define BLOCKWIDTH 10. //how wide/deep is the block in DISTANCE UNITS
 
-
+#define WATERCOLOR sf::Color(255,10,10)
 #define TERRAINCOLOR sf::Color(50,200,50)
+#define MOUNTAINCOLOR sf::Color(70,70,70)
 #define SEALEVEL 0
 
-sf::Color getRandomColor(){
-	return sf::Color(std::rand()%255,std::rand()%255,std::rand()%255);
+float heightDistort(float height){
+	//if you want to change how height is displayed, touch this instead of anything else please
+	return 3*height;
 }
 
 float srandTheta(int i, int j){
@@ -63,7 +64,7 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
 	float theta;
 	for (int i=0; i<BLOCKCOUNT_X+2; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+2; j++){
-			theta = srandTheta((x*5)+i,(z*5)+j);
+			theta = srandTheta((x*(BLOCKCOUNT_X))+i,(z*(BLOCKCOUNT_Z))+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
@@ -71,14 +72,14 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
 	
 	for (int i=0; i<BLOCKCOUNT_X+1; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+1; j++){
-			array[i][j]=perlin(gradient, i+0.5,j+0.5);
+			array[i][j]=heightDistort(perlin(gradient, i+0.5,j+0.5));
 		}
-		std::cout<<std::endl;
 	}
+	
 }
 
 Drawable* perlinTerrain(int x, int z){
-	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKHEIGHT) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKHEIGHT)
+	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKWIDTH) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKWIDTH)
 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
@@ -91,17 +92,17 @@ Drawable* perlinTerrain(int x, int z){
 		}
 	}*/
 	
-	Quaternion start = Quaternion(0, x*BLOCKWIDTH, SEALEVEL, z*BLOCKHEIGHT);
+	Quaternion start = Quaternion(0, z*BLOCKWIDTH, SEALEVEL, x*BLOCKWIDTH);
 	
 	Quaternion q1, q2, q3, q4;
 	
 	for (int i=0; i<BLOCKCOUNT_X; i++){
 		for (int j=0; j<BLOCKCOUNT_Z; j++){
 			
-			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
 			
 			q1=q1+start;
 			q2=q2+start;
@@ -109,12 +110,12 @@ Drawable* perlinTerrain(int x, int z){
 			q4=q4+start;
 			
 			if (rand()>(RAND_MAX/2)){
-				iter->next = 		new Triangle(q1, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
-				iter->next->next =  new Triangle(q4, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));
+				iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
 			}
 			else{
-				iter->next = 		new Triangle(q1, q4, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
-				iter->next->next =  new Triangle(q1, q4, q2, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));				
+				iter->next = 		new Triangle(q1, q4, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q1, q4, q2, TERRAINCOLOR);				
 			}
 			iter = iter->next->next;
 		}
