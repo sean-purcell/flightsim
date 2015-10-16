@@ -11,6 +11,16 @@ se101-lab
 	- Timeline showing breakdown of milestones leading up to project completion.
 	- Detailed description of hardware components
 	- Expected challenges
+2. Flight simulator. (Jasper, Sean)
+3. Launchpad integration. (Neerajen)
+	- Serial port listener program (C++?)
+	- Serial port sender program (ino)
+	- Encoding to bytes / decoding from bytes
+	- Data transmission rate?
+	- How to deal with packet loss
+4. Javarobot
+	- Serial port stuff might overlap with Launchpad integration
+	- Maths: angles -> VK fire rates
 
 #### Schedule
 - Oct 16, 2015 23:59: Proposal due.
