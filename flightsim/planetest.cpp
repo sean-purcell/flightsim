@@ -79,33 +79,11 @@ int main()
 	
 	Aircraft* aircraft = new Aircraft();
 	objects->insert(aircraft);	
-	
-	/*for (int i=0; i<20; i++){
-		for (int j=0; j<20; j++){
-		objects->insert(new Sphere(Quaternion(0, i, 0,j),0.05, sf::Color(std::rand()%255,std::rand()%255,std::rand()%255) ));
-		}
-	}*/
-	
-	//objects->insert(generateTerrainBox(0, 0, 10, 10, 3, 2));
-	//objects->insert(iterateSplitTriangle(new Triangle(Quaternion(0,-15,0,-15), Quaternion(0,20,0,0), Quaternion(0,0,0,20), sf::Color::Green) , 2.0, 0.5, 5));
+		
 	Drawable *terrain = initializeTestTerrain();
 
 	objects->insert(terrain);
-	
-	/*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(0,10,0),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(10,0,0),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(10,10,10),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(10,0,10),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(10,10,0),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(0,0,0),500,sf::Color(0,255,255)));
-	objects->insert(new Sphere(Quaternion(0,10,10),500,sf::Color(0,255,255)));
-	*/
-	//objects.push_back(new Line(Quaternion(0,10,10), Quaternion(0,0,0) ,sf::Color(0,255,255)));
-	//objects->insert(new Triangle(Quaternion(2,8,2), Quaternion(2,2,8), Quaternion(8,2,2), sf::Color(255,255,0)));
-	//objects->insert(new Triangle(Quaternion(12,8,2), Quaternion(24,-23,58), Quaternion(18,22,22), sf::Color(255,100,100)));
-	//objects->insert(new Triangle(Quaternion(0,-8,59), Quaternion(0,-23,58), Quaternion(0,-22,22), sf::Color(100,100,200)));
-	
+		
 	Quaternion camerapos(0, 0, 0, 0);
 	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
 	Quaternion temprotation(0, 0, 0, 0);
@@ -122,37 +100,10 @@ int main()
 		
 		camerarotation.normalize();
 		
-		//so uh we do input in an interesting way
-		//this will probably be rewritten for ports or something but yeah
-		//not only does it look like rubbish, it is in fact rubbish
-		aircraft->velocity = aircraft->velocity + aircraft->facing.transform(
-			Quaternion(0.0, 0,0, 0.01 *
-			(float)sf::Keyboard::isKeyPressed(sf::Keyboard::E)));
-		aircraft->velocity = aircraft->velocity + aircraft->facing.transform(
-			Quaternion(0.0, 0,0, -0.01 *
-			(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Q)));
-		
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))	//air brakes are totally a real thing
-			aircraft->velocity = aircraft->velocity * 0.95;
-		
-		float pitchang = (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)
-			+ (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-		Quaternion pitch(pitchang, aircraft->facing.transform(
-			Quaternion(1, 0, 0)));
-		//aircraft->velocity = pitch.transform(aircraft->velocity);
-		aircraft->facing = pitch * aircraft->facing;
-
-		//float rollang = (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A)
-		//	+ (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-		//Quaternion roll(rollang, aircraft->facing.transform(Quaternion(0, 0, 1)));
-		//aircraft->velocity = roll.transform(aircraft->velocity);
-		//aircraft->facing = roll * aircraft->facing;
-		//dcamerapos.x=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::D)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-		//dcamerapos.y=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Z)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::X);
-		//dcamerapos.z=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-
 		left  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		right = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+		up    = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+		down  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::S);
 
 		//dcamerapos=dcamerapos*0.1;
 

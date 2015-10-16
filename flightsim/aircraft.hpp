@@ -40,7 +40,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			rollmoi = 161820.94;
 			aileronarea = 0.003;
 			aileronradius = 5;
-			elevatorarea = 3;
+			elevatorarea = 0.003;
 			elevatorradius = 8;
 			rho = 1.225;
 		}
@@ -48,9 +48,9 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		Aircraft(){
 			init_params();
 
-			pos = Quaternion(0, 1, 10, 1);		//real component must be zero
+			pos = Quaternion(0, 1, 10000, 1);		//real component must be zero
 			facing = Quaternion (1, 0, 0, 0);	//orientation
-			velocity = Quaternion (0, 0, 0, 500);	//real component must be zero
+			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
 			omega = Quaternion(0, 0, 0, 0);
 			
 			//bunch of sphere stuff that will be obsolete eventually
@@ -81,6 +81,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 				shape.setRadius(render_radius);
 				
 			shape.setPosition(draw_pos.getScreenPos()+sf::Vector2f(-render_radius,-render_radius));
+			std::cout << distanceFromCamera << " " << render_radius << " " << std::endl;
 			//std::cout<<"radius:"<<render_radius<<std::endl;
 		}
 		
@@ -94,7 +95,6 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 
 		void applyForces(float dt) {
 			Quaternion netF(0, 0, 0, 0);
-			Quaternion netT(0, 0, 0, 0);
 
 			netF = netF + fGravity();
 			netF = netF + fWing();
@@ -103,13 +103,11 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			float rollA = tAileron() / rollmoi;
 			float pitchA = tElevator() / pitchmoi;
 
-			//Quaternion accel = netF * (1 / mass);
-			Quaternion accel(0, 0, 0);
+			Quaternion accel = netF * (1 / mass);
 
 			this->pos = this->pos + this->velocity * dt + accel * (0.5f * dt * dt);
 			this->velocity = this->velocity + accel * dt;
 
-			std::cout << rollA << " " << pitchA << std::endl;
 			Quaternion alpha(0, pitchA, 0, rollA);
 
 			omega = omega + alpha * dt;
@@ -142,15 +140,12 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		}
 
 		float tAileron() {
-			std::cout << left << " " << right << std::endl;
 			float effect = left * maxaileron + right * minaileron;
 			Quaternion ailangl(-aoi + effect, Quaternion(-1, 0, 0));
 			Quaternion ailangr(aoi + effect, Quaternion( 1, 0, 0));
 
 			Quaternion anl = facing.transform(ailangl.transform(Quaternion(0, 1, 0)));
 			Quaternion anr = facing.transform(ailangr.transform(Quaternion(0, 1, 0)));
-
-			std::cout << "anl: " << anl << ", anr:" << anr << std::endl;
 
 			Quaternion v = this->velocity * -1.0f;
 			Quaternion vl = v + facing.transform(Quaternion(0, -this->omega.z * aileronradius, 0));
@@ -161,14 +156,29 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 
 			Quaternion lt = liftl.cross(facing.transform(Quaternion(-aileronradius, 0, 0)));
 			Quaternion rt = liftr.cross(facing.transform(Quaternion(aileronradius, 0, 0)));
-			// TODO: fix
+
 			Quaternion torque = lt + rt;
 			std::cout << "lt: " << lt << ", rt: " << rt << ", t: " << torque << std::endl;
 			return torque.dot(facing.transform(Quaternion(0, 0, 1)));
 		}
 
 		float tElevator() {
-			return 0;
+			float effect = -up * minelevator + -down * maxelevator;
+			Quaternion elangl(-effect, Quaternion(1, 0, 0));
+
+			Quaternion en = facing.transform(elangl.transform(Quaternion(0, 1, 0)));
+
+			// TODO: add rotation imparted velocity
+			Quaternion v = this->velocity * -1.0f
+				+ facing.transform(Quaternion(0, omega.x * elevatorradius, 0));
+
+			Quaternion lift = en * rho * elevatorarea * fabs(v.dot(en)) * (v.dot(en));
+
+			Quaternion et = lift.cross(facing.transform(Quaternion(0, 0, elevatorradius)));
+
+			std::cout << "et: " << et << std::endl;
+
+			return et.dot(facing.transform(Quaternion(1, 0, 0)));
 		}
 		
 	private:
