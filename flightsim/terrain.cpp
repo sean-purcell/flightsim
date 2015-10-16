@@ -2,9 +2,8 @@
 
 //default width and height of perlin noise generation
 #define BLOCKCOUNT_X 10	//how many triangles wide makeup a block 
-#define BLOCKCOUNT_Z 10	//same but for z-values
-#define BLOCKWIDTH 5. //difference between highest and lowest x-value in a terrain block
-#define BLOCKHEIGHT 5. //same but for z-width
+#define BLOCKCOUNT_Z 5	//same but for z-values
+#define BLOCKWIDTH 10. //how wide/deep is the block in distance units
 
 
 #define TERRAINCOLOR sf::Color(50,200,50)
@@ -63,22 +62,26 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
 	float theta;
 	for (int i=0; i<BLOCKCOUNT_X+2; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+2; j++){
-			theta = srandTheta((x*5)+i,(z*5)+j);
+			theta = srandTheta((x*(BLOCKCOUNT_X))+i,(z*(BLOCKCOUNT_Z))+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
 	}
 	
+	std::cout<<"BEGIN BLOCK"<<std::endl;
 	for (int i=0; i<BLOCKCOUNT_X+1; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+1; j++){
 			array[i][j]=perlin(gradient, i+0.5,j+0.5);
+			std::cout<<array[i][j]<<" ";
 		}
 		std::cout<<std::endl;
 	}
+	
+	std::cout<<"END BLOCK"<<std::endl;
 }
 
 Drawable* perlinTerrain(int x, int z){
-	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKHEIGHT) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKHEIGHT)
+	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKWIDTH) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKWIDTH)
 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
@@ -91,17 +94,17 @@ Drawable* perlinTerrain(int x, int z){
 		}
 	}*/
 	
-	Quaternion start = Quaternion(0, x*BLOCKWIDTH, SEALEVEL, z*BLOCKHEIGHT);
+	Quaternion start = Quaternion(0, z*BLOCKWIDTH, SEALEVEL, x*BLOCKWIDTH);
 	
 	Quaternion q1, q2, q3, q4;
 	
 	for (int i=0; i<BLOCKCOUNT_X; i++){
 		for (int j=0; j<BLOCKCOUNT_Z; j++){
 			
-			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
-			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
 			
 			q1=q1+start;
 			q2=q2+start;
@@ -109,12 +112,12 @@ Drawable* perlinTerrain(int x, int z){
 			q4=q4+start;
 			
 			if (rand()>(RAND_MAX/2)){
-				iter->next = 		new Triangle(q1, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
-				iter->next->next =  new Triangle(q4, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));
+				iter->next = 		new Triangle(q1, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 0));
+				iter->next->next =  new Triangle(q4, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 1));
 			}
 			else{
-				iter->next = 		new Triangle(q1, q4, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 0));
-				iter->next->next =  new Triangle(q1, q4, q2, getColor((x*BLOCKWIDTH)+i, (z*BLOCKHEIGHT)+j, 1));				
+				iter->next = 		new Triangle(q1, q4, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 0));
+				iter->next->next =  new Triangle(q1, q4, q2, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 1));				
 			}
 			iter = iter->next->next;
 		}
