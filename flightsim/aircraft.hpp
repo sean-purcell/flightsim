@@ -18,10 +18,13 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		float wingarea;
 		float pitchmoi;
 		float rollmoi;
+		float yawmoi;
 		float aileronarea;
 		float aileronradius;
 		float elevatorarea;
 		float elevatorradius;
+		float rudderarea;
+		float rudderradius;
 		float rho;
 		float dragcoeff;
 
@@ -39,20 +42,23 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			wingarea = 38;
 			pitchmoi = 21935.779;
 			rollmoi = 161820.94;
+			yawmoi = 178290.06;
 			aileronarea = 0.03;
 			aileronradius = 5;
 			elevatorarea = 0.03;
 			elevatorradius = 8;
+			rudderarea = 0.03;
+			rudderradius = 8;
 			rho = 1.225;
-			dragcoeff = 0.5;
+			dragcoeff = 0.3;
 		}
 		
 		Aircraft(){
 			init_params();
 
-			pos = Quaternion(0, 1, 1000, 1);		//real component must be zero
+			pos = Quaternion(0, 1, 10000, 1);		//real component must be zero
 			facing = Quaternion (1, 0, 0, 0);	//orientation
-			velocity = Quaternion (0, 0, 0, 500);	//real component must be zero
+			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
 			omega = Quaternion(0, 0, 0, 0);
 			
 			//bunch of sphere stuff that will be obsolete eventually
@@ -103,13 +109,14 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 
 			float rollA = tAileron() / rollmoi;
 			float pitchA = tElevator() / pitchmoi;
+			float yawA = tRudder() / yawmoi;
 
 			Quaternion accel = netF * (1 / mass);
 
 			this->pos = this->pos + this->velocity * dt + accel * (0.5f * dt * dt);
 			this->velocity = this->velocity + accel * dt;
 
-			Quaternion alpha(0, pitchA, 0, rollA);
+			Quaternion alpha(0, pitchA, yawA, rollA);
 
 			omega = omega + alpha * dt;
 
@@ -172,7 +179,6 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 
 			Quaternion en = facing.transform(elangl.transform(Quaternion(0, 1, 0)));
 
-			// TODO: add rotation imparted velocity
 			Quaternion v = this->velocity * -1.0f
 				+ facing.transform(Quaternion(0, omega.x * elevatorradius, 0));
 
@@ -181,6 +187,19 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			Quaternion et = lift.cross(facing.transform(Quaternion(0, 0, elevatorradius)));
 
 			return et.dot(facing.transform(Quaternion(1, 0, 0)));
+		}
+
+		float tRudder() {
+			Quaternion rn = facing.transform(Quaternion(1, 0, 0));
+
+			Quaternion v = this->velocity * -1.0f
+				+ facing.transform(Quaternion(omega.y * rudderradius, 0, 0));
+
+			Quaternion lift = rn * rho * rudderarea * fabs(v.dot(rn)) * (v.dot(rn));
+
+			Quaternion rt = lift.cross(facing.transform(Quaternion(0, 0, rudderradius)));
+
+			return rt.dot(facing.transform(Quaternion(0, 1, 0)));
 		}
 		
 	private:

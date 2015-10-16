@@ -9,8 +9,8 @@
 
 const int fov=90;
 const float ratio=std::tan(fov/2.0);
-const int screenwidth=1000;
-const int screenheight=800;
+const int screenwidth=1024;
+const int screenheight=640;
 const sf::Vector2i size(screenwidth, screenheight);
 
 #include "quaternion.hpp"
@@ -27,7 +27,6 @@ Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 float up, down, left, right;
 
 void update_list(Drawable* &start, float dt){
-	std::cout << dt << std::endl;
 	Drawable* iter = start;
 	int length=0;
 
