@@ -48,9 +48,9 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		Aircraft(){
 			init_params();
 
-			pos = Quaternion(0, 1, 100000, 1);		//real component must be zero
+			pos = Quaternion(0, 1, 10, 1);		//real component must be zero
 			facing = Quaternion (1, 0, 0, 0);	//orientation
-			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
+			velocity = Quaternion (0, 0, 0, 500);	//real component must be zero
 			omega = Quaternion(0, 0, 0, 0);
 			
 			//bunch of sphere stuff that will be obsolete eventually
@@ -103,7 +103,8 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			float rollA = tAileron() / rollmoi;
 			float pitchA = tElevator() / pitchmoi;
 
-			Quaternion accel = netF * (1 / mass);
+			//Quaternion accel = netF * (1 / mass);
+			Quaternion accel(0, 0, 0);
 
 			this->pos = this->pos + this->velocity * dt + accel * (0.5f * dt * dt);
 			this->velocity = this->velocity + accel * dt;
@@ -119,7 +120,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 				facing = omegaVersor * facing;
 			}
 
-			std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << std::endl;
+			std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", o:" << omega << std::endl;
 		}
 
 		Quaternion fGravity() {
@@ -152,9 +153,11 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			std::cout << "anl: " << anl << ", anr:" << anr << std::endl;
 
 			Quaternion v = this->velocity * -1.0f;
+			Quaternion vl = v + facing.transform(Quaternion(0, -this->omega.z * aileronradius, 0));
+			Quaternion vr = v + facing.transform(Quaternion(0, this->omega.z * aileronradius, 0));
 
-			Quaternion liftl = anl * rho * aileronarea * fabs(v.dot(anl)) * (v.dot(anl));
-			Quaternion liftr = anr * rho * aileronarea * fabs(v.dot(anr)) * (v.dot(anr));
+			Quaternion liftl = anl * rho * aileronarea * fabs(vl.dot(anl)) * (vl.dot(anl));
+			Quaternion liftr = anr * rho * aileronarea * fabs(vr.dot(anr)) * (vr.dot(anr));
 
 			Quaternion lt = liftl.cross(facing.transform(Quaternion(-aileronradius, 0, 0)));
 			Quaternion rt = liftr.cross(facing.transform(Quaternion(aileronradius, 0, 0)));
