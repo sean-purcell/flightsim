@@ -1,16 +1,18 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKCOUNT_X 10	//how many triangles wide makeup a block 
+#define BLOCKCOUNT_X 5	//how many triangles wide makeup a block 
 #define BLOCKCOUNT_Z 5	//same but for z-values
-#define BLOCKWIDTH 10. //how wide/deep is the block in distance units
+#define BLOCKWIDTH 10. //how wide/deep is the block in DISTANCE UNITS
 
-
+#define WATERCOLOR sf::Color(255,10,10)
 #define TERRAINCOLOR sf::Color(50,200,50)
+#define MOUNTAINCOLOR sf::Color(70,70,70)
 #define SEALEVEL 0
 
-sf::Color getRandomColor(){
-	return sf::Color(std::rand()%255,std::rand()%255,std::rand()%255);
+float heightDistort(float height){
+	//if you want to change how height is displayed, touch this instead of anything else please
+	return 3*height;
 }
 
 float srandTheta(int i, int j){
@@ -68,16 +70,12 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
 		}
 	}
 	
-	std::cout<<"BEGIN BLOCK"<<std::endl;
 	for (int i=0; i<BLOCKCOUNT_X+1; i++){
 		for (int j=0; j<BLOCKCOUNT_Z+1; j++){
-			array[i][j]=perlin(gradient, i+0.5,j+0.5);
-			std::cout<<array[i][j]<<" ";
+			array[i][j]=heightDistort(perlin(gradient, i+0.5,j+0.5));
 		}
-		std::cout<<std::endl;
 	}
 	
-	std::cout<<"END BLOCK"<<std::endl;
 }
 
 Drawable* perlinTerrain(int x, int z){
@@ -112,12 +110,12 @@ Drawable* perlinTerrain(int x, int z){
 			q4=q4+start;
 			
 			if (rand()>(RAND_MAX/2)){
-				iter->next = 		new Triangle(q1, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 0));
-				iter->next->next =  new Triangle(q4, q2, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 1));
+				iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
 			}
 			else{
-				iter->next = 		new Triangle(q1, q4, q3, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 0));
-				iter->next->next =  new Triangle(q1, q4, q2, getColor((x*BLOCKWIDTH)+i, (z*BLOCKWIDTH)+j, 1));				
+				iter->next = 		new Triangle(q1, q4, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q1, q4, q2, TERRAINCOLOR);				
 			}
 			iter = iter->next->next;
 		}
