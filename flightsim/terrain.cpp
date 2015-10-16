@@ -1,8 +1,8 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKCOUNT 4	//how many triangles wide makeup a block, it's nice if this is a power of 2
-#define BLOCKWIDTH 10. //how wide/deep is the block in DISTANCE UNITS
+#define CHUNKCOUNT 4	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
+#define CHUNKWIDTH 10. //how wide/deep is the CHUNK in DISTANCE UNITS
 
 #define WATERCOLOR sf::Color(255,10,10)
 #define TERRAINCOLOR sf::Color(50,200,50)
@@ -36,14 +36,14 @@ float lerp(float a, float b, float w){
 	return (1.0-w)*a + w*b;
 }
 
-float dotGridGradient(float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2], int ix, int iy, float x, float y){
+float dotGridGradient(float gradient[CHUNKCOUNT+2][CHUNKCOUNT+2][2], int ix, int iy, float x, float y){
 	float dx = x-(float)ix;
 	float dy = y-(float)iy;
 	
 	return (dx*gradient[iy][ix][0] + dy*gradient[iy][ix][1]);
 }
 
-float perlin(float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2], float x, float y){
+float perlin(float gradient[CHUNKCOUNT+2][CHUNKCOUNT+2][2], float x, float y){
 	int x0 = (x>0.0 ? (int)x : (int)x-1);
 	int x1 = x0+1;
 	int y0 = (y>0.0 ? (int)y : (int)y-1);
@@ -64,19 +64,19 @@ float perlin(float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2], float x, float y){
 	return val;
 }
 
-void generatePerlin(int x, int z, float array[BLOCKCOUNT+1][BLOCKCOUNT+1]){
-	float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2];
+void generatePerlin(int x, int z, float array[CHUNKCOUNT+1][CHUNKCOUNT+1]){
+	float gradient[CHUNKCOUNT+2][CHUNKCOUNT+2][2];
 	float theta;
-	for (int i=0; i<BLOCKCOUNT+2; i++){
-		for (int j=0; j<BLOCKCOUNT+2; j++){
-			theta = srandTheta((x*(BLOCKCOUNT))+i,(z*(BLOCKCOUNT))+j);
+	for (int i=0; i<CHUNKCOUNT+2; i++){
+		for (int j=0; j<CHUNKCOUNT+2; j++){
+			theta = srandTheta((x*(CHUNKCOUNT))+i,(z*(CHUNKCOUNT))+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
 	}
 	
-	for (int i=0; i<BLOCKCOUNT+1; i++){
-		for (int j=0; j<BLOCKCOUNT+1; j++){
+	for (int i=0; i<CHUNKCOUNT+1; i++){
+		for (int j=0; j<CHUNKCOUNT+1; j++){
 			array[i][j]=heightDistort(perlin(gradient, i+0.5,j+0.5));
 		}
 	}
@@ -84,30 +84,30 @@ void generatePerlin(int x, int z, float array[BLOCKCOUNT+1][BLOCKCOUNT+1]){
 }
 
 Drawable* perlinTerrain(int x, int z){
-	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKWIDTH) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKWIDTH)
+	//Returns a pointer to a linked list of Triangle objects that form a CHUNK of terrain that extend from (x*CHUNKWIDTH, z*CHUNKWIDTH) to ((x+1)*CHUNKWIDTH, (z+1)*CHUNKWIDTH)
 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
-	float array[BLOCKCOUNT+1][BLOCKCOUNT+1];
+	float array[CHUNKCOUNT+1][CHUNKCOUNT+1];
 	generatePerlin(x, z, array);
 	
-	/*for (int i=0; i<BLOCKCOUNT; i++){
-		for (int j=0; j<BLOCKCOUNT; j++){
+	/*for (int i=0; i<CHUNKCOUNT; i++){
+		for (int j=0; j<CHUNKCOUNT; j++){
 			array[i][j]=sqrt(fabs(array[i][j]));
 		}
 	}*/
 	
-	Quaternion start = Quaternion(0, z*BLOCKWIDTH, SEALEVEL, x*BLOCKWIDTH);
+	Quaternion start = Quaternion(0, z*CHUNKWIDTH, SEALEVEL, x*CHUNKWIDTH);
 	
 	Quaternion q1, q2, q3, q4;
 	
-	for (int i=0; i<BLOCKCOUNT; i++){
-		for (int j=0; j<BLOCKCOUNT; j++){
+	for (int i=0; i<CHUNKCOUNT; i++){
+		for (int j=0; j<CHUNKCOUNT; j++){
 			
-			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT, array[i][j], (float)j*BLOCKWIDTH/BLOCKCOUNT);
-			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT, array[i+1][j], (float)j*BLOCKWIDTH/BLOCKCOUNT);
-			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT, array[i][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT);
-			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT, array[i+1][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT);
+			q1 = Quaternion(0, (float)i*CHUNKWIDTH/CHUNKCOUNT, array[i][j], (float)j*CHUNKWIDTH/CHUNKCOUNT);
+			q2 = Quaternion(0, (float)(i+1)*CHUNKWIDTH/CHUNKCOUNT, array[i+1][j], (float)j*CHUNKWIDTH/CHUNKCOUNT);
+			q3 = Quaternion(0, (float)i*CHUNKWIDTH/CHUNKCOUNT, array[i][j+1], (float)(j+1)*CHUNKWIDTH/CHUNKCOUNT);
+			q4 = Quaternion(0, (float)(i+1)*CHUNKWIDTH/CHUNKCOUNT, array[i+1][j+1], (float)(j+1)*CHUNKWIDTH/CHUNKCOUNT);
 			
 			q1=q1+start;
 			q2=q2+start;
