@@ -1,69 +1,22 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKWIDTH 20
-#define BLOCKHEIGHT 20
+#define BLOCKCOUNT_X 10	//how many triangles wide makeup a block 
+#define BLOCKCOUNT_Z 10	//same but for z-values
+#define BLOCKWIDTH 5. //difference between highest and lowest x-value in a terrain block
+#define BLOCKHEIGHT 5. //same but for z-width
+
+
 #define TERRAINCOLOR sf::Color(50,200,50)
+#define SEALEVEL 0
 
 sf::Color getRandomColor(){
 	return sf::Color(std::rand()%255,std::rand()%255,std::rand()%255);
 }
 
-Triangle* splitTriangle(Triangle* tri, float hvarbound){
-	//replaces a triangle with four other triangles. each of the three new edges the center is displaced by, at most, hvar up or down
-	//works in-place on a linked list
-	Drawable* next = tri->next;
-	tri->next = 0;
-	Quaternion midpoint = (tri->a + tri->b + tri->c)/3;
-	Quaternion var = Quaternion(0,0,hvarbound*(std::rand()%2 - 1),0);
-	midpoint = midpoint + var;
-	Triangle* ret = new Triangle(tri->a, tri->b, midpoint, tri->color);
-	ret->next = 	new Triangle(tri->a, midpoint, tri->c, tri->color);
-	ret->next->next=new Triangle(midpoint, tri->b, tri->c, tri->color);
-	ret->next->next->next = next;
-	delete tri;
-	return ret;
-}
-
-Drawable* generateTerrainBox(float x, float z, float width, float depth, float startY, int fractalIterations){
-	//generates random terrain from (x to x+width) and (z to z+depth)
-	sf::Color color = TERRAINCOLOR;
-	Quaternion q = Quaternion(0,x,startY,z);
-	Triangle* head = new Triangle(Quaternion(0,0,0,0)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color);
-	head->insert(new Triangle(Quaternion(0,width,0,depth)+q, Quaternion(0,width,0,0)+q, Quaternion(0,0,0,depth)+q, color));
-	
-	Triangle* iter;
-	float var = 2.5;
-	for (int i=0; i<fractalIterations; i++){
-		head = splitTriangle(head,var);
-		iter = head;
-		while (iter->next->next->next!=NULL){
-			iter->next->next->next = (Drawable*)splitTriangle((Triangle*)iter->next->next->next, var);
-			iter = (Triangle*)iter->next->next->next;
-		}
-		var/=1.5;
-	}
-	
-	
-	return (Drawable*)head;
-}
-
-Drawable* iterateSplitTriangle(Triangle* tri, float variance, float varianceDecay, int fractalIterations){
-	//generates random terrain from (x to x+width) and (z to z+depth)
-	Triangle* iter;
-	Triangle* head = tri;
-	for (int i=0; i<fractalIterations; i++){
-		head = splitTriangle(head,variance);
-		iter = head;
-		while (iter->next->next->next!=NULL){
-			iter->next->next->next = (Drawable*)splitTriangle((Triangle*)iter->next->next->next, variance);
-			iter = (Triangle*)iter->next->next->next;
-		}
-		variance*=varianceDecay;
-	}
-	
-	
-	return (Drawable*)head;
+float srandTheta(int i, int j){
+	srand(i*66666+j);
+	return ((float)rand()/RAND_MAX)*2*M_PI;
 }
 
 //implemented based on pseudocode on en.wikipedia.org/wiki/Perlin_noise
@@ -72,14 +25,14 @@ float lerp(float a, float b, float w){
 	return (1.0-w)*a + w*b;
 }
 
-float dotGridGradient(float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2], int ix, int iy, float x, float y){
+float dotGridGradient(float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2], int ix, int iy, float x, float y){
 	float dx = x-(float)ix;
 	float dy = y-(float)iy;
 	
 	return (dx*gradient[iy][ix][0] + dy*gradient[iy][ix][1]);
 }
 
-float perlin(float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2], float x, float y){
+float perlin(float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2], float x, float y){
 	int x0 = (x>0.0 ? (int)x : (int)x-1);
 	int x1 = x0+1;
 	int y0 = (y>0.0 ? (int)y : (int)y-1);
@@ -97,54 +50,67 @@ float perlin(float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2], float x, float y){
 	ix1 = lerp(n0, n1, sx);
 	
 	val = lerp(ix0, ix1, sy);
-	std::cout<<n0<<" "<<n1<<" "<<sx<<" "<<ix1<<std::endl;
 	return val;
 }
 
-void generatePerlin(float array[BLOCKWIDTH][BLOCKHEIGHT]){
-	float gradient[BLOCKWIDTH+1][BLOCKHEIGHT+1][2];
+void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
+	float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2];
 	float theta;
-	for (int i=0; i<BLOCKWIDTH+1; i++){
-		for (int j=0; j<BLOCKHEIGHT+1; j++){
-			theta = ((float)rand()/RAND_MAX)*(2*M_PI);
+	for (int i=0; i<BLOCKCOUNT_X+2; i++){
+		for (int j=0; j<BLOCKCOUNT_Z+2; j++){
+			theta = srandTheta((x*BLOCKCOUNT_X)+i,(z*BLOCKCOUNT_Z)+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
 	}
 	
-	std::cout<<"lmao start"<<std::endl;
-	for (int i=0; i<BLOCKWIDTH; i++){
-		for (int j=0; j<BLOCKHEIGHT; j++){
+	for (int i=0; i<BLOCKCOUNT_X+1; i++){
+		for (int j=0; j<BLOCKCOUNT_Z+1; j++){
 			array[i][j]=perlin(gradient, i+0.5,j+0.5);
-			std::cout<<array[i][j]<<" ";
 		}
 		std::cout<<std::endl;
 	}
-	std::cout<<"lmao end"<<std::endl;
 }
 
-Drawable* perlinTerrain(int startX, int startY){
-	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from 
+Drawable* perlinTerrain(int x, int z){
+	//Returns a pointer to a linked list of Triangle objects that form a block of terrain that extend from (x*BLOCKWIDTH, z*BLOCKHEIGHT) to ((x+1)*BLOCKWIDTH, (z+1)*BLOCKHEIGHT)
+
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
-	float array[BLOCKWIDTH][BLOCKHEIGHT];
-	generatePerlin(array);
+	float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1];
+	generatePerlin(x, z, array);
 	
-	for (int i=0; i<BLOCKWIDTH; i++){
-		for (int j=0; j<BLOCKHEIGHT; j++){
+	/*for (int i=0; i<BLOCKCOUNT_X; i++){
+		for (int j=0; j<BLOCKCOUNT_Z; j++){
 			array[i][j]=sqrt(fabs(array[i][j]));
 		}
-	}
+	}*/
 	
-	for (int i=0; i<BLOCKWIDTH-1; i++){
-		for (int j=0; j<BLOCKHEIGHT-1; j++){
+	Quaternion start = Quaternion(0, x*BLOCKWIDTH, SEALEVEL, z*BLOCKHEIGHT);
+	
+	Quaternion q1, q2, q3, q4;
+	
+	for (int i=0; i<BLOCKCOUNT_X; i++){
+		for (int j=0; j<BLOCKCOUNT_Z; j++){
+			
+			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKHEIGHT/BLOCKCOUNT_Z);
+			
+			q1=q1+start;
+			q2=q2+start;
+			q3=q3+start;
+			q4=q4+start;
+			
 			if (rand()>(RAND_MAX/2)){
-				iter->next = 		new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
-				iter->next->next =  new Triangle(Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i+1, array[i+1][j], j), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
+				
+				iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
 			}
 			else{
-				iter->next = 		new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i, array[i][j+1], j+1), TERRAINCOLOR);
-				iter->next->next =  new Triangle(Quaternion(0, i, array[i][j], j), Quaternion(0, i+1, array[i+1][j+1], j+1), Quaternion(0, i+1, array[i+1][j], j), TERRAINCOLOR);				
+				iter->next = 		new Triangle(q1, q4, q3, TERRAINCOLOR);
+				iter->next->next =  new Triangle(q1, q4, q2, TERRAINCOLOR);				
 			}
 			iter = iter->next->next;
 		}
