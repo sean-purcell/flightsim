@@ -6,7 +6,7 @@
 
 Triangle *terrain[MOVGRIDWID][MOVGRIDHEI][2];
 
-sf::Color getColor(int x, int z, int q) {
+sf::Color getColorMovTest(int x, int z, int q) {
 	srand((x * 65537 + z) * (q ? 1 : -1));
 	return sf::Color(rand() % 256, rand() % 256, rand() % 256);
 }
@@ -44,12 +44,12 @@ void updateMovTerrain(Quaternion pos) {
 			iter->a = Quaternion(i+x, 0, j+z) * SCALE;
 			iter->b = Quaternion(i+1+x, 0, j+z) * SCALE;
 			iter->c = Quaternion(i+x, 0, j+1+z) * SCALE;
-			iter->color = getColor(i+x, j+z, 0);
+			iter->color = getColorMovTest(i+x, j+z, 0);
 			iter = terrain[i + MOVGRIDWID/2][j + MOVGRIDWID/2][1];
 			iter->a = Quaternion(i+1+x, 0, j+1+z) * SCALE;
 			iter->b = Quaternion(i+1+x, 0, j+z) * SCALE;
 			iter->c = Quaternion(i+x, 0, j+1+z) * SCALE;
-			iter->color = getColor(i+x, j+z, 1);
+			iter->color = getColorMovTest(i+x, j+z, 1);
 		}
 	}
 }
