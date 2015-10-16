@@ -1,33 +1,62 @@
 #ifndef AIRCRAFT_HPP
 #define AIRCRAFT_HPP
 
+extern float up, down, left, right;
+
 class Aircraft: public Drawable	//currently a hacked together proof of concept using a sphere.
 	//IT DOESN'T INHERIT FROM SPHERE BECAUSE IT WILL EVENTUALLY NOT BE A SPHERE (hopefully)
 {
 	public:
-		float g = -9.8;
-		float mass = 23500;
-		float thrust = 62300 * 2;
-		float aoi = 10 * M_PI / 180;
+		float g;
+		float mass;
+		float thrust;
+		float aoi;
 		float maxaileron;
-		float wingarea = 38;
+		float minaileron;
+		float maxelevator;
+		float minelevator;
+		float wingarea;
+		float pitchmoi;
+		float rollmoi;
 		float aileronarea;
 		float aileronradius;
 		float elevatorarea;
 		float elevatorradius;
-		float rho = 1.225;
+		float rho;
 
-		Quaternion pos, facing, velocity;
+		Quaternion pos, facing, velocity, omega;
+
+		void init_params() {
+			g = -9.8;
+			mass = 23500;
+			thrust = 62300 * 2;
+			aoi = 10 * M_PI / 180;
+			maxaileron = 45 * M_PI / 180;
+			minaileron = -45 * M_PI / 180;
+			maxelevator = 24 * M_PI / 180;
+			minelevator = -10.5 * M_PI / 180;
+			wingarea = 38;
+			pitchmoi = 21935.779;
+			rollmoi = 161820.94;
+			aileronarea = 0.003;
+			aileronradius = 5;
+			elevatorarea = 3;
+			elevatorradius = 8;
+			rho = 1.225;
+		}
 		
 		Aircraft(){
-			pos = Quaternion(0, 1, 100, 1);		//real component must be zero
+			init_params();
+
+			pos = Quaternion(0, 1, 100000, 1);		//real component must be zero
 			facing = Quaternion (1, 0, 0, 0);	//orientation
-			velocity = Quaternion (0, 0, 0, 531);	//real component must be zero
+			velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
+			omega = Quaternion(0, 0, 0, 0);
 			
 			//bunch of sphere stuff that will be obsolete eventually
 			radius = 0.05;
 			color = sf::Color(255,255,255);
-			
+
 			next = NULL;
 			child = NULL;
 		}
@@ -69,19 +98,28 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 
 			netF = netF + fGravity();
 			netF = netF + fWing();
-			//netF += fAileron();
-			//netF += fElevator();
 			netF = netF + fThrust();
 
-			//netT += tAileron();
-			//netT += tElevator();
+			float rollA = tAileron() / rollmoi;
+			float pitchA = tElevator() / pitchmoi;
 
 			Quaternion accel = netF * (1 / mass);
 
 			this->pos = this->pos + this->velocity * dt + accel * (0.5f * dt * dt);
 			this->velocity = this->velocity + accel * dt;
 
-			std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing.transform(Quaternion(0, 0, 1))) << std::endl;
+			std::cout << rollA << " " << pitchA << std::endl;
+			Quaternion alpha(0, pitchA, 0, rollA);
+
+			omega = omega + alpha * dt;
+
+			if(omega.get_magnitude() > 1e-5) {
+				std::cout << rollmoi << std::endl;
+				Quaternion omegaVersor(omega.get_magnitude() * dt, facing.transform(omega));
+				facing = omegaVersor * facing;
+			}
+
+			std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << std::endl;
 		}
 
 		Quaternion fGravity() {
@@ -94,13 +132,40 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			Quaternion v = this->velocity * -1.0f;
 
 			Quaternion lift = wn * rho * wingarea * fabs(v.dot(wn)) * (v.dot(wn));
-			std::cout << "wn: " << wn << ", lift: " << lift << std::endl;
 			return lift;
 		}
 
 		Quaternion fThrust() {
 			Quaternion fw = facing.transform(Quaternion(0, 0, 1));
 			return fw * thrust;
+		}
+
+		float tAileron() {
+			std::cout << left << " " << right << std::endl;
+			float effect = left * maxaileron + right * minaileron;
+			Quaternion ailangl(-aoi + effect, Quaternion(-1, 0, 0));
+			Quaternion ailangr(aoi + effect, Quaternion( 1, 0, 0));
+
+			Quaternion anl = facing.transform(ailangl.transform(Quaternion(0, 1, 0)));
+			Quaternion anr = facing.transform(ailangr.transform(Quaternion(0, 1, 0)));
+
+			std::cout << "anl: " << anl << ", anr:" << anr << std::endl;
+
+			Quaternion v = this->velocity * -1.0f;
+
+			Quaternion liftl = anl * rho * aileronarea * fabs(v.dot(anl)) * (v.dot(anl));
+			Quaternion liftr = anr * rho * aileronarea * fabs(v.dot(anr)) * (v.dot(anr));
+
+			Quaternion lt = liftl.cross(facing.transform(Quaternion(-aileronradius, 0, 0)));
+			Quaternion rt = liftr.cross(facing.transform(Quaternion(aileronradius, 0, 0)));
+			// TODO: fix
+			Quaternion torque = lt + rt;
+			std::cout << "lt: " << lt << ", rt: " << rt << ", t: " << torque << std::endl;
+			return torque.dot(facing.transform(Quaternion(0, 0, 1)));
+		}
+
+		float tElevator() {
+			return 0;
 		}
 		
 	private:

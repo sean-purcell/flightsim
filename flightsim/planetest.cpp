@@ -9,8 +9,8 @@
 
 const int fov=90;
 const float ratio=std::tan(fov/2.0);
-const int screenwidth=1600;
-const int screenheight=1000;
+const int screenwidth=1000;
+const int screenheight=800;
 const sf::Vector2i size(screenwidth, screenheight);
 
 #include "quaternion.hpp"
@@ -24,6 +24,7 @@ Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 #include "terrain.cpp"
 #include "movingtestground.hpp"
 
+float up, down, left, right;
 
 void update_list(Drawable* &start, float dt){
 	Drawable* iter = start;
@@ -141,14 +142,17 @@ int main()
 		//aircraft->velocity = pitch.transform(aircraft->velocity);
 		aircraft->facing = pitch * aircraft->facing;
 
-		float rollang = (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A)
-			+ (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-		Quaternion roll(rollang, aircraft->facing.transform(Quaternion(0, 0, 1)));
+		//float rollang = (0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A)
+		//	+ (-0.01) * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+		//Quaternion roll(rollang, aircraft->facing.transform(Quaternion(0, 0, 1)));
 		//aircraft->velocity = roll.transform(aircraft->velocity);
-		aircraft->facing = roll * aircraft->facing;
+		//aircraft->facing = roll * aircraft->facing;
 		//dcamerapos.x=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::D)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		//dcamerapos.y=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Z)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::X);
 		//dcamerapos.z=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+
+		left  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+		right = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::D);
 
 		//dcamerapos=dcamerapos*0.1;
 
