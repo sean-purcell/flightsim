@@ -1,8 +1,7 @@
 #include <cstdlib>
 
 //default width and height of perlin noise generation
-#define BLOCKCOUNT_X 5	//how many triangles wide makeup a block 
-#define BLOCKCOUNT_Z 5	//same but for z-values
+#define BLOCKCOUNT 4	//how many triangles wide makeup a block, it's nice if this is a power of 2
 #define BLOCKWIDTH 10. //how wide/deep is the block in DISTANCE UNITS
 
 #define WATERCOLOR sf::Color(255,10,10)
@@ -12,13 +11,19 @@
 
 float heightDistort(float height){
 	//if you want to change how height is displayed, touch this instead of anything else please
-	return 3*height;
+	return 3*(height);
 }
 
 float srandTheta(int i, int j){
 	srand(i*65537+j);
 	return ((float)rand()/RAND_MAX)*2*M_PI;
 }
+
+int srandBit(int i, int j){
+	srand(i*65537 + j);
+	return (rand()>(RAND_MAX)/2);
+}
+
 
 sf::Color getColor(int x, int z, int q) {
 	srand((x * 65537 + z) * (q ? 1 : -1));
@@ -31,14 +36,14 @@ float lerp(float a, float b, float w){
 	return (1.0-w)*a + w*b;
 }
 
-float dotGridGradient(float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2], int ix, int iy, float x, float y){
+float dotGridGradient(float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2], int ix, int iy, float x, float y){
 	float dx = x-(float)ix;
 	float dy = y-(float)iy;
 	
 	return (dx*gradient[iy][ix][0] + dy*gradient[iy][ix][1]);
 }
 
-float perlin(float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2], float x, float y){
+float perlin(float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2], float x, float y){
 	int x0 = (x>0.0 ? (int)x : (int)x-1);
 	int x1 = x0+1;
 	int y0 = (y>0.0 ? (int)y : (int)y-1);
@@ -59,19 +64,19 @@ float perlin(float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2], float x, float y
 	return val;
 }
 
-void generatePerlin(int x, int z, float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1]){
-	float gradient[BLOCKCOUNT_X+2][BLOCKCOUNT_Z+2][2];
+void generatePerlin(int x, int z, float array[BLOCKCOUNT+1][BLOCKCOUNT+1]){
+	float gradient[BLOCKCOUNT+2][BLOCKCOUNT+2][2];
 	float theta;
-	for (int i=0; i<BLOCKCOUNT_X+2; i++){
-		for (int j=0; j<BLOCKCOUNT_Z+2; j++){
-			theta = srandTheta((x*(BLOCKCOUNT_X))+i,(z*(BLOCKCOUNT_Z))+j);
+	for (int i=0; i<BLOCKCOUNT+2; i++){
+		for (int j=0; j<BLOCKCOUNT+2; j++){
+			theta = srandTheta((x*(BLOCKCOUNT))+i,(z*(BLOCKCOUNT))+j);
 			gradient[i][j][0]=sin(theta);
 			gradient[i][j][1]=cos(theta);
 		}
 	}
 	
-	for (int i=0; i<BLOCKCOUNT_X+1; i++){
-		for (int j=0; j<BLOCKCOUNT_Z+1; j++){
+	for (int i=0; i<BLOCKCOUNT+1; i++){
+		for (int j=0; j<BLOCKCOUNT+1; j++){
 			array[i][j]=heightDistort(perlin(gradient, i+0.5,j+0.5));
 		}
 	}
@@ -83,11 +88,11 @@ Drawable* perlinTerrain(int x, int z){
 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
-	float array[BLOCKCOUNT_X+1][BLOCKCOUNT_Z+1];
+	float array[BLOCKCOUNT+1][BLOCKCOUNT+1];
 	generatePerlin(x, z, array);
 	
-	/*for (int i=0; i<BLOCKCOUNT_X; i++){
-		for (int j=0; j<BLOCKCOUNT_Z; j++){
+	/*for (int i=0; i<BLOCKCOUNT; i++){
+		for (int j=0; j<BLOCKCOUNT; j++){
 			array[i][j]=sqrt(fabs(array[i][j]));
 		}
 	}*/
@@ -96,20 +101,20 @@ Drawable* perlinTerrain(int x, int z){
 	
 	Quaternion q1, q2, q3, q4;
 	
-	for (int i=0; i<BLOCKCOUNT_X; i++){
-		for (int j=0; j<BLOCKCOUNT_Z; j++){
+	for (int i=0; i<BLOCKCOUNT; i++){
+		for (int j=0; j<BLOCKCOUNT; j++){
 			
-			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
-			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j], (float)j*BLOCKWIDTH/BLOCKCOUNT_Z);
-			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT_X, array[i][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
-			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT_X, array[i+1][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT_Z);
+			q1 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT, array[i][j], (float)j*BLOCKWIDTH/BLOCKCOUNT);
+			q2 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT, array[i+1][j], (float)j*BLOCKWIDTH/BLOCKCOUNT);
+			q3 = Quaternion(0, (float)i*BLOCKWIDTH/BLOCKCOUNT, array[i][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT);
+			q4 = Quaternion(0, (float)(i+1)*BLOCKWIDTH/BLOCKCOUNT, array[i+1][j+1], (float)(j+1)*BLOCKWIDTH/BLOCKCOUNT);
 			
 			q1=q1+start;
 			q2=q2+start;
 			q3=q3+start;
 			q4=q4+start;
 			
-			if (rand()>(RAND_MAX/2)){
+			if (srandBit(i,j)){
 				iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
 				iter->next->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
 			}
