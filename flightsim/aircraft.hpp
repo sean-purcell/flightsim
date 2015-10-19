@@ -27,6 +27,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		float rudderradius;
 		float rho;
 		float dragcoeff;
+		float rudderdampcoeff;
 
 		Quaternion pos, facing, velocity, omega;
 
@@ -47,10 +48,11 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			aileronradius = 5;
 			elevatorarea = 0.03;
 			elevatorradius = 8;
-			rudderarea = 0.03;
+			rudderarea = 0.3;
 			rudderradius = 8;
 			rho = 1.225;
 			dragcoeff = 0.3;
+			rudderdampcoeff = 100;
 		}
 		
 		Aircraft(){
@@ -193,7 +195,8 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 			Quaternion rn = facing.transform(Quaternion(1, 0, 0));
 
 			Quaternion v = this->velocity * -1.0f
-				+ facing.transform(Quaternion(omega.y * rudderradius, 0, 0));
+				+ facing.transform(Quaternion(omega.y * rudderradius, 0, 0)) *
+					rudderdampcoeff;
 
 			Quaternion lift = rn * rho * rudderarea * fabs(v.dot(rn)) * (v.dot(rn));
 

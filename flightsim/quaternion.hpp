@@ -104,7 +104,7 @@ class Quaternion{
 
 		sf::Vector2f getScreenPos(){
 			if (z==0)
-				return sf::Vector2f(-1000,-1000);
+				return sf::Vector2f(NAN, NAN);
 			return sf::Vector2f(
 				ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0),
 				-ratio*(screenwidth/2.0)*y/z + (screenheight/2.0) );
@@ -124,14 +124,16 @@ Quaternion clipLineToScreen(Quaternion A, Quaternion B){
 	// if A is z-negative, returns a point on the line connecting A and B which is just in front of the camera
 	if (A.z>0) 
 		return A;
-	else {
+	else if(B.z > 0) {
 		return A + (B-A)*((0.0001-A.z)/(B.z-A.z));
+	} else {
+		return Quaternion(NAN, NAN, NAN);
 	}
 }
 
 std::string toString(Quaternion q) {
 	std::ostringstream os;
-	os << std::setprecision(6) << std::fixed;
+	os << std::setprecision(3) << std::fixed;
 	os << "(" << q.w << "," << q.x << "," << q.y << "," << q.z << ")";
 	return os.str();
 }

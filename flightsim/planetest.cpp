@@ -90,8 +90,10 @@ int main()
 	sf::Mouse::setPosition(sf::Vector2i(screenwidth/2, screenheight/2),window);
 
 	sf::Clock gameClock;
+	sf::Time frame = sf::seconds(1/30.);
 	
 	while (window.isOpen()) {
+		sf::Time stT = gameClock.getElapsedTime();
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
 				window.close();
@@ -111,7 +113,7 @@ int main()
 
 		window.clear(sf::Color(0, 0, 0));
 		
-		update_list(objects, (gameClock.restart()).asSeconds());	//can add time clocking later, right now simulation time is set to frame speed
+		update_list(objects, frame.asSeconds());	//can add time clocking later, right now simulation time is set to frame speed
 		updateMovTerrain(aircraft->pos);
 		
 		camerapos = aircraft->pos - aircraft->facing.transform(
@@ -123,6 +125,11 @@ int main()
 		draw_list(objects, window);
 		
 		window.display();
+
+		sf::Time sleepT = gameClock.getElapsedTime() - stT;
+		if(frame > sleepT) {
+			sf::sleep(frame - sleepT);
+		}
 	}
 	
 	
