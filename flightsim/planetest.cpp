@@ -37,12 +37,12 @@ void update_list(Drawable* &start, float dt){
 	}
 }
 		
-void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation){
+void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
 	Drawable* iter = start;
 	int length=0;
 
 	while (iter!=NULL){
-		iter->predraw(camerapos, camerarotation);
+		iter->predraw(camerapos, camerarotation, camerarotationinverse);
 		iter = iter->next;
 		length++;
 	}
@@ -86,6 +86,7 @@ int main()
 		
 	Quaternion camerapos(0, 0, 0, 0);
 	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
+	Quaternion camerarotationinverse;
 	Quaternion temprotation(0, 0, 0, 0);
 	sf::Mouse::setPosition(sf::Vector2i(screenwidth/2, screenheight/2),window);
 
@@ -119,8 +120,9 @@ int main()
 		camerapos = aircraft->pos - aircraft->facing.transform(
 			Quaternion(0, 0, 5));
 		camerarotation = aircraft->facing.inverse();
+		camerarotationinverse = aircraft->facing;
 
-		predraw_list(objects, camerapos, camerarotation);
+		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
 		
 		draw_list(objects, window);
 		

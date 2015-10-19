@@ -13,11 +13,10 @@ class Sphere: public Drawable
 			color = _color;
 			
 			next = NULL;
-			child = NULL;
 		}
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation){	//
-			draw_pos = camerarotation * ((pos-camerapos)* camerarotation.inverse());
+		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
+			draw_pos = camerarotation * ((pos-camerapos)* camerarotationinverse);
 			
 			distanceFromCamera = draw_pos.z;
 			
@@ -57,12 +56,11 @@ class Line: public Drawable
 			color = _color;
 			
 			next = NULL;
-			child = NULL;
 		}
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation){	//
-			drawStart = camerarotation * ((start-camerapos)* camerarotation.inverse());
-			drawEnd = camerarotation * ((end-camerapos)* camerarotation.inverse());
+		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
+			drawStart = camerarotation * ((start-camerapos)* camerarotationinverse);
+			drawEnd = camerarotation * ((end-camerapos)* camerarotationinverse);
 		
 		
 			
@@ -111,17 +109,16 @@ class Triangle: public Drawable
 			color = _color;
 			
 			next = NULL;
-			child = NULL;
 		}
 		
 		Quaternion getNormal(){
 			return ((b-a).cross(c-a)).normalized();
 		}
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation){
-			a_draw = camerarotation * ((a-camerapos)* camerarotation.inverse());
-			b_draw = camerarotation * ((b-camerapos)* camerarotation.inverse());
-			c_draw = camerarotation * ((c-camerapos)* camerarotation.inverse());
+		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+			a_draw = camerarotation * ((a-camerapos)* camerarotationinverse);
+			b_draw = camerarotation * ((b-camerapos)* camerarotationinverse);
+			c_draw = camerarotation * ((c-camerapos)* camerarotationinverse);
 
 			if ( (a_draw.z<0) and (b_draw.z<0) and (c_draw.z<0) )
 				shouldDraw = false;

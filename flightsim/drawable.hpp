@@ -7,12 +7,11 @@ class Drawable{
 		bool shouldDraw;
 		Drawable * next;
 		Drawable * child;
-		virtual void predraw(Quaternion camerapos, Quaternion camerarotation){};
+		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){};
 		virtual void draw(sf::RenderWindow &window){};
 		
 		Drawable() {
 			next = NULL;	//link to a separate item
-			child = NULL;	//currently does nothing, IDEALLY this will allow us to "group" 
 			distanceFromCamera=-1;
 		}
 		
@@ -31,7 +30,6 @@ class Drawable{
 		
 		virtual void update(float dt){
 		}
-		
 };
 
 //hacked together mergesort
@@ -84,6 +82,60 @@ Drawable* split(Drawable* start) {
     }
 }
 //END
+
+
+
+
+class DrawableGroup: public Drawable
+{
+	public:
+		DrawableGroup(Drawable* begin){
+			next = NULL;
+			child = begin;
+		}
+		
+		~DrawableGroup(){
+			delete child;
+		}
+		
+		void insert(Drawable* item){
+			Drawable* iter = item;
+			while ((iter->next)!=NULL){
+				iter = iter->next;
+			}
+			iter->next = child;
+			child = item;
+		}
+		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+			shouldDraw = false;
+			Drawable *iter = child;
+			int count = 0;
+			while (iter != NULL){
+				iter->predraw(camerapos, camerarotation, camerarotationinverse);
+				shouldDraw = shouldDraw || iter->shouldDraw;
+				distanceFromCamera += iter->distanceFromCamera;
+				iter = iter->next;
+				count++;
+			}
+			distanceFromCamera/=count;
+			child = mergeSort(child);
+			
+		}
+		
+		void draw(sf::RenderWindow &window){
+			if (shouldDraw){
+				Drawable *iter = child;
+				while (iter != NULL){
+					iter->draw(window);
+					iter = iter->next;
+				}
+			}
+		}
+		
+	
+};
+
+
 
 
 #endif
