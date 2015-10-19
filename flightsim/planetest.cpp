@@ -118,6 +118,7 @@ int main()
 		camerapos = aircraft->pos - aircraft->facing.transform(
 			Quaternion(0, 0, 5));
 		camerarotation = aircraft->facing.inverse();
+		camerarotationinverse = aircraft->facing;
 
 		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
 		
