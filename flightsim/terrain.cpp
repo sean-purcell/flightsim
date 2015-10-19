@@ -129,5 +129,5 @@ Drawable* perlinTerrain(int x, int z){
 	Drawable* ret = head->next;
 	head->next = 0;
 	delete head;
-	return ret;
+	return (Drawable*)(new DrawableGroup(ret));
 }

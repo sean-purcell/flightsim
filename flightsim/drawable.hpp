@@ -89,37 +89,49 @@ Drawable* split(Drawable* start) {
 class DrawableGroup: public Drawable
 {
 	public:
-		Quaternion a, b, c;
-		sf::Color color;
-		
-		DrawableGroup(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color){
+		DrawableGroup(Drawable* begin){
 			next = NULL;
-			child = NULL;
+			child = begin;
 		}
 		
+		~DrawableGroup(){
+			delete child;
+		}
+		
+		void insert(Drawable* item){
+			Drawable* iter = item;
+			while ((iter->next)!=NULL){
+				iter = iter->next;
+			}
+			iter->next = child;
+			child = item;
+		}
 		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
 			shouldDraw = false;
 			Drawable *iter = child;
+			int count = 0;
 			while (iter != NULL){
 				iter->predraw(camerapos, camerarotation, camerarotationinverse);
+				shouldDraw = shouldDraw || iter->shouldDraw;
+				distanceFromCamera += iter->distanceFromCamera;
 				iter = iter->next;
+				count++;
 			}
-			
+			distanceFromCamera/=count;
 			child = mergeSort(child);
 			
 		}
 		
 		void draw(sf::RenderWindow &window){
-			Drawable *iter = child;
-			while (iter != NULL){
-				iter->draw(window);
-				iter = iter->next;
+			if (shouldDraw){
+				Drawable *iter = child;
+				while (iter != NULL){
+					iter->draw(window);
+					iter = iter->next;
+				}
 			}
 		}
 		
-	private:
-		sf::ConvexShape shape;
-		Quaternion a_draw, b_draw, c_draw;
 	
 };
 
