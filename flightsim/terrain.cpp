@@ -115,3 +115,28 @@ Drawable* Terrain::getChunk(int x, int z){
 	return (Drawable*)(new DrawableGroup(ret));
 }
 
+<<<<<<< Updated upstream
+=======
+
+class ChunkManager{
+	public:
+		std::pair<int, int> loaded[1000];
+		
+		ChunkManager(Terrain _terrain){ terrain = _terrain;}
+		Drawable* load(int, int);
+		void free(int, int);
+		int isLoaded(int, int);
+
+	private:
+		Terrain terrain;
+		int loadedChunks;
+};
+
+
+
+int ChunkManager::isLoaded(int x, int y){
+	for (int i=0; i<loadedChunks; i++){
+		
+	}
+}
+>>>>>>> Stashed changes

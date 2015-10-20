@@ -9,6 +9,7 @@ class Drawable{
 	public:
 		float distanceFromCamera;
 		bool shouldDraw;
+		bool shouldRemove;
 		Drawable * next;
 		Drawable * child;
 		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){};

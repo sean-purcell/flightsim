@@ -32,7 +32,7 @@ class Line: public Drawable
 		sf::Color color;
 		
 		Line(Quaternion _start, Quaternion _end, sf::Color _color);
-		
+
 		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
 		
 		void draw(sf::RenderWindow &window);
@@ -50,7 +50,7 @@ class Triangle: public Drawable
 		sf::Color color;
 		
 		Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color);
-		
+
 		Quaternion getNormal();
 		
 		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
