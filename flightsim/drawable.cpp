@@ -3,6 +3,7 @@
 
 Drawable::Drawable() {
 	next = NULL;	//link to a separate item
+	shouldDelete = false;
 	distanceFromCamera=-1;
 }
 
@@ -66,8 +67,9 @@ Drawable* split(Drawable* start) {
 }
 //END
 
-DrawableGroup::DrawableGroup(Drawable* begin){
-	next = NULL;
+DrawableGroup::DrawableGroup(Drawable* begin):
+Drawable()
+{
 	child = begin;
 }
 

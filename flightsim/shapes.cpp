@@ -6,12 +6,12 @@
 
 Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 
-Sphere::Sphere(Quaternion _pos, float _radius, sf::Color _color){
+Sphere::Sphere(Quaternion _pos, float _radius, sf::Color _color):
+	Drawable()
+	{
 	pos = _pos;
 	radius = _radius;
 	color = _color;
-	
-	next = NULL;
 }
 
 void Sphere::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
@@ -36,12 +36,12 @@ void Sphere::draw(sf::RenderWindow &window){
 	window.draw(shape);
 }
 
-Line::Line(Quaternion _start, Quaternion _end, sf::Color _color){
+Line::Line(Quaternion _start, Quaternion _end, sf::Color _color):
+	Drawable()
+	{
 	start = _start;
 	end = _end;
 	color = _color;
-	
-	next = NULL;
 }
 
 void Line::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
@@ -76,13 +76,12 @@ void Line::draw(sf::RenderWindow &window){
 	window.draw(vertices, 2, sf::Lines);
 }
 
-Triangle::Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color){
+Triangle::Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color): Drawable()
+{
 	a = _a;
 	b = _b;
 	c = _c;
 	color = _color;
-	
-	next = NULL;
 }
 
 Quaternion Triangle::getNormal(){
