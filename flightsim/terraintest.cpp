@@ -21,8 +21,8 @@ Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0.5, 1, 0.5).normalized();
 #include "shapes.hpp"
  
 #include "aircraft.hpp"
+#include "PerlinNoise.cpp"
 #include "terrain.cpp"
- 
  
 void update_list(Drawable* &start, float dt){
     Drawable* iter = start;
@@ -72,10 +72,12 @@ int main()
     Drawable* objects = new Drawable;
      
     std::rand();
-     
-    for(int i=0; i<4; i++){
-        for(int j=0; j<4; j++){
-            objects->insert(perlinTerrain(i,j));
+    
+	Terrain terrain(1, 10);
+
+    for(int i=0; i<8; i++){
+        for(int j=0; j<8; j++){
+            objects->insert(terrain.getChunk(i,j));
         }
     }
     std::cout<<"end"<<std::endl;
