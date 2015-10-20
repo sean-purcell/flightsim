@@ -4,6 +4,8 @@
 #include "quaternion.hpp"
 #include "windowinfo.hpp"
 
+float up = 0, down = 0, left = 0, right = 0;
+
 void Aircraft::init_params() {
 	g = -9.8;
 	mass = 23500;

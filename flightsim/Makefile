@@ -9,7 +9,7 @@ planetest: bin bin/planetest.o $(OBJECTS)
 	g++ -o bin/planetest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
 
 terraintest: bin bin/terraintest.o $(OBJECTS)
-	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB)
+	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS)

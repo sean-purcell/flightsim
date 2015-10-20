@@ -22,7 +22,7 @@ sf::Vector2i size(screenwidth, screenheight);
 #include "terrain.hpp"
 #include "movingtestground.hpp"
 
-float up, down, left, right;
+extern float up, down, left, right;
 
 void update_list(Drawable* &start, float dt){
 	Drawable* iter = start;

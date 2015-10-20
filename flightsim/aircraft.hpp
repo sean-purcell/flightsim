@@ -5,8 +5,6 @@
 #include "quaternion.hpp"
 #include <SFML/Graphics.hpp>
 
-extern float up, down, left, right;
-
 class Aircraft: public Drawable	//currently a hacked together proof of concept using a sphere.
 	//IT DOESN'T INHERIT FROM SPHERE BECAUSE IT WILL EVENTUALLY NOT BE A SPHERE (hopefully)
 {
