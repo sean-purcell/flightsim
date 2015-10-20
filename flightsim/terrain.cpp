@@ -1,4 +1,9 @@
 #include <cstdlib>
+#include <cmath>
+
+#include "terrain.hpp"
+#include "drawable.hpp"
+#include "shapes.hpp"
 
 //default width and height of perlin noise generation
 #define CHUNKCOUNT 4	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
@@ -80,7 +85,6 @@ void generatePerlin(int x, int z, float array[CHUNKCOUNT+1][CHUNKCOUNT+1]){
 			array[i][j]=heightDistort(perlin(gradient, i+0.5,j+0.5));
 		}
 	}
-	
 }
 
 Drawable* perlinTerrain(int x, int z){

@@ -1,5 +1,22 @@
-planetest: planetest.cpp aircraft.hpp quaternion.hpp shapes.hpp drawable.hpp terrain.cpp movingtestground.hpp
-	g++ -O3 -o planetest planetest.cpp -lsfml-system -lsfml-graphics -lsfml-window
+SOURCES=$(filter-out quaterniontest.cpp movingtestground.cpp terraintest.cpp planetest.cpp flightsimulate.cpp, $(wildcard *.cpp))
+OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
-flightsim: flightsimulate.cpp aircraft.hpp quaternion.hpp shapes.hpp drawable.hpp terrain.cpp
-	g++ -o flightsim flightsimulate.cpp -lsfml-system -lsfml-graphics -lsfml-window
+LIB=-lsfml-window -lsfml-system -lsfml-graphics ${EXTRALIB}
+
+FLAGS=-O3
+
+planetest: bin bin/planetest.o $(OBJECTS)
+	g++ -o bin/planetest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
+
+terraintest: bin bin/terraintest.o $(OBJECTS)
+	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB)
+
+bin/%.o: %.cpp
+	g++ -c $< -o $@ $(FLAGS)
+
+bin:
+	@mkdir bin
+
+clean:
+	rm -rf bin/
+

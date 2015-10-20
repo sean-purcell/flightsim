@@ -7,21 +7,19 @@
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
 
-const int fov=90;
-const float ratio=std::tan(fov/2.0);
-const int screenwidth=1024;
-const int screenheight=640;
-const sf::Vector2i size(screenwidth, screenheight);
+int fov=90;
+float ratio=std::tan(fov/2.0);
+int screenwidth=1024;
+int screenheight=640;
+sf::Vector2i size(screenwidth, screenheight);
 
 #include "quaternion.hpp"
-
-Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
 
 #include "drawable.hpp"
 #include "shapes.hpp"
 
 #include "aircraft.hpp"
-#include "terrain.cpp"
+#include "terrain.hpp"
 #include "movingtestground.hpp"
 
 float up, down, left, right;
