@@ -3,7 +3,7 @@
 
 Drawable::Drawable() {
 	next = NULL;	//link to a separate item
-	shouldDelete = false;
+	shouldRemove = false;
 	distanceFromCamera=-1;
 }
 

@@ -115,14 +115,11 @@ Drawable* Terrain::getChunk(int x, int z){
 	return (Drawable*)(new DrawableGroup(ret));
 }
 
-<<<<<<< Updated upstream
-=======
-
 class ChunkManager{
 	public:
 		std::pair<int, int> loaded[1000];
 		
-		ChunkManager(Terrain _terrain){ terrain = _terrain;}
+		ChunkManager(Terrain _terrain) : terrain(_terrain) {}
 		Drawable* load(int, int);
 		void free(int, int);
 		int isLoaded(int, int);
@@ -139,4 +136,4 @@ int ChunkManager::isLoaded(int x, int y){
 		
 	}
 }
->>>>>>> Stashed changes
+
