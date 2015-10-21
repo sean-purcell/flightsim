@@ -13,5 +13,18 @@ class Terrain{
 		PerlinNoise noise;
 };
 
+class ChunkManager{
+	public:
+		std::pair<int, int> loaded[1000];
+		
+		ChunkManager(Terrain _terrain);
+		Drawable* load(int, int);
+		void free(int, int);
+		int isLoaded(int, int);
+
+	private:
+		Terrain terrain;
+		int loadedChunks;
+};
 #endif
 
