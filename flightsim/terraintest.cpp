@@ -73,8 +73,8 @@ int main()
     
 	Terrain terrain(1, 10);
 
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
+    for(int i=0; i<32; i++){
+        for(int j=0; j<32; j++){
             objects->insert(terrain.getChunk(i,j));
         }
     }
@@ -133,8 +133,8 @@ int main()
          
         camerarotation.normalize();
         camerarotationinverse = camerarotation.inverse();
-        cameravel = cameravel + camerarotationinverse * (Quaternion(0,0,0, 0.01 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
-        cameravel = cameravel + camerarotationinverse * (Quaternion(0,0,0, -0.01 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
+        camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
+        camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
          
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             cameravel = cameravel * 0.95;

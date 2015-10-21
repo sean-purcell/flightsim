@@ -46,7 +46,7 @@ sf::Color getColor(int x, int z, int q) {
 Terrain::Terrain(int _seed, int octaves){
 	seed = _seed;
 	// persistence, frequency, amplitude, octaves, randomseed
-	noise = PerlinNoise(0.7, 0.1, 3, octaves, seed);
+	noise = PerlinNoise(0.3, 0.025, 100, octaves, seed);
 }
 
 Drawable* Terrain::getChunk(int x, int z){
