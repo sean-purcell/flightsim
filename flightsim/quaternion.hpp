@@ -56,5 +56,7 @@ std::string toString(Quaternion q);
 
 std::ostream & operator<<(std::ostream &out, Quaternion const &q);
 
+bool isOnScreen(sf::Vector2f pos);
+
 #endif
 

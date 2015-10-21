@@ -93,27 +93,34 @@ void Triangle::predraw(Quaternion camerapos, Quaternion camerarotation, Quaterni
 	b_draw = camerarotation * ((b-camerapos)* camerarotationinverse);
 	c_draw = camerarotation * ((c-camerapos)* camerarotationinverse);
 
-	if ( (a_draw.z<0) and (b_draw.z<0) and (c_draw.z<0) )
+	sf::Vector2f
+		a_s = a_draw.getScreenPos(),
+		b_s = b_draw.getScreenPos(),
+		c_s = c_draw.getScreenPos();
+
+	if(!(isOnScreen(a_s) && isOnScreen(b_s) && isOnScreen(c_s))) {
 		shouldDraw = false;
-	else
+		return;
+	} else {
 		shouldDraw = true;
-		
+	}
+
 	distanceFromCamera = ((a_draw + b_draw + c_draw)/3).z;
-	
-	
-	
-	shape.setPointCount(6);
-	shape.setPoint(0, clipLineToScreen(a_draw,b_draw).getScreenPos() );
+
+	shape.setPointCount(3);
+	shape.setPoint(0, a_s);
+	shape.setPoint(1, b_s);
+	shape.setPoint(2, c_s);
+	/*shape.setPoint(0, clipLineToScreen(a_draw,b_draw).getScreenPos() );
 	shape.setPoint(1, clipLineToScreen(b_draw,a_draw).getScreenPos() );
 	shape.setPoint(2, clipLineToScreen(b_draw,c_draw).getScreenPos() );
 	shape.setPoint(3, clipLineToScreen(c_draw,b_draw).getScreenPos() );
 	shape.setPoint(4, clipLineToScreen(c_draw,a_draw).getScreenPos() );
 	shape.setPoint(5, clipLineToScreen(a_draw,c_draw).getScreenPos() );
-	
+	*/
+
 	int lmao = 255*(0.4+0.6*fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
 	shape.setFillColor(color*sf::Color(lmao, lmao, lmao));
-	
-
 }
 
 void Triangle::draw(sf::RenderWindow &window){
