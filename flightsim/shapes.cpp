@@ -89,38 +89,45 @@ Quaternion Triangle::getNormal(){
 }
 
 void Triangle::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+#define eq(a, b) (fabs(a.x-b.x)<1e-3 && fabs(a.y-b.y)<1e-3)
 	a_draw = camerarotation * ((a-camerapos)* camerarotationinverse);
 	b_draw = camerarotation * ((b-camerapos)* camerarotationinverse);
 	c_draw = camerarotation * ((c-camerapos)* camerarotationinverse);
 
-	sf::Vector2f
-		a_s = a_draw.getScreenPos(),
-		b_s = b_draw.getScreenPos(),
-		c_s = c_draw.getScreenPos();
-
-	if(!(isOnScreen(a_s) && isOnScreen(b_s) && isOnScreen(c_s))) {
+	if ( (a_draw.z<0) and (b_draw.z<0) and (c_draw.z<0) ) {
 		shouldDraw = false;
 		return;
-	} else {
+	} else
 		shouldDraw = true;
-	}
-
+		
 	distanceFromCamera = ((a_draw + b_draw + c_draw)/3).z;
+	
+	sf::Vector2f
+		a0 = clipLineToScreen(a_draw,c_draw).getScreenPos(),
+		a1 = clipLineToScreen(a_draw,b_draw).getScreenPos(),
+		b0 = clipLineToScreen(b_draw,a_draw).getScreenPos(),
+		b1 = clipLineToScreen(b_draw,c_draw).getScreenPos(),
+		c0 = clipLineToScreen(c_draw,b_draw).getScreenPos(),
+		c1 = clipLineToScreen(c_draw,a_draw).getScreenPos();
 
-	shape.setPointCount(3);
-	shape.setPoint(0, a_s);
-	shape.setPoint(1, b_s);
-	shape.setPoint(2, c_s);
-	/*shape.setPoint(0, clipLineToScreen(a_draw,b_draw).getScreenPos() );
-	shape.setPoint(1, clipLineToScreen(b_draw,a_draw).getScreenPos() );
-	shape.setPoint(2, clipLineToScreen(b_draw,c_draw).getScreenPos() );
-	shape.setPoint(3, clipLineToScreen(c_draw,b_draw).getScreenPos() );
-	shape.setPoint(4, clipLineToScreen(c_draw,a_draw).getScreenPos() );
-	shape.setPoint(5, clipLineToScreen(a_draw,c_draw).getScreenPos() );
-	*/
-
+	if(eq(a0, a1) && eq(b0, b1) && eq(c0, c1)) {
+		shape.setPointCount(3);
+		shape.setPoint(0, a1);
+		shape.setPoint(1, b1);
+		shape.setPoint(2, c1);
+	} else {
+		shape.setPointCount(6);
+		shape.setPoint(0, a1);
+		shape.setPoint(1, b0);
+		shape.setPoint(2, b1);
+		shape.setPoint(3, c0);
+		shape.setPoint(4, c1);
+		shape.setPoint(5, a0);
+	}
+	
 	int lmao = 255*(0.4+0.6*fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
 	shape.setFillColor(color*sf::Color(lmao, lmao, lmao));
+#undef eq
 }
 
 void Triangle::draw(sf::RenderWindow &window){

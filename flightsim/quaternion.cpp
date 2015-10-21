@@ -100,17 +100,11 @@ Quaternion Quaternion::cross(Quaternion other){
 }
 
 sf::Vector2f Quaternion::getScreenPos(){
-	if (z<=0)
+	if (z==0)
 		return sf::Vector2f(NAN, NAN);
-	float _x = ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0);
-	float _y = -ratio*(screenwidth/2.0)*y/z + (screenheight/2.0);
-	return sf::Vector2f(_x, _y);
-}
-
-bool isOnScreen(sf::Vector2f pos) {
-	float _x = pos.x;
-	float _y = pos.y;
-	return !(_x != _x || _x < 0 || _x > screenwidth || _y < 0 || _y > screenheight);
+	return sf::Vector2f(
+		ratio*(screenwidth/2.0)*x/z + (screenwidth/2.0),
+		-ratio*(screenwidth/2.0)*y/z + (screenheight/2.0) );
 }
 
 Quaternion Quaternion::transform(Quaternion p) {
