@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cmath>
+#include <ctime>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
@@ -69,9 +70,9 @@ int main()
  
     Drawable* objects = new Drawable;
      
-    std::rand();
+    std::srand(time(NULL));
     
-	Terrain terrain(1, 10);
+	Terrain terrain(std::rand() % 65536, 10);
 
     for(int i=0; i<32; i++){
         for(int j=0; j<32; j++){
@@ -135,6 +136,8 @@ int main()
         camerarotationinverse = camerarotation.inverse();
         camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
         camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
+        camerapos = camerapos + camerarotationinverse * (Quaternion(0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D), 0, 0) * camerarotation);
+        camerapos = camerapos + camerarotationinverse * (Quaternion(0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A), 0, 0) * camerarotation);
          
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             cameravel = cameravel * 0.95;

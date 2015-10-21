@@ -8,34 +8,34 @@ public:
 
   // Constructor
     PerlinNoise();
-    PerlinNoise(float _persistence, float _frequency, float _amplitude, int _octaves, int _randomseed);
+    PerlinNoise(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed);
 
   // Get Height
-    float GetHeight(float x, float y) const;
+    double GetHeight(double x, double y) const;
 
   // Get
-  float Persistence() const { return persistence; }
-  float Frequency()   const { return frequency;   }
-  float Amplitude()   const { return amplitude;   }
+  double Persistence() const { return persistence; }
+  double Frequency()   const { return frequency;   }
+  double Amplitude()   const { return amplitude;   }
   int    Octaves()     const { return octaves;     }
   int    RandomSeed()  const { return randomseed;  }
 
   // Set
-  void Set(float _persistence, float _frequency, float _amplitude, int _octaves, int _randomseed);
+  void Set(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed);
 
-  void SetPersistence(float _persistence) { persistence = _persistence; }
-  void SetFrequency(  float _frequency)   { frequency = _frequency;     }
-  void SetAmplitude(  float _amplitude)   { amplitude = _amplitude;     }
+  void SetPersistence(double _persistence) { persistence = _persistence; }
+  void SetFrequency(  double _frequency)   { frequency = _frequency;     }
+  void SetAmplitude(  double _amplitude)   { amplitude = _amplitude;     }
   void SetOctaves(    int    _octaves)     { octaves = _octaves;         }
   void SetRandomSeed( int    _randomseed)  { randomseed = _randomseed;   }
 
 private:
 
-    float Total(float i, float j) const;
-    float GetValue(float x, float y) const;
-    float Interpolate(float x, float y, float a) const;
-    float Noise(int x, int y) const;
+    double Total(double i, double j) const;
+    double GetValue(double x, double y) const;
+    double Interpolate(double x, double y, double a) const;
+    double Noise(int x, int y) const;
 
-    float persistence, frequency, amplitude;
+    double persistence, frequency, amplitude;
     int octaves, randomseed;
 };
