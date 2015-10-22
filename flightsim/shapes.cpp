@@ -4,7 +4,7 @@
 #include "drawable.hpp"
 #include "windowinfo.hpp"
 
-Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 1).normalized();
+Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 0.4).normalized();
 
 Sphere::Sphere(Quaternion _pos, float _radius, sf::Color _color):
 	Drawable()
