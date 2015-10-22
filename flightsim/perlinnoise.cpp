@@ -95,13 +95,14 @@ double PerlinNoise::GetValue(double x, double y) const
 
 double PerlinNoise::Interpolate(double x, double y, double a) const
 {
-	double negA = 1.0 - a;
+	/*double negA = 1.0 - a;
 	double negASqr = negA * negA;
 	double fac1 = 3.0 * (negASqr) - 2.0 * (negASqr * negA);
 	double aSqr = a * a;
 	double fac2 = 3.0 * aSqr - 2.0 * (aSqr * a);
 
-	return x * fac1 + y * fac2; //add the weighted factors
+	return x * fac1 + y * fac2; //add the weighted factors*/
+	return x * a + y * (1 - a);
 }
 
 double PerlinNoise::Noise(int x, int y) const

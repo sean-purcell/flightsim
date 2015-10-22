@@ -5,6 +5,7 @@
 #include "drawable.hpp"
 #include "shapes.hpp"
 #include "perlinnoise.hpp"
+#include "simplexnoise.hpp"
 
 //default width and height of perlin noise generation
 #define CHUNKCOUNT 4	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
@@ -46,7 +47,7 @@ sf::Color getColor(int x, int z, int q) {
 Terrain::Terrain(int _seed, int octaves){
 	seed = _seed;
 	// persistence, frequency, amplitude, octaves, randomseed
-	noise = PerlinNoise(0.3, 0.025, 100, octaves, seed);
+	noise = PerlinNoise(0, 0.025, 100, octaves, seed);
 }
 
 Drawable* Terrain::getChunk(int x, int z){
@@ -59,7 +60,8 @@ Drawable* Terrain::getChunk(int x, int z){
 	for (int i=0; i<CHUNKCOUNT+1; i++){
 		for (int j=0; j<CHUNKCOUNT+1; j++){
 			//array[i][j]=fmax(noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT),0.0);
-			array[i][j]=noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
+			//array[i][j]=noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
+			array[i][j] = Simplex::noise((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
 		}
 	}
 
@@ -69,6 +71,9 @@ Drawable* Terrain::getChunk(int x, int z){
 		}
 	}*/
 	
+	//sf::Color color(192 + std::rand() % 64, 192 + std::rand() % 64, 192 + std::rand() % 64);
+	sf::Color color = TERRAINCOLOR;
+
 	Quaternion start = Quaternion(0, x*CHUNKWIDTH, SEALEVEL, z*CHUNKWIDTH);
 	
 	Quaternion q1, q2, q3, q4;
@@ -88,21 +93,21 @@ Drawable* Terrain::getChunk(int x, int z){
 			
 			if (srandBit(i+x,j+z)){
 				if ((q1.y != q2.y) || (q2.y != q3.y)){
-					iter->next = 		new Triangle(q1, q2, q3, TERRAINCOLOR);
+					iter->next = new Triangle(q1, q2, q3, color);
 					iter = iter->next;
 				}
 				if ((q4.y != q2.y) || (q2.y != q3.y)){
-					iter->next =  new Triangle(q4, q2, q3, TERRAINCOLOR);
+					iter->next = new Triangle(q4, q2, q3, color);
 					iter = iter->next;
 				}
 			}
 			else{
 				if ((q1.y != q4.y) || (q4.y != q3.y)){
-					iter->next = 		new Triangle(q1, q4, q3, TERRAINCOLOR);
+					iter->next = new Triangle(q1, q4, q3, color);
 					iter = iter->next;
 				}
 				if ((q1.y != q2.y) || (q2.y != q4.y)){
-					iter->next =  new Triangle(q1, q4, q2, TERRAINCOLOR);				
+					iter->next = new Triangle(q1, q4, q2, color);				
 					iter = iter->next;
 				}
 			}
