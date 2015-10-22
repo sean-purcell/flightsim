@@ -16,7 +16,7 @@ but attribution is appreciated.
 #ifndef __SIMPLEX_H__
 #define __SIMPLEX_H__
 
-#include <cstdint>
+#include <stdint.h>
 
 class Grad {
 public:
