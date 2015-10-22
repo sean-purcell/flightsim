@@ -4,7 +4,6 @@
 #include "terrain.hpp"
 #include "drawable.hpp"
 #include "shapes.hpp"
-#include "perlinnoise.hpp"
 #include "simplexnoise.hpp"
 
 //default width and height of perlin noise generation
@@ -44,10 +43,9 @@ sf::Color getColor(int x, int z, int q) {
 
 };*/
 
-Terrain::Terrain(int _seed, int octaves){
-	seed = _seed;
-	// persistence, frequency, amplitude, octaves, randomseed
-	noise = PerlinNoise(0, 0.025, 100, octaves, seed);
+Terrain::Terrain(int _seed, int octaves) : seed(_seed),
+	noise(0.5e-2, 0.5, 25, octaves, seed) {
+	// frequency, persistence, amplitude, octaves, randomseed
 }
 
 Drawable* Terrain::getChunk(int x, int z){
@@ -61,7 +59,7 @@ Drawable* Terrain::getChunk(int x, int z){
 		for (int j=0; j<CHUNKCOUNT+1; j++){
 			//array[i][j]=fmax(noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT),0.0);
 			//array[i][j]=noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
-			array[i][j] = Simplex::noise((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
+			array[i][j] = noise.getValue((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
 		}
 	}
 

@@ -2,7 +2,7 @@
 #define TERRAIN_HPP
 
 #include "drawable.hpp"
-#include "perlinnoise.hpp"
+#include "simplexnoise.hpp"
 
 class Terrain{
 	public:
@@ -10,7 +10,7 @@ class Terrain{
 		Drawable* getChunk(int x, int z);
 	private:
 		int seed;
-		PerlinNoise noise;
+		Simplex noise;
 };
 
 class ChunkManager{

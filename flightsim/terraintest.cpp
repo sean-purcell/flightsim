@@ -20,7 +20,6 @@ sf::Vector2i size(screenwidth, screenheight);
 #include "shapes.hpp"
  
 #include "aircraft.hpp"
-#include "perlinnoise.hpp"
 #include "simplexnoise.hpp"
 #include "terrain.hpp"
  
@@ -76,10 +75,9 @@ int main()
     
     int seed = std::rand() % 65536;
     std::cout << "seed: " << seed << std::endl;
-    Terrain terrain(1, 10);
+    Terrain terrain(seed, 10);
 
 
-	Simplex::init();
     for(int i=0; i<32; i++){
         for(int j=0; j<32; j++){
             objects->insert(terrain.getChunk(i,j));
