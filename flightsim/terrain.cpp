@@ -43,9 +43,18 @@ sf::Color getColor(int x, int z, int q) {
 
 };*/
 
-Terrain::Terrain(int _seed, int octaves) : seed(_seed),
-	noise(0.5e-2, 0.5, 25, octaves, seed) {
+Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
+	octaves(_octaves),
+	frequency(0.5e-2),
+	noise(frequency, 0.5, 25, _octaves, seed),
+	amp(frequency * 1e-1, 0.3, 1, 3, 2*seed+1),
+	pers(frequency * 1e-1, 0.3, 1, 3, 3*seed+7) {
 	// frequency, persistence, amplitude, octaves, randomseed
+}
+
+float Terrain::getHeight(float x, float y){
+	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 20*(1.1+amp.getValue(x, y)), octaves, seed);
+	return noise.getValue(x, y);
 }
 
 Drawable* Terrain::getChunk(int x, int z){
@@ -59,7 +68,7 @@ Drawable* Terrain::getChunk(int x, int z){
 		for (int j=0; j<CHUNKCOUNT+1; j++){
 			//array[i][j]=fmax(noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT),0.0);
 			//array[i][j]=noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
-			array[i][j] = noise.getValue((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
+			array[i][j] = getHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
 		}
 	}
 

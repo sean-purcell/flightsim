@@ -54,6 +54,14 @@ Simplex::Simplex(double _freq, double _persist,
 	}
 }
 
+void Simplex::set(double _f, double _p, double _a, int _o, int _s){
+	freq = _f;
+	amp = _a;
+	persistence = _p;
+	octaves = _o;
+	seed = _s;
+}
+
 double Simplex::getValue(double x, double y) {
 	double _amp = amp;
 	double _freq = freq;

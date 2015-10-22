@@ -27,6 +27,7 @@ public:
 class Simplex {
 public:
 	Simplex(double f, double p, double a, int o, int s);
+	void set(double f, double p, double a, int o, int s);
 	double getValue(double x, double y);
 
 private:

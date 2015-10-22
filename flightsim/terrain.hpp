@@ -8,9 +8,14 @@ class Terrain{
 	public:
 		Terrain(int _seed, int _octaveN);
 		Drawable* getChunk(int x, int z);
+		float getHeight(float x, float y);
 	private:
 		int seed;
+		int octaves;
+		float frequency;
 		Simplex noise;
+		Simplex amp;
+		Simplex pers;
 };
 
 class ChunkManager{
