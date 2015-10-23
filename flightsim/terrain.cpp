@@ -204,6 +204,7 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 	}
 
 	dist = sqrt(dx * dx + dz * dz + _y * _y);
+	this->distanceFromCamera = dist;
 
 	int TCOUNT = CHUNKCOUNT - (int) (dist / CHUNKDEGRADEDIST);
 	//int TCOUNT = CHUNKCOUNT;
@@ -250,6 +251,11 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 		q2 = Quaternion(x1, x1z0, z0);
 		q3 = Quaternion(x0, x0z1, z1);
 		q4 = Quaternion(x1, x1z1, z1);
+
+		q1 = q1 + start;
+		q2 = q2 + start;
+		q3 = q3 + start;
+		q4 = q4 + start;
 
 		if (srandBit(_x+x*TCOUNT,_z+z*TCOUNT)) {
 			triangles[2*k  ].a = q1;
