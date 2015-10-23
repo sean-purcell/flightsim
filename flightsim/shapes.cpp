@@ -76,6 +76,15 @@ void Line::draw(sf::RenderWindow &window){
 	window.draw(vertices, 2, sf::Lines);
 }
 
+Triangle::Triangle()
+: Drawable()
+{
+	a = Quaternion(0, 0, 0);
+	b = Quaternion(0, 0, 0);
+	c = Quaternion(0, 0, 0);
+	color = sf::Color(0, 0, 0);
+}
+
 Triangle::Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color): Drawable()
 {
 	a = _a;

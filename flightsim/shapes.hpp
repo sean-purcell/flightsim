@@ -49,6 +49,7 @@ class Triangle: public Drawable
 		Quaternion a, b, c;
 		sf::Color color;
 		
+		Triangle();
 		Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color);
 
 		Quaternion getNormal();

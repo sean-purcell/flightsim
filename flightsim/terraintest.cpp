@@ -89,8 +89,7 @@ int main()
     int seed = std::rand() % 65536;
     std::cout << "seed: " << seed << std::endl;
     Terrain terrain(seed, 10);
-	ChunkManager chunkmanager(terrain);
-
+    ChunkManager chunkmanager(terrain);
     std::cout<<"end"<<std::endl;
      
     /*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
