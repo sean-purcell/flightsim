@@ -78,8 +78,8 @@ int main()
     Terrain terrain(seed, 10);
 
 
-    for(int i=0; i<32; i++){
-        for(int j=0; j<32; j++){
+    for(int i=0; i<1; i++){
+        for(int j=0; j<1; j++){
             objects->insert(terrain.getChunk(i,j));
         }
     }

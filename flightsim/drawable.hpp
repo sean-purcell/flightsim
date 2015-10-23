@@ -43,7 +43,7 @@ class DrawableGroup: public Drawable
 		~DrawableGroup();
 		
 		void insert(Drawable* item);
-		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
 		
 		void draw(sf::RenderWindow &window);
 };

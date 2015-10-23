@@ -99,14 +99,14 @@ void DrawableGroup::predraw(Quaternion camerapos, Quaternion camerarotation, Qua
 	}
 	distanceFromCamera/=count;
 	child = mergeSort(child);
-	
 }
 
 void DrawableGroup::draw(sf::RenderWindow &window){
 	if (shouldDraw){
 		Drawable *iter = child;
 		while (iter != NULL){
-			iter->draw(window);
+			if(iter->shouldDraw)
+				iter->draw(window);
 			iter = iter->next;
 		}
 	}
