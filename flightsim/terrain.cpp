@@ -171,6 +171,14 @@ TerrainChunk::TerrainChunk(int _x, int _z, Terrain &t)
 	std::cout << getHeight(0.5, 0.5) << std::endl;
 }
 
+TerrainChunk::~TerrainChunk() {
+	for(int i = 0; i < CHUNKCOUNT*CHUNKCOUNT*2; i++) {
+		triangles[i].next = NULL;
+		triangles[i].child = NULL;
+	}
+	child = NULL;
+}
+
 float min(float a, float b) {
 	return a < b ? a : b;
 }

@@ -110,4 +110,4 @@ void DrawableGroup::draw(sf::RenderWindow &window){
 			iter = iter->next;
 		}
 	}
-}	
+}

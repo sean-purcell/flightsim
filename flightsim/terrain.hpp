@@ -40,6 +40,7 @@ class TerrainChunk : public DrawableGroup {
 
 	public:
 		TerrainChunk(int x, int z, Terrain &t);
+		~TerrainChunk();
 
 		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
 };

@@ -40,7 +40,7 @@ class DrawableGroup: public Drawable
 	public:
 		DrawableGroup(Drawable* begin);
 		
-		~DrawableGroup();
+		virtual ~DrawableGroup();
 		
 		void insert(Drawable* item);
 		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
