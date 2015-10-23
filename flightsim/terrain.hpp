@@ -37,6 +37,7 @@ class TerrainChunk : public DrawableGroup {
 		float heightmap[CHUNKCOUNT+2][CHUNKCOUNT+2];
 		Triangle triangles[CHUNKCOUNT*CHUNKCOUNT*2];
 		std::pair<float, int> dists[CHUNKCOUNT * CHUNKCOUNT];
+		Terrain &t;
 		int x, z;
 
 		float getHeight(float x, float y);

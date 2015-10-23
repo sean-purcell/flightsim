@@ -129,6 +129,8 @@ float interp(float a, float b, float r) {
 }
 
 float TerrainChunk::getHeight(float x, float y) {
+	return t.getHeight(x * CHUNKRATIO + this->x * CHUNKWIDTH,
+		y * CHUNKRATIO + this->z * CHUNKWIDTH);
 	int x0 = (int) x;
 	int y0 = (int) y;
 	int x1 = x + 1;
@@ -147,10 +149,11 @@ float TerrainChunk::getHeight(float x, float y) {
 	              yfrac);
 }
 
-TerrainChunk::TerrainChunk(int _x, int _z, Terrain &t)
+TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t)
 	: DrawableGroup(&triangles[0]),
 	x(_x),
-	z(_z)
+	z(_z),
+	t(_t)
 {
 	for(int i = 0; i <= CHUNKCOUNT; i++) {
 		for(int j = 0; j <= CHUNKCOUNT; j++) {
@@ -303,13 +306,15 @@ Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	Drawable* head = new Drawable;
 	Drawable* iter = head;
 	
-	std::cout<<"loaded:"<<loadedChunks<<std::endl;
+	//std::cout<<"loaded:"<<loadedChunks<<std::endl;
 	
 	//remove any unneeded chunks
 	ChunkMap::iterator tmp;
 	for(ChunkMap::iterator iterator = loaded.begin(); iterator != loaded.end(); ) {
 		if (abs(xchunk - iterator->first.first)>chunksAround || abs(zchunk - iterator->first.second)>chunksAround){ //if should be removed
-			freeChunk((iterator++)->first);
+			IntPair tmp = iterator->first;
+			iterator++;
+			freeChunk(tmp);
 		} else {
 			iterator++;
 		}
@@ -338,6 +343,7 @@ void ChunkManager::loadChunk(IntPair key){
 	if (!isLoaded(key)){
 		loaded[key] = terrain.getChunk(key);
 		loadedChunks++;
+		std::cout << "adding chunk " << key.first << "," << key.second << std::endl;
 	}
 }
 
@@ -346,6 +352,7 @@ void ChunkManager::freeChunk(IntPair key){
 		loaded[key]->shouldRemove = true;
 		loaded.erase(key);
 		loadedChunks--;
+		std::cout << "deling chunk " << key.first << "," << key.second << std::endl;
 	}
 }
 

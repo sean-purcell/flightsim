@@ -23,28 +23,25 @@ sf::Vector2i size(screenwidth, screenheight);
 #include "simplexnoise.hpp"
 #include "terrain.hpp"
  
-void update_list(Drawable* &start, float dt){
-    Drawable *iter = start;
+void update_list(Drawable** start, float dt){
+    Drawable **iter = start;
     Drawable *tmp;
     int length=0;
  
-    while (iter!=NULL){
-        iter->update(dt);
-        if (iter->next){
-		    if (iter->next->shouldRemove){ //DELETE THAT SHIT
-				tmp = iter->next;
-				iter->next = iter->next->next;
-				tmp->next = 0;
-				delete tmp;
-			}
-			else{
-			    length++;
-			}
-		}
-		iter = iter->next;
+    while (*iter!=NULL){
+	Drawable *ptr = *iter;
+        ptr->update(dt);
+        if (ptr->shouldRemove){ //DELETE THAT SHIT
+            *iter = ptr->next;
+	    ptr->next = NULL;
+	    delete ptr;
+        } else {
+            length++;
+	    iter = &(ptr->next);
 	}
+    }
 	
-	std::cout<<"length:"<<length<<std::endl;
+	//std::cout<<"length:"<<length<<std::endl;
 }
          
 void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
@@ -117,6 +114,10 @@ int main()
     int dMouseY;
      
     sf::Mouse::setPosition(sf::Vector2i(screenwidth/2, screenheight/2),window);
+    Drawable *newChunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 1);
+    if(newChunks != NULL) {
+        objects->insert(newChunks);
+    }
      
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
@@ -170,10 +171,9 @@ int main()
          
         window.clear(sf::Color(100, 100, 240));
         
-        if (rand()%10 == 0){
-        	objects->insert(chunkmanager.getNewChunks(camerapos.x, camerapos.z, 1));
-        }
-        update_list(objects, 1);
+	objects->insert(chunkmanager.getNewChunks(camerapos.x, camerapos.z, 1));
+
+	update_list(&objects, 1);
         
         predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
          
