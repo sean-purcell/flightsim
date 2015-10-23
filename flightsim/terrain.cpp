@@ -166,9 +166,12 @@ TerrainChunk::TerrainChunk(int _x, int _z, Terrain &t)
 	}
 	heightmap[CHUNKCOUNT+1][CHUNKCOUNT+1] = heightmap[CHUNKCOUNT][CHUNKCOUNT];
 
-	std::cout << getHeight(0.5, 0.5) << std::endl;
-	std::cout << getHeight(0.5, 0.5) << std::endl;
-	std::cout << getHeight(0.5, 0.5) << std::endl;
+	for(int i = 0; i < CHUNKCOUNT; i++) {
+		for(int j = 0; j < CHUNKCOUNT; j++) {
+			std::cout << getHeight(i, j) << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 TerrainChunk::~TerrainChunk() {
@@ -208,13 +211,14 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 
 	dist = sqrt(dx * dx + dz * dz + _y * _y);
 
-	//int TCOUNT = CHUNKCOUNT - (int) (dist / CHUNKDEGRADEDIST);
-	int TCOUNT = CHUNKCOUNT;
+	int TCOUNT = CHUNKCOUNT - (int) (dist / CHUNKDEGRADEDIST);
+	//int TCOUNT = CHUNKCOUNT;
 	TCOUNT = TCOUNT < 1 ? 1 : TCOUNT;
 
 	//std::cout << "x: " << x << ", z: " << z << ", TCOUNT: " << TCOUNT << std::endl;
 
 	float TRATIO = CHUNKWIDTH / TCOUNT;
+	float HRATIO = CHUNKCOUNT / (float) TCOUNT;
 
 	for(int i = 0; i < TCOUNT; i++) {
 		for(int j = 0; j < TCOUNT; j++) {
@@ -243,10 +247,10 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 		float z0 = _z * TRATIO;
 		float z1 = (_z + 1) * TRATIO;
 
-		float x0z0 = getHeight(x0, z0);
-		float x0z1 = getHeight(x0, z1);
-		float x1z0 = getHeight(x1, z0);
-		float x1z1 = getHeight(x1, z1);
+		float x0z0 = getHeight((_x+0) * HRATIO, (_z+0) * HRATIO);
+		float x0z1 = getHeight((_x+0) * HRATIO, (_z+1) * HRATIO);
+		float x1z0 = getHeight((_x+1) * HRATIO, (_z+0) * HRATIO);
+		float x1z1 = getHeight((_x+1) * HRATIO, (_z+1) * HRATIO);
 
 		q1 = Quaternion(x0, x0z0, z0);
 		q2 = Quaternion(x1, x1z0, z0);
@@ -258,15 +262,15 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 			triangles[2*k  ].b = q2;
 			triangles[2*k  ].c = q3;
 			triangles[2*k+1].a = q4;
-			triangles[2*k+1].a = q2;
-			triangles[2*k+1].a = q3;
+			triangles[2*k+1].b = q2;
+			triangles[2*k+1].c = q3;
 		} else {
 			triangles[2*k  ].a = q1;
 			triangles[2*k  ].b = q4;
 			triangles[2*k  ].c = q3;
 			triangles[2*k+1].a = q1;
-			triangles[2*k+1].a = q4;
-			triangles[2*k+1].a = q2;
+			triangles[2*k+1].b = q4;
+			triangles[2*k+1].c = q2;
 		}
 
 		triangles[2*k  ].color = TERRAINCOLOR;

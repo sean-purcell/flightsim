@@ -11,7 +11,7 @@
 #define CHUNKCOUNT 32	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
 #define CHUNKWIDTH 128. //how wide/deep is the CHUNK in DISTANCE UNITS
 #define CHUNKRATIO (CHUNKWIDTH/CHUNKCOUNT)
-#define CHUNKDEGRADEDIST 50 // the distance increments it gets less accurate at
+#define CHUNKDEGRADEDIST 200 // the distance increments it gets less accurate at
 
 class Terrain{
 	public:
