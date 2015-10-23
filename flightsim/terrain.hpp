@@ -4,10 +4,13 @@
 #include "drawable.hpp"
 #include "simplexnoise.hpp"
 
+typedef std::pair<int, int> IntPair;
+typedef std::map<IntPair, Drawable*> ChunkMap;
+
 class Terrain{
 	public:
 		Terrain(int _seed, int _octaveN);
-		Drawable* getChunk(int x, int z);
+		Drawable* getChunk(IntPair);
 		float getHeight(float x, float y);
 	private:
 		int seed;
@@ -20,16 +23,16 @@ class Terrain{
 
 class ChunkManager{
 	public:
-		std::pair<int, int> loaded[1000];
-		
 		ChunkManager(Terrain _terrain);
-		Drawable* load(int, int);
-		void free(int, int);
-		int isLoaded(int, int);
-
+		Drawable* getNewChunks(float x, float z, int chunksAround);	//deallocates old chunks, returns pointer to new chunks
 	private:
 		Terrain terrain;
 		int loadedChunks;
+
+		ChunkMap loaded;		
+		void loadChunk(IntPair);
+		void freeChunk(IntPair);
+		int isLoaded(IntPair);
 };
 #endif
 

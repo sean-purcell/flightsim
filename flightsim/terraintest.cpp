@@ -24,14 +24,27 @@ sf::Vector2i size(screenwidth, screenheight);
 #include "terrain.hpp"
  
 void update_list(Drawable* &start, float dt){
-    Drawable* iter = start;
+    Drawable *iter = start;
+    Drawable *tmp;
     int length=0;
  
     while (iter!=NULL){
         iter->update(dt);
-        iter = iter->next;
-        length++;
-    }
+        if (iter->next){
+		    if (iter->next->shouldRemove){ //DELETE THAT SHIT
+				tmp = iter->next;
+				iter->next = iter->next->next;
+				tmp->next = 0;
+				delete tmp;
+			}
+			else{
+			    length++;
+			}
+		}
+		iter = iter->next;
+	}
+	
+	std::cout<<"length:"<<length<<std::endl;
 }
          
 void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
@@ -76,13 +89,8 @@ int main()
     int seed = std::rand() % 65536;
     std::cout << "seed: " << seed << std::endl;
     Terrain terrain(seed, 10);
+	ChunkManager chunkmanager(terrain);
 
-
-    for(int i=0; i<32; i++){
-        for(int j=0; j<32; j++){
-            objects->insert(terrain.getChunk(i,j));
-        }
-    }
     std::cout<<"end"<<std::endl;
      
     /*objects->insert(new Sphere(Quaternion(0,0,10),500,sf::Color(0,255,255)));
@@ -162,7 +170,12 @@ int main()
         }
          
         window.clear(sf::Color(100, 100, 240));
-         
+        
+        if (rand()%10 == 0){
+        	objects->insert(chunkmanager.getNewChunks(camerapos.x, camerapos.z, 1));
+        }
+        update_list(objects, 1);
+        
         predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
          
         draw_list(objects, window);

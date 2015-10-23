@@ -13,6 +13,9 @@ Drawable::~Drawable() {
 
 void Drawable::insert(Drawable* item){
 	Drawable* iter = item;
+	if (item==NULL){
+		return;
+	}
 	while ((iter->next)!=NULL){
 		iter = iter->next;
 	}
@@ -79,6 +82,9 @@ DrawableGroup::~DrawableGroup(){
 
 void DrawableGroup::insert(Drawable* item){
 	Drawable* iter = item;
+	if (iter==NULL){
+		return;
+	}
 	while ((iter->next)!=NULL){
 		iter = iter->next;
 	}

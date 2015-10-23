@@ -7,8 +7,8 @@
 #include "simplexnoise.hpp"
 
 //default width and height of perlin noise generation
-#define CHUNKCOUNT 4	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
-#define CHUNKWIDTH 10. //how wide/deep is the CHUNK in DISTANCE UNITS
+#define CHUNKCOUNT 16	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
+#define CHUNKWIDTH 40. //how wide/deep is the CHUNK in DISTANCE UNITS
 
 #define WATERCOLOR sf::Color(255,10,10)
 #define TERRAINCOLOR sf::Color(50,200,50)
@@ -57,8 +57,10 @@ float Terrain::getHeight(float x, float y){
 	return noise.getValue(x, y);
 }
 
-Drawable* Terrain::getChunk(int x, int z){
+Drawable* Terrain::getChunk(IntPair key){
 	//Returns a pointer to a linked list of Triangle objects that form a CHUNK of terrain that extend from (x*CHUNKWIDTH, z*CHUNKWIDTH) to ((x+1)*CHUNKWIDTH, (z+1)*CHUNKWIDTH)
+	int x = key.first;
+	int z = key.second; 
 
 	Drawable* head = new Drawable();
 	Drawable* iter = head;
@@ -107,6 +109,7 @@ Drawable* Terrain::getChunk(int x, int z){
 					iter->next = new Triangle(q4, q2, q3, color);
 					iter = iter->next;
 				}
+
 			}
 			else{
 				if ((q1.y != q4.y) || (q4.y != q3.y)){
@@ -132,7 +135,63 @@ ChunkManager::ChunkManager(Terrain _terrain):
 	terrain(_terrain)
 	{}
 
-//Drawable* ChunkManager::load(int, int);
-//void ChunkManager::free(int, int);
-//int ChunkManager::isLoaded(int, int);
+Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
+	//x,z are the coordinates of the player
+	//distanceToLoad is the range around the player that you want to load chunks in
+	int xchunk = floor(x/CHUNKWIDTH);
+	int zchunk = floor(z/CHUNKWIDTH);
+	
+	IntPair key;
+	
+	Drawable* head = new Drawable;
+	Drawable* iter = head;
+	
+	std::cout<<"loaded:"<<loadedChunks<<std::endl;
+	
+	//remove any unneeded chunks
+	ChunkMap::iterator tmp;
+	for(ChunkMap::iterator iterator = loaded.begin(); iterator != loaded.end(); ) {
+		if (abs(xchunk - iterator->first.first)>chunksAround || abs(zchunk - iterator->first.second)>chunksAround){ //if should be removed
+			freeChunk((iterator++)->first);
+		} else {
+			iterator++;
+		}
+	}
+	
+	//add any chunks that aren't in
+	
+	for (int i=xchunk-chunksAround; i<=xchunk+chunksAround; i++){
+		for (int j=zchunk-chunksAround; j<=zchunk+chunksAround; j++){
+			key = IntPair(i,j);
+			if (!isLoaded(key)){
+				loadChunk(key);
+				iter->next = loaded[key];
+				iter = iter->next;
+			}
+		}		
+	}
+	
+	Drawable* ret = head->next;
+	head->next = 0;
+	delete head;
+	return (Drawable*)(new DrawableGroup(ret));
+}
 
+void ChunkManager::loadChunk(IntPair key){
+	if (!isLoaded(key)){
+		loaded[key] = terrain.getChunk(key);
+		loadedChunks++;
+	}
+}
+
+void ChunkManager::freeChunk(IntPair key){
+	if (isLoaded(key)){
+		loaded[key]->shouldRemove = true;
+		loaded.erase(key);
+		loadedChunks--;
+	}
+}
+
+int ChunkManager::isLoaded(IntPair key){
+	return loaded.find(key)!=loaded.end();
+}
