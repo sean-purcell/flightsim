@@ -5,6 +5,10 @@ LIB=-lsfml-window -lsfml-system -lsfml-graphics $(EXTRALIB)
 
 FLAGS=-O3
 
+.PHONY: all
+
+all: planetest terraintest
+
 planetest: bin bin/planetest.o $(OBJECTS)
 	g++ -o bin/planetest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
 
