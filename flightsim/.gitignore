@@ -4,3 +4,8 @@ a.out
 *.dSYM
 planetest
 *.*~
+*.cpp.*
+*.o
+flightsimulate
+*.gch
+geany_run_script.sh
