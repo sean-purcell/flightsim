@@ -1,0 +1,546 @@
+\documentclass[12pt]{article}
+%\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\usepackage[font=footnotesize]{caption}
+\usepackage{parskip}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{placeins}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{siunitx}	% Degree symbol
+\usepackage{hyperref}	% Include urls
+
+\setlength{\parskip}{\baselineskip}
+\setlist[itemize]{noitemsep}			% No extra line between bullet points
+\setlist[enumerate]{noitemsep}
+
+\begin{document}
+	This is me trying to intuit quaternions.
+	
+	\section{Complex Numbers}
+	
+	Recall that if we have a complex number $z \in \mathbb{C}$, then it can be expressed in the form $z = a + bi$, where $a,b \in \mathbb{R}$ and $i^2 = -1$.
+	
+	We can add two complex numbers: 
+		\begin{align*}
+			z_1 + z_2 &= (a_1 + b_1i) + (a_2 + b_2i) \\
+					  &= (a_1 + a_2) + (b_1 + b_2)i				  
+		\end{align*}
+	We can multiply two complex numbers:
+		\begin{align*}
+			z_1 z_2 &= (a_1 + b_1i)(a_2 + b_2i) \\
+					&= (a_1 a_2 - b_1 b_2) + (a_1 b_2 + a_2 b_1)i
+		\end{align*}
+		
+	\subsection{Notation:}
+	
+	$z$ can be expressed in several forms:
+	\begin{itemize}
+		\item Standard form: $a + bi$
+		\item Ordered list form: $(a, b)$
+	\end{itemize}
+	
+	\subsection{The Norm}
+	
+	We can find the magnitude of a complex number: $\|z\| = \sqrt{a^2 + b^2}$.
+		
+	\subsection{Using Complex Numbers to Rotate Stuff}
+	
+	We can plot complex numbers on a 2D coordinate system by using the real part and imaginary part as components. 
+	This plane is sometimes called the Argand plane. The horizontal axis is the real line and the vertical axis is the imaginary line. 
+	For example, the number $1 + i$ would be at $(1,1)$ on the Argand plane.
+
+	We can multiply $z$ by a special complex number (let's call it $r$ for ``rotor'') to rotate it counterclockwise in the Argand plane. Examples:
+	
+	\begin{tabular}{|c|c|}
+ 		\hline
+ 		rotor & rotates \\
+ 		\hline
+ 		$1 + 0i$ & 0\si{\degree}\\ \hline
+ 		$0 + i$ & 90\si{\degree}\\ \hline
+ 		$-1 + 0i$ & 180\si{\degree}\\ \hline
+ 		$0 - i$ & 270\si{\degree}\\ \hline
+	\end{tabular}
+	
+	A rotor must have a norm of one. 
+	Otherwise it would change the length of $z$, and then it won't be a rigid rotation. 
+	The set of rotors satisfying $\|r\| = 1$ forms a unit circle around the origin. 
+	Thus $r$ has the form $\cos\theta + i\sin\theta$, because this describes a circle if we let $\theta \in [0\si{\degree}, 360\si{\degree})$.
+	
+	Also, if $r = \cos\theta + i\sin\theta$ and $z \in \mathbb{C}$, then $rz$ is the number $z$ rotated by $\theta$ in the Argand plane.
+	
+	\textbf{Proof:}
+	
+	Recall our good old friend, the 2D rotation matrix:	
+	$$\mathbf{R}_\theta = \begin{bmatrix}
+							\cos\theta & -\sin\theta \\
+							\sin\theta & \cos\theta \\
+						\end{bmatrix}$$	
+	We trust it, right? 
+	We can see how the columns of $\mathbf{R}_\theta$ form the standard basis unit vectors in $\mathbb{R}^2$ rotated counterclockwise by angle $\theta$? 
+	Okay good. 
+	Let's right-multiply $\mathbf{R}_\theta$ by $z = (a, b)$:
+	$$\mathbf{R}_\theta z = \begin{bmatrix}
+							\cos\theta & -\sin\theta \\
+							\sin\theta & \cos\theta \\
+						\end{bmatrix}
+						\begin{bmatrix}
+							a \\
+							b \\
+						\end{bmatrix} =	
+						\begin{bmatrix}
+								a\cos\theta - b\sin\theta \\
+								a\sin\theta + b\cos\theta \\
+							\end{bmatrix}$$
+	So if we let $z'$ be the rotated $z$,
+	\begin{align*}
+	z' &= (a\cos\theta - b\sin\theta) + (a\sin\theta + b\cos\theta)i \\
+	   &= (a + bi)(\cos\theta + i\sin\theta) \\
+	   &= zr
+	\end{align*}	
+	So complex numbers actually have a whole rotation matrix baked into them. 
+	Cool.
+	
+	\iffalse
+	
+	\subsection{Iterated Rotation}
+	
+	If we want motion to be all smooth and stuff, then $\theta$ will probably be very small. 
+	For example, if we want a square to rotate very smoothly around the origin in an animation, we would choose an $r$ that's very close to 1, and then multiply it to each vertex of the square. 
+	And again. 
+	And again. 
+	And once for each frame of the animation. 
+	So the rotor $r$ would be locked in place, always pointing to that same complex number just slightly removed from 1, while the square smoothly rotates about the origin, moving around and around.
+	
+	\fi
+
+	\section{Quaternions}
+	
+	So you know the story about how Hamilton tried to get complex numbers to work in 3D and agggh it wasn't working because he couldn't multiply them and then years later he finally realized that he needed to go 4D.
+	
+	\iffalse
+		``Marty! You're not thinking fourth dimensionally!'' -- E. L. Brown
+	\fi
+
+	The famous fundamental formula is:
+		$$ i^2 = j^2 = k^2 = ijk = -1 $$
+	These are the axioms just make everything work properly.
+	
+	Note: These quaternion numbers have four components now. 
+	If we have a quaternion $q \in \mathbb{H}$, then it can be expressed in the form $q = a + bi + cj + dk$ where $a,b,c,d \in \mathbb{R}$ and $i^2=j^2=k^2=ijk=-1$.
+	
+	\subsection{Notation:}
+	
+	$q$ can be expressed in several forms:
+	\begin{itemize}
+		\item Standard form: $a + bi + cj + dk$
+		\item Ordered list form: $(a, b, c, d)$
+		\item Scalar and vector form: $(a, \vec{v})$ where $\vec{v} = (b, c, d)$
+	\end{itemize}
+
+	If $b = c = d = 0$, then $q$ is said to be purely real.
+	
+	If $a = 0$, then $q$ is said to be purely imaginary.
+	
+	Note that we sometimes use the terms ``vector'' and ``quaternion'' interchangeably. 
+	``Vector'' in this context refers to the three imaginary components of a quaternion $q$. 
+	So if we call a quaternion a vector, then we are implying that that particular quaternion is purely imaginary.
+
+	\subsection{The Norm}
+	
+	We can find the magnitude of a quaternion: $\|q\| = \sqrt{a^2 + b^2 + c^2 + d^2}$.
+		
+	\subsection{Noncommutativity}
+	
+	An important thing to remember with quaternions is that multiplication is not commutative. 
+	This makes sense, because rotation is not commutative. 
+	From the quaternion formulas, the following can be deduced:	
+		\begin{alignat*}{2}
+			ij & = k, & \qquad ji & = -k, \\
+			jk & = i, & kj & = -i, \\
+			ki & = j, & ik & = -j 
+		\end{alignat*}	
+	These are sort of like cross-products, if you take $i, j, k$ to be the unit basis vectors in $\mathbb{R}^3$. 
+	Actually, this is probably related to why physics people use $\hat{\i}, \hat{\j}, \hat{k}$ a lot. 
+	But anyway, if we assume a right-handed system, all of the above multiplications match up to the cross products. 
+	For example: Rotate $\hat{\i}$ into $\hat{\j}$. 
+	Your thumb will be pointing out. 
+	This is $\hat{k}$. 
+	Etc.
+
+	\subsection{Operations}
+	
+	We can add two quaternions:
+		\begin{align*}
+			q_1 + q_2 &= (a_1 + b_1i + c_1j + d_1k) + (a_2 + b_2i + c_2j + d_2k) \\
+					  &= (a_1 + a_2) + (b_1 + b_2)i + (c_1 + c_2)j + (d_1 + d_2)k				  
+		\end{align*}
+	We can multiply two quaternions:
+		\begin{align*}
+			q_1 q_2 &= (a_1 + b_1i + c_1j + d_1k)(a_2 + b_2i + c_2j + d_2k) \\
+					&= a_1a_2 - b_1b_2 - c_1c_2 - d_1d_2 \\
+					&+ (a_1b_2 + b_1a_2 + c_1d_2 - d_1c_2)i \\
+					&+ (a_1c_2 - b_1d_2 + c_1a_2 + d_1b_2)j \\
+					&+ (a_1d_2 + b_1c_2 - c_1b_2 + d_1a_2)k
+		\end{align*}
+	You can verify that last one by multiplying out the product using the distributive property, and applying the appropriate substitutions when you have terms like $ij$ or $kj$. 
+	Important: Remember to preserve the order of $i, j, k$ when multiplying out because quaternion multiplication is noncommutative.
+	
+	\subsection{Square Roots of -1}
+
+	In $\mathbb{C}$, there are only two square roots of -1: $i$ and $-i$. 
+	In $\mathbb{H}$, there are infinitely many square roots of -1. 
+	In fact, the square roots of -1 in $\mathbb{H}$ are precisely the purely imaginary unit quaternions.
+	
+	Now keep in mind that when we use quaternions to do rotations and stuff, we set $i, j, k$ to be the basis vectors of $\mathbb{R}^3$. 
+	So in this context, purely imaginary unit quaternions are actually in reality. 
+	And purely real quaternions do not exist in reality. 
+	And imaginary quaternions that have a real component are not completely in reality. 
+	So, confusing terminology there. 
+	Oh well.
+
+	To be consistent, let's call $\mathbb{R}^3$ imaginary land, because a quaternion is only fully real if it is purely imaginary. 
+	I don't mean real as in on the real line, but real as in existing in our 3D reality. (Y'know?)
+	
+	\iffalse
+		Is this real life? Is this just fantasy? Caught in a landslide. No escape from reality.
+	\fi
+	
+	Suppose we're standing in imaginary land. 
+	Say we have the $i$ axis pointing rightwards, the $j$ axis pointing upwards, and the $k$ axis point directly at us. 
+	Let the real axis be perpendicular to all three axes simultaneously, increasing \textit{ana} and decreasing \textit{kata}, orthogonally out of 3-space.
+	
+	\subsection{Subspace}
+	
+	Since we want to rotate stuff, let's pick an arbitrary rotation axis $\vec{u}$. 
+	Let $\|\vec{u}\| = 1$ (normalized). 
+	So, without loss of generality, if we let $\vec{u} = i$, then rotating things around $\vec{u}$ would create circles parallel to the $jk$ plane. 
+	If we're standing with $i$ pointing to our right, $j$ pointing up, and $k$ pointing towards us, then spinning things around $u$ would be like watching a huge cement truck parked facing rightwards, spinning its drum so that you can see the cement stains coming towards you from the top and going away from you at the bottom.
+	
+	Fact: We can represent $\vec{u}$ as a quaternion of the form $\mathbf{u} = 0 + u_1i + u_2j + u_3k$. 
+	Because $\mathbf{u}$ is purely imaginary, $\mathbf{u}^2 = -1$.
+	
+	Fact: For any purely imaginary $\mathbf{u}$, the subspace spanned by $\{1, \mathbf{u}\} \subset \mathbb{H}$ is a real subalgebra isomorphic to $\mathbf{C}$. 
+	(See the math.stackexchange link below for a more concise and mathy explanation.) 
+	Remember, the real line is orthogonal to all of imaginary land, so the unit quaternions $1$ and $\mathbf{u}$ form a right angle. 
+	
+	Important part: The numbers $a + b\mathbf{u}$ would just act among themselves like complex numbers $a + bi$. 
+	Let's denote this subspace $A(\mathbf{u})$. 
+	Also, denote its orthogonal complement $B(\mathbf{u})$, with purely imaginary basis unit quaternions $\mathbf{v}$ and $\mathbf{w}$. 
+	Let's make $\mathbf{u} = i$ to make things easier to visualize. 
+	Then $B(\mathbf{u})$ would be the subspace spanned by $j$ and $k$. 
+	In other words, $\mathbf{v} = j$ and $\mathbf{w} = k$.
+	
+	\subsection{The Alpha Subspace}
+	
+	So in $A(\mathbf{u})$, we're down to two dimensions again, and our puny little brains can handle what's going on now. 
+	And quaternions in this plane behave just like complex numbers, and we know how those work, so great!
+	
+	For example: $\mathbf{u}^2 = -1$. 
+	Yup. 
+	$\mathbf{u}^3 = -\mathbf{u}$. 
+	As expected. 
+	In fact, we can import that whole rotor number thing and say that if $q \in A(\mathbf{u})$ and $r = \cos\theta + \mathbf{u}\sin\theta$, then $qr = rq = $ quaternion $q$ rotated counterclockwise in the $\langle 1, \mathbf{u} \rangle$-plane by angle $\theta$.
+	
+	What would happen if we choose a rotor from the $\langle 1, \mathbf{u} \rangle$-plane $A(\mathbf{u})$ and to rotate the quaternion $q$?
+	Let's choose a modest $\theta = 15\si{\degree}$ for the rotor so that we can take things step by step, to see what's going on. 
+	Also, let's keep $\mathbf{u} = i$ for now. 
+	Then, rotating iteratively, we have:
+	
+	\begin{tabular}{|p{1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm}|}
+		\hline
+		 &  \multicolumn{4}{c}{$q$} \\ 
+ 		\hline
+ 		rotor & real & i & j & k\\
+ 		\hline
+ 		$r^0$ & $0    $ & $1   $ & $0$ & $0$\\ \hline
+		$r^1$ & $-0.26$ & $0.97$ & $0$ & $0$\\ \hline
+		$r^2$ & $-0.5 $ & $0.87$ & $0$ & $0$\\ \hline
+		$r^3$ & $-0.71$ & $0.71$ & $0$ & $0$\\ \hline
+		$r^4$ & $-0.87$ & $0.5 $ & $0$ & $0$\\ \hline
+		$r^5$ & $-0.97$ & $0.26$ & $0$ & $0$\\ \hline
+		$r^6$ & $-1   $ & $0   $ & $0$ & $0$\\ \hline
+	\end{tabular}
+	
+	If we look at the $\langle 1, \mathbf{u} \rangle$-plane $A(\mathbf{u})$ dead on: 
+	Multiplying $q$ by $r$ rotates it counterclockwise out of imaginary land and towards $-1$ on the real line. 
+	If we kept applying the rotor, $q$ would continuing rotating along $A(\mathbf{u})$ and gradually reenter imaginary land again, but inverted from its initial state. 
+	Then if we kept going, $q$ would rotate out of imaginary land again, and towards $1$ on the real line.
+	
+	If we were watching this happen in imaginary land, we would not see any rotation because we cannot perceive the real line, as it is $ana$ and $kata$ to our space. 
+	Instead, we would only be able to observe the vector projection of $q$ onto imaginary land. 
+	In other words, $q$'s shadow on imaginary land.
+	
+	Before we begin, we would observe $q$ stretching to the right at full length, parallel to $i$.
+	Then, we begin applying the rotor. 
+	$q$ will appear to shrink leftwards towards the origin. 
+	Once we have applied $90\si{\degree}$ of rotor, the shadow of $q$ will seem to have disappeared completely. 
+	Then, it will reappear on the opposite side of the origin, slowly growing longer along $i$ in a negative direction. 
+	And then at $180\si{\degree}$ of rotor, it will be at full length. 
+	Then, as we keep applying the rotor, it will begin shrinking towards the origin again, until it disappears completely after we have applied $270\si{\degree}$ of rotor.
+	
+	\subsection{The Beta Subspace}
+	
+	Now if $q \in A(\mathbf{u})$, then we only have two degrees of freedom in our rotation, and one of them isn't even in reality! 
+	So we need to incorporate $B(\mathbf{u})$ somehow. 
+	We know how $q$ will behave if it is restricted to the $A(\mathbf{u})$ subspace. 
+	But what if $q$ had a component in the $\langle \mathbf{v}, \mathbf{w} \rangle$-plane $B(\mathbf{u})$ as well?
+	
+	We can figure out what would happen with algebra. 
+	Let the rotor $r = \cos\theta + \mathbf{u}\sin\theta$. 
+	Note that we are still keeping $r \in A(\mathbf{u})$. 
+	This is because we want to rotate about $\mathbf{u}$. 
+	Let $q = x\mathbf{u} + y\mathbf{v} + z\mathbf{w}$ where $x, y, z \in \mathbb{R}$. 
+	Because $\mathbf{u}, \mathbf{v}, \mathbf{w}$ are mutually orthogonal by construction, they span $\mathbb{R}^3$. 
+	Thus $q$ has now been generalized to any vector in imaginary land.
+	
+	So, let's rotate some quaternions.
+	
+	\subsection{Multiplicative Properties}
+	
+	Because $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$ is an ordered orthonormal basis for the purely imaginary quaternions with the same orientation as $\{i, j, k\}$, $\{1, \mathbf{u}, \mathbf{v}, \mathbf{w}\}$ has the same multiplication table as $\{1, i, j, k\}$. 
+	(See the math.stackexchange link below for more on this.) 
+	In particular,
+		\begin{alignat*}{2}
+			\mathbf{uv} & = \mathbf{w}, & \qquad \mathbf{vu} & = \mathbf{-w}, \\
+			\mathbf{vw} & = \mathbf{u}, & \mathbf{wv} & = \mathbf{-u}, \\
+			\mathbf{wu} & = \mathbf{v}, & \mathbf{uw} & = \mathbf{-v} 
+		\end{alignat*}		
+	\subsection{In the case that we left-multiply the rotor}
+	
+	Multiplying out the quaternions,
+	 	\begin{align*} rq &= (\cos\theta + \mathbf{u}\sin\theta)(x\mathbf{u} + y\mathbf{v} + z\mathbf{w}) \\
+	 					  &= x\cos\theta\mathbf{u} + y\cos\theta\mathbf{v} + z\cos\theta\mathbf{w} + x\sin\theta\mathbf{u}^2 + y\sin\theta\mathbf{uv} + z\sin\theta\mathbf{uw}	 \\
+	 					  &= (-x\sin\theta) + (x\cos\theta)\mathbf{u} + (y\cos\theta - z\sin\theta)\mathbf{v} + (y\sin\theta + z\cos\theta)\mathbf{w}
+	 	\end{align*}	 
+	 	
+	 	\subsection{In the case that we right-multiply the rotor}
+	
+	Multiplying out the quaternions,
+	 	\begin{align*} qr &= (x\mathbf{u} + y\mathbf{v} + z\mathbf{w})(\cos\theta + \mathbf{u}\sin\theta) \\
+	 					  &= x\cos\theta\mathbf{u} + y\cos\theta\mathbf{v} + z\cos\theta\mathbf{w} + x\sin\theta\mathbf{u}^2 + y\sin\theta\mathbf{vu} + z\sin\theta\mathbf{wu}	 \\
+	 					  &= (-x\sin\theta) + (x\cos\theta)\mathbf{u} + (y\cos\theta + z\sin\theta)\mathbf{v} + (-y\sin\theta + z\cos\theta)\mathbf{w}
+	 	\end{align*}	
+	 	
+		\subsection{Is there a difference?}
+		 	
+	 	Right-multiplication and left-multiplication do have subtle differences:
+	 	\begin{align*}
+	 		rq =
+	 		\begin{bmatrix}
+	 			-x\sin\theta \\
+	 			(x\cos\theta)\mathbf{u} \\
+	 			(y\cos\theta - z\sin\theta)\mathbf{v} \\
+	 			(y\sin\theta - z\cos\theta)\mathbf{w}
+			\end{bmatrix} \quad
+	 		qr =	 		
+	 		\begin{bmatrix}
+	 			-x\sin\theta \\
+	 			(x\cos\theta)\mathbf{u} \\
+	 			(y\cos\theta + z\sin\theta)\mathbf{v} \\
+	 			(-y\sin\theta + z\cos\theta)\mathbf{w}
+			\end{bmatrix}
+		\end{align*}
+	The coefficients for $1$ and $\mathbf{u}$ are the same. 
+	So, quaternion multiplication is commutative if we look only at the  $A(\mathbf{u})$ cross-section of $q$.
+	
+	However, the coefficients for $\mathbf{v}$ and $\mathbf{w}$ are not the same. So, quaternion multiplication is not commutative if we look only at the $B(\mathbf{u})$ cross-section of $q$.
+	
+	We can see that the coefficients for the $\mathbf{v}$ and $\mathbf{w}$ components are the multiplied-out version of a 2D rotation matrix in the $\langle \mathbf{v}, \mathbf{w} \rangle$-plane $B(\mathbf{u})$.
+		
+		If we factor out the rotation matrix for both cases:
+		\begin{align*}
+			rq \rightarrow \begin{bmatrix}
+							\cos\theta & -\sin\theta \\
+							\sin\theta & \cos\theta \\
+						\end{bmatrix}
+						\begin{bmatrix}
+							y \\
+							z \\
+						\end{bmatrix} \qquad
+			qr \rightarrow \begin{bmatrix}
+							\cos\theta & \sin\theta \\
+							-\sin\theta & \cos\theta \\
+						\end{bmatrix}
+						\begin{bmatrix}
+							y \\
+							z \\
+						\end{bmatrix}
+		\end{align*}
+		Note that the latter is equivalent to:
+		\begin{align*}
+			qr \rightarrow \begin{bmatrix}
+							\cos(-\theta) & -\sin(-\theta) \\
+							\sin(-\theta) & \cos(-\theta) \\
+						\end{bmatrix}
+						\begin{bmatrix}
+							y \\
+							z \\
+						\end{bmatrix}
+		\end{align*}		
+		So, multiplying $rq$ rotates $q$ by angle $\theta$ in $B(\mathbf{u})$, and multiplying $qr$ rotates $q$ by angle $-\theta$ in $B(\mathbf{u})$! 
+		(With right-hand rule rotation.)
+	 	
+	 	\subsection{Numerical Example: Rotor of the Left}
+	 					
+	 	To illustrate: Let's use the $\theta = 15\si{\degree}$ rotor from before to rotate a $q$ that has a component in both the $\langle 1, \mathbf{u} \rangle$-plane $A(\mathbf{u})$ and the $\langle \mathbf{v}, \mathbf{w} \rangle$-plane $B(\mathbf{u})$. 
+	 	As before, let's keep $\mathbf{u} = i$. 
+	 	And let's have $q = i + j$ so that it starts pointing diagonally up and to the right at an angle of $45\si{\degree}$.
+	 	Also, let's left-multiply by $r$. 
+	 	Then rotating iteratively, we have: 
+
+	\begin{tabular}{|p{1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm}|}
+		\hline
+		 &  \multicolumn{4}{c}{$r^n q$} \\ 
+ 		\hline
+ 		rotor & real & i & j & k\\
+ 		\hline
+ 		$r^0$ & $0    $ & $1   $ & $1   $ & $0   $\\ \hline
+		$r^1$ & $-0.26$ & $0.97$ & $0.97$ & $0.26$\\ \hline
+		$r^2$ & $-0.5 $ & $0.87$ & $0.87$ & $0.5 $\\ \hline
+		$r^3$ & $-0.71$ & $0.71$ & $0.71$ & $0.71$\\ \hline
+		$r^4$ & $-0.87$ & $0.5 $ & $0.5 $ & $0.87$\\ \hline
+		$r^5$ & $-0.97$ & $0.26$ & $0.29$ & $0.97$\\ \hline
+		$r^6$ & $-1   $ & $0   $ & $0   $ & $1   $\\ \hline
+	\end{tabular}
+	 
+	If we look only at the real and $\mathbf{u}$ components, we see that $q$ rotates the same as earlier.
+	So, adding a $\mathbf{v}$ and $\mathbf{w}$ component to the quaternion does not change its behaviour under rotation in the $\langle 1, \mathbf{u} \rangle$-plane $A(\mathbf{u})$.
+	So that's nice.
+	However, this makes it clear that we cannot just multiply a vector by a rotor to perform rotations in 3D:
+ 	We're spinning the quaternion out of imaginary land! 
+ 	The rotated quaternion has a real component now, which means it isn't firmly in reality anymore. 
+ 	And look at the $\mathbf{u}$ component. 
+ 	It has changed. 
+ 	Rotating a point about an axis shouldn't move it in a direction parallel to the axis. 
+ 	Oh dear. 
+ 	We'll have to do something about that later.
+ 	
+ 	But let's take a look at the $\langle \mathbf{u}, \mathbf{v} \rangle$-plane $B(\mathbf{u})$. 
+ 	Over the course of the rotation, $q$ rotated towards us. 
+ 	It started pointing up, and now it's pointing towards us. 
+ 	
+ 	We see that this rotation is adhering to the right-hand rule, because if we point our right thumb (the rotation axis) rightwards along $\mathbf{u}$ and curl our fingers, this is the same direction as the rotation.
+
+	So hey, we rotated a vector! 
+ 	Sure, it shouldn't have drifted left as it rotated, but eh, close enough.
+ 	
+ 	\subsection{Numerical Example: Rotor of the Right}
+ 	
+ 	So, exactly the same as before; the only difference is that we're right-multiplying by $r$ now.
+ 	Then, rotating iteratively, we have:
+
+	\begin{tabular}{|p{1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm}|}
+		\hline
+		 &  \multicolumn{4}{c}{$q r^n$} \\ 
+ 		\hline
+ 		rotor & real & i & j & k\\
+ 		\hline
+ 		$r^0$ & $0    $ & $1   $ & $1   $ & $0    $\\ \hline
+		$r^1$ & $-0.26$ & $0.97$ & $0.97$ & $-0.26$\\ \hline
+		$r^2$ & $-0.5 $ & $0.87$ & $0.87$ & $-0.5 $\\ \hline
+		$r^3$ & $-0.71$ & $0.71$ & $0.71$ & $-0.71$\\ \hline
+		$r^4$ & $-0.87$ & $0.5 $ & $0.5 $ & $-0.87$\\ \hline
+		$r^5$ & $-0.97$ & $0.26$ & $0.29$ & $-0.97$\\ \hline
+		$r^6$ & $-1   $ & $0   $ & $0   $ & $-1   $\\ \hline
+	\end{tabular}
+
+	If we look only at the real and $\mathbf{u}$ components, we see that $q$ still rotates the same as earlier.
+	It turns counterclockwise out of imaginary land and towards $-1$ on the real line.
+	
+	If we look at the $\mathbf{v}$ and $\mathbf{w}$ components, we see that $q$ is rotating in the opposite direction from when we left-multiplied the rotor:
+	Over the course of the rotation, $q$ rotated away from us.
+	It started pointing up, and now it's pointing away from us.
+	
+	We see that this rotation is adhering to the left-hand rule, because if we point our left thumb (the rotation axis) rightwards along $\mathbf{u}$ and curl our fingers, this is the same direction as the rotation.
+	
+	So, if $q$ is on the right side of the product, $B(\mathbf{u})$ rotation follows right-hand rule.
+	
+	If $q$ is on the left side of the product, $B(\mathbf{u})$ rotation follows left-hand rule.
+	
+	\subsection{Constructive and destructive interference}
+	
+	Some notation: Let $r$ be the rotor for angle $\theta$ in $A(\mathbf{u})$, and let $r^{-1}$ be the rotor for angle $-\theta$ in $A(\mathbf{u})$.
+	
+	Note that if we perform $rqr$, this doubles the rotation in the $A(\mathbf{u})$ plane and cancels the rotation in the $B(\mathbf{u})$ plane.
+	
+	If we instead do $rqr^{-1}$, this would cancel the rotation in the $A(\mathbf{u})$ plane and double the rotation in the $B(\mathbf{u})$ plane.
+	
+	So let's say $\theta = 45\si{\degree}$. Then:
+
+	\begin{tabular}{|p{1.5cm} | p{1.1cm} | p{1.1cm} | p{1.1cm} | p{1.1cm}|}
+		\hline
+		 &  \multicolumn{4}{c}{result} \\ 
+ 		\hline
+ 		product   & real & i & j & k\\
+ 		\hline
+ 		$q$       & $0    $ & $1   $ & $1   $ & $0   $\\ \hline
+		$rq$      & $-0.71$ & $0.71$ & $0.71$ & $0.71$\\ \hline
+		$rqr^{-1}$& $0    $ & $1   $ & $0   $ & $1   $\\ \hline
+	\end{tabular}
+	
+ 	So, we start with $q = i + j$.
+ 	
+ 	When we left-multiply the rotor, $q$ spins counterclockwise out of imaginary land by $45\si{\degree}$ in the $\langle 1, i \rangle$-plane, heading towards $-1$ on the real line. 
+ 	At the same time, $q$ spins towards us in the $\langle j, k \rangle$-plane by $45 \si{\degree}$. 
+ 	
+ 	If we combine the rotations in these two planes, we can determine what we would actually see: 
+ 	First, the quaternion starts pointing up and to the right at a $45\si{\degree}$ angle, in the plane of your screen. 
+ 	Then, it begins turning out of the screen towards you, while simultaneously shrinking left towards the origin. 
+ 	It is now pointing out of the screen at an angle of $45\si{\degree}$, left of where it started.
+ 	
+ 	Next, when we right-multiply the rotor, $q$ spins clockwise in the $\langle 1, i \rangle$-plane, right back into imaginary land. 
+ 	At the same time, $q$ continues its rotation in the $\langle j, k \rangle$-plane, spinning farther in the same direction. 	
+ 	
+ 	If we combine the rotations in these two planes, we can determine what we would actually see: The quaternion will continue turning out of the screen until it is pointing directly at you, while simulatenously growing rightwards, away from the origin. 
+ 	
+ 	The net result is that $q$ has been rotated by $90 \si{\degree}$ about the $i$-axis.
+ 	
+ 	However, we chose $i$ to be $\mathbf{u}$ arbitrarily. So, this would be the same for any value of $\mathbf{u}$. So, we can generalize the rotation procedure:
+ 	
+ 	\subsection{The Rotation Procedure}
+ 	
+ 	Suppose you want to rotate a vector $\vec{v} \in \mathbb{R}^3$ by angle $\theta$ about the rotation axis $\vec{U}$, $\|\vec{U}\| \ne 0$, using right-hand rule convention:
+ 	
+ 	\begin{enumerate}
+ 		\item Convert $\vec{v}$ to a quaternion: $q = (0, \vec{v})$.
+ 		\item Normalize $\vec{U}$: $\vec{u} = \dfrac{\vec{U}}{\|\vec{U}\|}$.
+ 		\item Find the rotor for $\tfrac{\theta}{2}$ in the $\langle 1, \mathbf{u} \rangle$ plane: $r = (\cos\left(\tfrac{\theta}{2}\right), \vec{u}\sin\left(\tfrac{\theta}{2}\right))$.
+ 		\item Find the rotor for $-\tfrac{\theta}{2}$ in the $\langle 1, \mathbf{u} \rangle$ plane: $\bar{r} = (\cos\left(\tfrac{\theta}{2}\right), -\vec{u}\sin\left(\tfrac{\theta}{2}\right))$.
+ 		\item Compute the rotated quaternion: $q' = rq\bar{r}$.
+ 		\item Convert $q'$ to a vector: $\vec{v}' = \text{Im}(q')$.
+	\end{enumerate}
+ 	
+ 	We can skip the first and last steps if we just always use quaternions to represent vectors.
+ 	
+ 	So vectors in $\mathbb{R}^3$ can be seen as purely imaginary quaternions.
+ 	We can have position quaternions and direction quaternions just like with vectors, so cool.
+ 	
+		
+	\section{References}
+
+	\urlstyle{same}
+	
+	\begin{itemize}
+		\item Quaternion rotation intuition: \url{http://math.stackexchange.com/a/1434368/201000}
+		\item Wikipedia quaternion article: \url{https://en.wikipedia.org/wiki/Quaternion}
+		\item Mechanics of manipulation lecture: \url{http://www.cs.cmu.edu/afs/cs/academic/class/16741-s07/www/Lecture8.pdf}
+		\item Euclidean space website: \url{http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/index.htm}
+		\item Fancy pdf: \url{http://www.ijpam.eu/contents/2013-82-1/4/4.pdf}		
+	\end{itemize}
+	
+	\section{Sort of Relevant}
+	
+	Fun hyperspace stuff.
+	\begin{itemize}
+		\item Flatland: A Romance of Many Dimensions
+		\item Fine Structure (\url{qntm.org/structure}): Mitch technically comes from a 75 + 6D universe
+		\item The Boy Who Reversed Himself (William Sleator): YA novel about a person who can move in four spatial dimensions		
+		\item Miegakure: A 4D puzzle-platforming game that will be released eventually someday in the future probably
+		\item ``Technical Error'' (Arthur C. Clarke): A short story where a worker gets ``laterally inverted'' following an accident in a power station
+	\end{itemize}
+
+\end{document}
