@@ -60,11 +60,11 @@ void draw_list(Drawable* start, sf::RenderWindow &window){
 
 int main()
 {
-    sf::ContextSettings settings;
+	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
 	sf::RenderWindow window(sf::VideoMode(screenwidth, screenheight), "super basic flight simulator thing", sf::Style::Default, settings);
-   	sf::Event        event;
+   	sf::Event		event;
    	
    	window.setMouseCursorVisible(false);
 
@@ -170,6 +170,6 @@ int main()
 	std::cout<<"done deallocating"<<std::endl;
 	
 	
-    return 0;
+	return 0;
 }
 

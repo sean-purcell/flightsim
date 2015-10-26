@@ -59,11 +59,11 @@ void draw_list(Drawable* start, sf::RenderWindow &window){
 
 int main()
 {
-    sf::ContextSettings settings;
+	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
 	sf::RenderWindow window(sf::VideoMode(screenwidth, screenheight), "super basic flight simulator thing", sf::Style::Default, settings);
-   	sf::Event        event;
+   	sf::Event		event;
    	
    	window.setMouseCursorVisible(false);
 
@@ -105,7 +105,7 @@ int main()
 		
 		left  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		right = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-		up    = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+		up	= (float) sf::Keyboard::isKeyPressed(sf::Keyboard::W);
 		down  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::S);
 
 		//dcamerapos=dcamerapos*0.1;
@@ -137,6 +137,6 @@ int main()
 	std::cout<<"done deallocating"<<std::endl;
 	
 	
-    return 0;
+	return 0;
 }
 

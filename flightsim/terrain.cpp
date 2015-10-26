@@ -145,8 +145,8 @@ float TerrainChunk::getHeight(float x, float y) {
 	float x1y1 = heightmap[x1][y1];
 
 	return interp(interp(x0y0, x1y0, xfrac),
-	              interp(x1y0, x1y1, xfrac),
-	              yfrac);
+				  interp(x1y0, x1y1, xfrac),
+				  yfrac);
 }
 
 TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t)
