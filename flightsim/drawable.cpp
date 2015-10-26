@@ -12,15 +12,11 @@ Drawable::~Drawable() {
 }
 
 void Drawable::insert(Drawable* item){
-	Drawable* iter = item;
-	if (item==NULL){
-		return;
-	}
-	while ((iter->next)!=NULL){
+	Drawable *iter = this;
+	while(iter->next != NULL) {
 		iter = iter->next;
 	}
-	iter->next = next;
-	next = item;
+	iter->next = item;
 }
 
 void Drawable::update(float dt){
@@ -80,7 +76,7 @@ DrawableGroup::~DrawableGroup(){
 	delete child;
 }
 
-void DrawableGroup::insert(Drawable* item){
+void DrawableGroup::insertInto(Drawable *item) {
 	Drawable* iter = item;
 	if (iter==NULL){
 		return;

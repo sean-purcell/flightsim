@@ -295,6 +295,8 @@ ChunkManager::ChunkManager(Terrain _terrain):
 	terrain(_terrain)
 	{}
 
+int len(Drawable *d);
+
 Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	//x,z are the coordinates of the player
 	//distanceToLoad is the range around the player that you want to load chunks in
@@ -306,7 +308,6 @@ Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	Drawable* head = new Drawable;
 	Drawable* iter = head;
 	
-	//std::cout<<"loaded:"<<loadedChunks<<std::endl;
 	
 	//remove any unneeded chunks
 	ChunkMap::iterator tmp;
@@ -330,13 +331,13 @@ Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 				iter->next = loaded[key];
 				iter = iter->next;
 			}
-		}		
+		}
 	}
 	
 	Drawable* ret = head->next;
 	head->next = 0;
 	delete head;
-	return (Drawable*)(ret);
+	return static_cast<Drawable *>(ret);
 }
 
 void ChunkManager::loadChunk(IntPair key){

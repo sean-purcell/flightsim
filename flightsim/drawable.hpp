@@ -19,7 +19,7 @@ class Drawable{
 		
 		virtual ~Drawable();
 		
-		virtual void insert(Drawable* item);
+		void insert(Drawable* item);
 		
 		virtual void update(float dt);
 };
@@ -42,7 +42,7 @@ class DrawableGroup: public Drawable
 		
 		virtual ~DrawableGroup();
 		
-		void insert(Drawable* item);
+		void insertInto(Drawable* item);
 		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
 		
 		void draw(sf::RenderWindow &window);

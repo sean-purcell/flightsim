@@ -22,6 +22,15 @@ sf::Vector2i size(screenwidth, screenheight);
 #include "aircraft.hpp"
 #include "simplexnoise.hpp"
 #include "terrain.hpp"
+
+ int len(Drawable *d) {
+	int r = 0;
+	while(d != NULL) {
+		d = d->next;
+		r++;
+	}
+	return r;
+ }
  
 void update_list(Drawable** start, float dt){
 	Drawable **iter = start;
@@ -29,19 +38,20 @@ void update_list(Drawable** start, float dt){
 	int length=0;
  
 	while (*iter!=NULL){
-	Drawable *ptr = *iter;
+		Drawable *ptr = *iter;
 		ptr->update(dt);
 		if (ptr->shouldRemove){ //DELETE THAT SHIT
+			std::cout << "removed object\n";
 			*iter = ptr->next;
-		ptr->next = NULL;
-		delete ptr;
+			ptr->next = NULL;
+			delete ptr;
 		} else {
 			length++;
-		iter = &(ptr->next);
-	}
+			iter = &(ptr->next);
+		}
 	}
 	
-	//std::cout<<"length:"<<length<<std::endl;
+	std::cout<<"length:"<<length<<std::endl;
 }
 		 
 void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
@@ -171,9 +181,10 @@ int main()
 		 
 		window.clear(sf::Color(100, 100, 240));
 		
-	objects->insert(chunkmanager.getNewChunks(camerapos.x, camerapos.z, 1));
+		Drawable *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 3);
+		objects->insert(nchunks);
 
-	update_list(&objects, 1);
+		update_list(&objects, 1);
 		
 		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
 		 
