@@ -16,11 +16,11 @@
 
 // Shader sources
 const GLchar* vertexSource =
-    "#version 120 core\n"
-    "in vec3 position;"
-    "in vec3 color;"
-    "in vec2 texcoord;"
-    "out vec3 Position;"
+    "#version 120\n"
+    "vec3 position;"
+    "vec3 color;"
+    "vec2 texcoord;"
+    "varying vec3 Position;"
     "uniform mat4 model;"
     "uniform mat4 view;"
     "uniform mat4 proj;"
@@ -29,9 +29,9 @@ const GLchar* vertexSource =
     "   gl_Position = proj * view * model * vec4(position, 1.0);"
     "}";
 const GLchar* fragmentSource =
-    "#version 350 core\n"
-    "in vec3 Position;"
-    "out vec4 outColor;"
+    "#version 120\n"
+    "varying vec3 Position;"
+    "vec4 outColor;"
     "void main() {"
     "   outColor = vec4(Position.x + 0.5f, Position.y + 0.5f, Position.y + 0.5f, 1.0);"
     "   outColor = vec4(1.0f,1.0f,1.0f,1.0f);"
@@ -57,7 +57,7 @@ int main() {
 	glewInit();
 #endif
 
-	std::cout << VERT_SHADER << std::endl;
+	std::cout << vertexSource << std::endl;
 // Create Vertex Array Object
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -118,21 +118,33 @@ int main() {
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
-GLint success = 0;
-glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 
-	std::cout << (success == GL_FALSE) << std::endl;
-GLint logSize = 0;
-glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
-// The maxLength includes the NULL character
-	std::vector<GLchar> errorLog(logSize);
-		glGetShaderInfoLog(vertexShader, logSize, &logSize, &errorLog[0]);
-	std::cout << &errorLog[0] << std::endl;
+	GLint success = 0;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if(success != GL_TRUE) {
+		GLint logSize = 0;
+		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
+		// The maxLength includes the NULL character
+		std::vector<GLchar> errorLog(logSize);
+			glGetShaderInfoLog(vertexShader, logSize, &logSize, &errorLog[0]);
+		std::cout << &errorLog[0] << std::endl;
+	}
 
 	// Create and compile the fragment shader
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);
+
+	success = 0;
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if(success != GL_TRUE) {
+		GLint logSize = 0;
+		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
+		// The maxLength includes the NULL character
+		std::vector<GLchar> errorLog(logSize);
+			glGetShaderInfoLog(fragmentShader, logSize, &logSize, &errorLog[0]);
+		std::cout << &errorLog[0] << std::endl;
+	}
 
 	// Link the vertex and fragment shader into a shader program
 	GLuint shaderProgram = glCreateProgram();
@@ -192,11 +204,11 @@ glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
 		float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 		glm::mat4 model;
-	//	model = glm::rotate(
-	//		model,
-	//		time * glm::radians(180.0f),
-	//		glm::vec3(0.0f, 0.0f, 1.0f)
-	//	);
+		model = glm::rotate(
+			model,
+			time * glm::radians(180.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f)
+		);
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
 		// Draw cube
