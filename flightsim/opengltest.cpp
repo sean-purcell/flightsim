@@ -157,9 +157,10 @@ void display()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glm::mat4 trans(1.f);
-        trans = translate(trans, glm::vec3(0.f,-0.5f,2.f));
-        trans = rotate(trans, ang, glm::vec3(.0f, 1.f, 0.f));
-	trans = rotate(trans, (float)M_PI/2, glm::vec3(1.f,0.f,0.f));
+	trans = rotate(trans, ang, glm::vec3(0.f, 0.f, 1.f));
+        trans = translate(trans, glm::vec3(0.f,-0.75f,2.f));
+        trans = rotate(trans, ang * (float)M_PI, glm::vec3(.0f, 1.f, 0.f));
+	trans = rotate(trans, (float)M_PI/2*0.75f, glm::vec3(1.f,0.f,0.f));
 
         ang += 0.05f;
         //if(ang > 2 * M_PI) ang -= 2 * M_PI;
