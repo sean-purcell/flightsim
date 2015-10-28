@@ -10,7 +10,7 @@ ifeq ($(UNAME_S),Linux)
 	FLAGS+= -lGL
 endif
 ifeq ($(UNAME_S),Darwin)
-	FLAGS+= -framework OpenGL
+	FLAGS+= -framework OpenGL -framework GLUT
 endif
 
 .PHONY: all planetest opengltest terraintest
