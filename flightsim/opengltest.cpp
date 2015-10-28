@@ -24,9 +24,11 @@ const GLchar* vertexSource =
     "in vec3 color;"
     "out vec3 Color;"
     "uniform mat4 trans;"
+    "uniform mat4 proj;"
+    "uniform mat4 view;"
     "void main() {"
     "   Color = color;"
-    "   gl_Position = trans * vec4(position, 0.0, 1.0);"
+    "   gl_Position = proj * view * trans * vec4(position, 0, 1.0);"
     "}";
 const GLchar* fragmentSource =
     "#version 150 core\n"
@@ -37,7 +39,7 @@ const GLchar* fragmentSource =
     "}";
 
 std::chrono::high_resolution_clock::time_point t_start;
-GLint uniModel;
+GLint uniTrans;
 	GLuint vao;
 	GLuint vbo;
 
@@ -120,13 +122,28 @@ void init() // Called before main loop to set up the program
     glEnableVertexAttribArray(colAttrib);
     glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
 
-    GLint uniTrans = glGetUniformLocation(shaderProgram, "trans");
-    glm::mat4 trans(1);
-    trans[1][0] = 0.7;
+    uniTrans = glGetUniformLocation(shaderProgram, "trans");
+    glm::mat4 trans(1.f);
+    trans = rotate(trans, 1.f, glm::vec3(1.0f, 0.f, 0.f));
     glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
+
+    GLint uniView = glGetUniformLocation(shaderProgram, "view");
+    glm::mat4 view = glm::lookAt(
+    	glm::vec3(0.f, 0.f, -1.f),
+	glm::vec3(0.f, 0.f, 0.f),
+	glm::vec3(0.f, 1.f, 0.f)
+	);
+    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+
+    GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+    glm::mat4 proj = glm::infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+
 
 std::cout << "init done\n";
 }
+
+float ang = 0.f;
 
 // Called at the start of the program, after a glutPostRedisplay() and during idle
 // to display a frame
@@ -139,10 +156,21 @@ void display()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glm::mat4 trans(1.f);
+        trans = translate(trans, glm::vec3(0.f,-0.5f,2.f));
+        trans = rotate(trans, ang, glm::vec3(.0f, 1.f, 0.f));
+	trans = rotate(trans, (float)M_PI/2, glm::vec3(1.f,0.f,0.f));
+
+        ang += 0.05f;
+        //if(ang > 2 * M_PI) ang -= 2 * M_PI;
+
+	    glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
+
+        
+
         // Draw a rectangle from the 2 triangles using 6 indices
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glutSwapBuffers();
-std::cout << "render\n";
 }
 
 // Called every time a window is resized to resize the projection matrix
