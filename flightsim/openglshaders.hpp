@@ -1,41 +1,7 @@
 #pragma once
 
-#ifdef __linux__
-#define INV "attribute "
-#define OUTV "varying "
-#define INF "varying "
-#define OUTV ""
-#define VERSION "#version 120\n"
-#endif
+#include "openglheaders.hpp"
 
-#ifdef __APPLE__
-#define INV "in "
-#define OUTV "out "
-#define INF "in "
-#define OUTF "out "
-#define VERSION "#version 150 core\n"
-#endif
-
-// Shader sources
-const GLchar* vertexSource =
-    VERSION
-    INV "vec2 position;"
-    INV "vec3 color;"
-    OUTV "vec3 Color;"
-    "uniform mat4 trans;"
-    "uniform mat4 proj;"
-    "uniform mat4 view;"
-    "void main() {"
-    "   Color = color;"
-    "   gl_Position = proj * view * trans * vec4(position, 0, 1.0);"
-    "}";
-
-const GLchar* fragmentSource =
-    VERSION
-    INF "vec3 Color;"
-    OUTF "vec4 outColor;"
-    "void main() {"
-    "   outColor = vec4(Color, 1.0);"
-    "}";
-
+extern const GLchar* vertexSource;
+extern const GLchar* fragmentSource;
 
