@@ -1,13 +1,14 @@
 SOURCES=$(filter-out opengltest.cpp quaterniontest.cpp movingtestground.cpp terraintest.cpp planetest.cpp flightsimulate.cpp, $(wildcard *.cpp))
 OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
-LIB=-lsfml-window -lsfml-system -lsfml-graphics -Iinc/ $(EXTRALIB)
+LIB=-lsfml-window -lsfml-system -lsfml-graphics -L/usr/local/lib -Iinc/ $(EXTRALIB)
 
-FLAGS=-O3 -std=c++11
+FLAGS=-g -std=c++11 -Wno-deprecated-declarations
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	FLAGS+= -lGL
+	LIB+= -L/usr/X11R6/lib -lGLEW -lGLU -lGL -lglut
 endif
 ifeq ($(UNAME_S),Darwin)
 	FLAGS+= -framework OpenGL -framework GLUT
@@ -23,8 +24,8 @@ planetest: bin bin/planetest.o $(OBJECTS)
 terraintest: bin bin/terraintest.o $(OBJECTS)
 	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
 
-opengltest: bin bin/opengltest.o $(OBJECTS)
-	g++ -o bin/opengltest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) -flto
+opengltest: bin bin/opengltest.o
+	g++ -o bin/opengltest $(word 2,$^) $(LIB) $(FLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)

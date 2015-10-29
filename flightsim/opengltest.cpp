@@ -1,8 +1,4 @@
-// The OpenGL libraries, make sure to include the GLUT and OpenGL frameworks
-#define  GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-#include <OpenGL/gl3.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
+#include "openglheaders.hpp"
 
 #include <ctime>
 #include <chrono>
@@ -10,33 +6,10 @@
 #include <iostream>
 #include <vector>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "openglshaders.hpp"
 
 // This is just an example using basic glut functionality.
 // If you want specific Apple functionality, look up AGL
-
-// Shader sources
-const GLchar* vertexSource =
-    "#version 150 core\n"
-    "in vec2 position;"
-    "in vec3 color;"
-    "out vec3 Color;"
-    "uniform mat4 trans;"
-    "uniform mat4 proj;"
-    "uniform mat4 view;"
-    "void main() {"
-    "   Color = color;"
-    "   gl_Position = proj * view * trans * vec4(position, 0, 1.0);"
-    "}";
-const GLchar* fragmentSource =
-    "#version 150 core\n"
-    "in vec3 Color;"
-    "out vec4 outColor;"
-    "void main() {"
-    "   outColor = vec4(Color, 1.0);"
-    "}";
 
 std::chrono::high_resolution_clock::time_point t_start;
 GLint uniTrans;
@@ -157,10 +130,9 @@ void display()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glm::mat4 trans(1.f);
-	trans = rotate(trans, ang, glm::vec3(0.f, 0.f, 1.f));
-        trans = translate(trans, glm::vec3(0.f,-0.75f,2.f));
-        trans = rotate(trans, ang * (float)M_PI, glm::vec3(.0f, 1.f, 0.f));
-	trans = rotate(trans, (float)M_PI/2*0.75f, glm::vec3(1.f,0.f,0.f));
+        trans = translate(trans, glm::vec3(0.f,-0.5f,2.f));
+        trans = rotate(trans, ang, glm::vec3(.0f, 1.f, 0.f));
+	trans = rotate(trans, (float)M_PI/2, glm::vec3(1.f,0.f,0.f));
 
         ang += 0.05f;
         //if(ang > 2 * M_PI) ang -= 2 * M_PI;
@@ -188,10 +160,15 @@ void reshape(int w, int h)
 
 int main(int argc, char **argv)
 {
+
     glutInit(&argc, argv); // Initializes glut
 
     // Sets up a double buffer with RGBA components and a depth component
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA | GLUT_3_2_CORE_PROFILE);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA
+#ifdef __APPLE__
+     | GLUT_3_2_CORE_PROFILE
+#endif
+	);
 
     // Sets the window size to 512*512 square pixels
     glutInitWindowSize(512, 512);
@@ -201,6 +178,11 @@ int main(int argc, char **argv)
 
     // Creates a window using internal glut functionality
     glutCreateWindow("Hello!");
+
+#ifdef __linux__
+    glewExperimental = GL_TRUE;
+    glewInit();
+#endif
 
     // passes reshape and display functions to the OpenGL machine for callback
     glutReshapeFunc(reshape);
