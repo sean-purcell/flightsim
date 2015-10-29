@@ -23,6 +23,20 @@ Quaternion::Quaternion(float nw, float nx, float ny, float nz){
 	z = nz;
 }
 
+Quaternion::Quaternion(vec3 v) {
+	x = v.x;
+	y = v.y;
+	z = v.z;
+	w = 0;
+}
+
+Quaternion::Quaternion(quat q) {
+	x = q.x;
+	y = q.y;
+	z = q.z;
+	w = q.w;
+}
+
 // Creates a new quaternion with the given angle and axis
 Quaternion::Quaternion(float rot, Quaternion axis) {
 	axis.normalize();

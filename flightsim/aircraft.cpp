@@ -1,8 +1,12 @@
 #include <cmath>
 
+#include "glmheaders.hpp"
+
 #include "aircraft.hpp"
 #include "quaternion.hpp"
 #include "windowinfo.hpp"
+#include "drawable.hpp"
+#include "util.hpp"
 
 float up = 0, down = 0, left = 0, right = 0;
 
@@ -19,7 +23,7 @@ void Aircraft::init_params() {
 	pitchmoi = 21935.779;
 	rollmoi = 161820.94;
 	yawmoi = 178290.06;
-	aileronarea = 0.03;
+	aileronarea = 0.3;
 	aileronradius = 5;
 	elevatorarea = 0.03;
 	elevatorradius = 8;
@@ -33,21 +37,17 @@ void Aircraft::init_params() {
 Aircraft::Aircraft(){
 	init_params();
 
-	pos = Quaternion(0, 1, 10000, 1);		//real component must be zero
-	facing = Quaternion (1, 0, 0, 0);	//orientation
-	velocity = Quaternion (0, 0, 0, 0);	//real component must be zero
-	omega = Quaternion(0, 0, 0, 0);
+	pos = vec3(1, 10000, 1);		//real component must be zero
+	facing = quat(1, 0, 0, 0);	//orientation
+	velocity = vec3(0, 0, 0);	//real component must be zero
+	omega = vec3(0, 0, 0);
 	
-	//bunch of sphere stuff that will be obsolete eventually
-	radius = 0.05;
-	color = sf::Color(255,255,255);
-
 	next = NULL;
 	child = NULL;
 }
 
-void Aircraft::predraw(Quaternion camerapos, Quaternion camerarotation){	//how does one draw a plane? by pretending it's a sphere. yoloooo
-	draw_pos = camerarotation * ((pos-camerapos)* camerarotation.inverse());
+void Aircraft::predraw(vec3 camerapos, quat camerarotation){
+	draw_pos = camerarotation * (pos-camerapos);
 	
 	distanceFromCamera = draw_pos.z;
 	
@@ -60,7 +60,7 @@ void Aircraft::predraw(Quaternion camerapos, Quaternion camerarotation){	//how d
 	else
 		shape.setRadius(render_radius);
 		
-	shape.setPosition(draw_pos.getScreenPos()+sf::Vector2f(-render_radius,-render_radius));
+	shape.setPosition(getScreenPos(draw_pos)+sf::Vector2f(-render_radius,-render_radius));
 }
 
 void Aircraft::update(float dt){
@@ -72,7 +72,7 @@ void Aircraft::draw(sf::RenderWindow &window){
 }
 
 void Aircraft::applyForces(float dt) {
-	Quaternion netF(0, 0, 0, 0);
+	vec3 netF(0, 0, 0);
 
 	netF = netF + fGravity();
 	netF = netF + fWing();
@@ -83,95 +83,95 @@ void Aircraft::applyForces(float dt) {
 	float pitchA = tElevator() / pitchmoi;
 	float yawA = tRudder() / yawmoi;
 
-	Quaternion accel = netF * (1 / mass);
+	vec3 accel = netF / mass;
 
 	this->pos = this->pos + this->velocity * dt + accel * (0.5f * dt * dt);
 	this->velocity = this->velocity + accel * dt;
 
-	Quaternion alpha(0, pitchA, yawA, rollA);
+	vec3 alpha(pitchA, yawA, rollA);
 
 	omega = omega + alpha * dt;
 
-	if(omega.get_magnitude() > 1e-5) {
-		Quaternion omegaVersor(omega.get_magnitude() * dt, facing.transform(omega));
+	if(dot(omega, omega) > 1e-10) {
+		quat omegaVersor = angleAxis(length(omega) * dt, facing * omega);
 		facing = omegaVersor * facing;
 	}
 
-	std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing.transform(Quaternion(0, 0, 1))) << std::endl;
+	std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing * (vec3(0, 0, 1))) << std::endl;
 }
 
-Quaternion Aircraft::fGravity() {
-	return Quaternion(0, 0, g * mass, 0);
+vec3 Aircraft::fGravity() {
+	return vec3(0, g * mass, 0);
 }
 
-Quaternion Aircraft::fWing() {
-	Quaternion wingang(aoi, Quaternion(-1, 0, 0));
-	Quaternion wn = facing.transform(wingang.transform(Quaternion(0, 1, 0)));
-	Quaternion v = this->velocity * -1.0f;
+vec3 Aircraft::fWing() {
+	quat wingang = angleAxis(aoi, vec3(-1, 0, 0));
+	vec3 wn = facing * (wingang * vec3(0, 1, 0));
+	vec3 v = -1.0f * this->velocity;
 
-	Quaternion lift = wn * rho * wingarea * fabs(v.dot(wn)) * (v.dot(wn));
+	vec3 lift = wn * rho * wingarea * (float) fabs(dot(v, wn)) * (dot(v, wn));
 	return lift;
 }
 
-Quaternion Aircraft::fThrust() {
-	Quaternion fw = facing.transform(Quaternion(0, 0, 1));
+vec3 Aircraft::fThrust() {
+	vec3 fw = facing * (vec3(0, 0, 1));
 	return fw * thrust;
 }
 
-Quaternion Aircraft::fDrag() {
-	Quaternion bw = facing.transform(Quaternion(0, 0, -1));
-	return bw * (velocity.dot(bw)) * (velocity.dot(bw)) * rho * dragcoeff;
+vec3 Aircraft::fDrag() {
+	vec3 bw = facing * (vec3(0, 0, -1));
+	return bw * (dot(velocity, bw)) * (dot(velocity, bw)) * rho * dragcoeff;
 }
 
 float Aircraft::tAileron() {
 	float effect = left * maxaileron + right * minaileron;
-	Quaternion ailangl(-aoi + effect, Quaternion(-1, 0, 0));
-	Quaternion ailangr(aoi + effect, Quaternion( 1, 0, 0));
+	quat ailangl = angleAxis(-aoi + effect, vec3(-1, 0, 0));
+	quat ailangr = angleAxis(aoi + effect, vec3( 1, 0, 0));
 
-	Quaternion anl = facing.transform(ailangl.transform(Quaternion(0, 1, 0)));
-	Quaternion anr = facing.transform(ailangr.transform(Quaternion(0, 1, 0)));
+	vec3 anl = facing * (ailangl * (vec3(0, 1, 0)));
+	vec3 anr = facing * (ailangr * (vec3(0, 1, 0)));
 
-	Quaternion v = this->velocity * -1.0f;
-	Quaternion vl = v + facing.transform(Quaternion(0, -this->omega.z * aileronradius, 0));
-	Quaternion vr = v + facing.transform(Quaternion(0, this->omega.z * aileronradius, 0));
+	vec3 v = this->velocity * -1.0f;
+	vec3 vl = v + facing * (vec3(0, -this->omega.z * aileronradius, 0));
+	vec3 vr = v + facing * (vec3(0, this->omega.z * aileronradius, 0));
 
-	Quaternion liftl = anl * rho * aileronarea * fabs(vl.dot(anl)) * (vl.dot(anl));
-	Quaternion liftr = anr * rho * aileronarea * fabs(vr.dot(anr)) * (vr.dot(anr));
+	vec3 liftl = anl * rho * aileronarea * (float) fabs(dot(vl, anl)) * (dot(vl, anl));
+	vec3 liftr = anr * rho * aileronarea * (float) fabs(dot(vr, anr)) * (dot(vr, anr));
 
-	Quaternion lt = liftl.cross(facing.transform(Quaternion(-aileronradius, 0, 0)));
-	Quaternion rt = liftr.cross(facing.transform(Quaternion(aileronradius, 0, 0)));
+	vec3 lt = cross(liftl, (facing * (vec3(-aileronradius, 0, 0))));
+	vec3 rt = cross(liftr, (facing * (vec3(aileronradius, 0, 0))));
 
-	Quaternion torque = lt + rt;
-	return torque.dot(facing.transform(Quaternion(0, 0, 1)));
+	vec3 torque = lt + rt;
+	return dot(torque, facing * (vec3(0, 0, 1)));
 }
 
 float Aircraft::tElevator() {
 	float effect = -up * minelevator + -down * maxelevator;
-	Quaternion elangl(-effect, Quaternion(1, 0, 0));
+	quat elangl = angleAxis(-effect, vec3(1, 0, 0));
 
-	Quaternion en = facing.transform(elangl.transform(Quaternion(0, 1, 0)));
+	vec3 en = facing * (elangl * (vec3(0, 1, 0)));
 
-	Quaternion v = this->velocity * -1.0f
-		+ facing.transform(Quaternion(0, omega.x * elevatorradius, 0));
+	vec3 v = this->velocity * -1.0f
+		+ facing * (vec3(0, omega.x * elevatorradius, 0));
 
-	Quaternion lift = en * rho * elevatorarea * fabs(v.dot(en)) * (v.dot(en));
+	vec3 lift = en * rho * elevatorarea * (float) fabs(dot(v, en)) * (dot(v, en));
 
-	Quaternion et = lift.cross(facing.transform(Quaternion(0, 0, elevatorradius)));
+	vec3 et = cross(lift, (facing * (vec3(0, 0, elevatorradius))));
 
-	return et.dot(facing.transform(Quaternion(1, 0, 0)));
+	return dot(et, (facing * (vec3(1, 0, 0))));
 }
 
 float Aircraft::tRudder() {
-	Quaternion rn = facing.transform(Quaternion(1, 0, 0));
+	vec3 rn = facing * (vec3(1, 0, 0));
 
-	Quaternion v = this->velocity * -1.0f
-		+ facing.transform(Quaternion(omega.y * rudderradius, 0, 0)) *
+	vec3 v = this->velocity * -1.0f
+		+ facing * (vec3(omega.y * rudderradius, 0, 0)) *
 			rudderdampcoeff;
 
-	Quaternion lift = rn * rho * rudderarea * fabs(v.dot(rn)) * (v.dot(rn));
+	vec3 lift = rn * rho * rudderarea * (float) fabs(dot(v, rn)) * (dot(v, rn));
 
-	Quaternion rt = lift.cross(facing.transform(Quaternion(0, 0, rudderradius)));
+	vec3 rt = cross(lift, facing * (vec3(0, 0, rudderradius)));
 
-	return rt.dot(facing.transform(Quaternion(0, 1, 0)));
+	return dot(rt, facing * (vec3(0, 1, 0)));
 }
 

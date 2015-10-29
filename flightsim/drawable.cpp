@@ -1,5 +1,8 @@
 #include "drawable.hpp"
 #include "quaternion.hpp"
+#include "windowinfo.hpp"
+
+#include "glmheaders.hpp"
 
 Drawable::Drawable() {
 	next = NULL;	//link to a separate item
@@ -113,3 +116,12 @@ void DrawableGroup::draw(sf::RenderWindow &window){
 		}
 	}
 }
+
+sf::Vector2f getScreenPos(vec3 v){
+	if (v.z==0)
+		return sf::Vector2f(NAN, NAN);
+	return sf::Vector2f(
+		ratio*(screenwidth/2.0)*v.x/v.z + (screenwidth/2.0),
+		-ratio*(screenwidth/2.0)*v.y/v.z + (screenheight/2.0) );
+}
+

@@ -6,6 +6,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
+#include "glmheaders.hpp"
 
 int fov=90;
 float ratio=std::tan(fov/2.0);
@@ -115,10 +116,9 @@ int main()
 		update_list(objects, frame.asSeconds());	//can add time clocking later, right now simulation time is set to frame speed
 		updateMovTerrain(aircraft->pos);
 		
-		camerapos = aircraft->pos - aircraft->facing.transform(
-			Quaternion(0, 0, 5));
-		camerarotation = aircraft->facing.inverse();
-		camerarotationinverse = aircraft->facing;
+		camerapos = Quaternion(aircraft->pos - aircraft->facing * vec3(0, 0, 5));
+		camerarotation = Quaternion(inverse(aircraft->facing));
+		camerarotationinverse = Quaternion(aircraft->facing);
 
 		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
 		

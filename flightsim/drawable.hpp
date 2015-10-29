@@ -3,6 +3,7 @@
 
 #include <SFML/Window.hpp>
 
+#include "glmheaders.hpp"
 #include "quaternion.hpp"
 
 class Drawable{
@@ -48,8 +49,7 @@ class DrawableGroup: public Drawable
 		void draw(sf::RenderWindow &window);
 };
 
-
-
+sf::Vector2f getScreenPos(vec3 q);
 
 #endif
 

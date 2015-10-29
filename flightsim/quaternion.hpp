@@ -6,6 +6,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "glmheaders.hpp"
+
 class Quaternion{
 	public:
 		float w, x, y, z;
@@ -15,6 +17,9 @@ class Quaternion{
 		Quaternion(float nx, float ny, float nz);
 		
 		Quaternion(float nw, float nx, float ny, float nz);
+
+		Quaternion(vec3 v);
+		Quaternion(quat q);
 
 		// Creates a new quaternion with the given angle and axis
 		Quaternion(float rot, Quaternion axis) ;
