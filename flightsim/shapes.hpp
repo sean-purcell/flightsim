@@ -4,64 +4,63 @@
 #include <SFML/Graphics.hpp>
 
 #include "drawable.hpp"
-#include "quaternion.hpp"
+#include "glmheaders.hpp"
 
 class Sphere: public Drawable
 {
 	public:
-		Quaternion pos;
+		vec3 pos;
 		sf::Color color;
 		
-		Sphere(Quaternion _pos, float _radius, sf::Color _color);
+		Sphere(vec3 _pos, float _radius, sf::Color _color);
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		void predraw(vec3 camerapos, quat camerarotation);
 		
 		void draw(sf::RenderWindow &window);
 		
 	private:
 		float radius;
 		float render_radius;
-		Quaternion draw_pos;
+		vec3 draw_pos;
 		sf::CircleShape shape;
 };
 
 class Line: public Drawable
 {
 	public:
-		Quaternion start, end;
+		vec3 start, end;
 		sf::Color color;
 		
-		Line(Quaternion _start, Quaternion _end, sf::Color _color);
+		Line(vec3 _start, vec3 _end, sf::Color _color);
 
-		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		void predraw(vec3 camerapos, quat camerarotation);
 		
 		void draw(sf::RenderWindow &window);
 		
 	private:
 		sf::Vertex vertices[2];
-		Quaternion drawStart, drawEnd;
+		vec3 drawStart, drawEnd;
 	
 };
 
 class Triangle: public Drawable
 {
 	public:
-		Quaternion a, b, c;
+		vec3 a, b, c;
 		sf::Color color;
 		
 		Triangle();
-		Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color);
+		Triangle(vec3 _a, vec3 _b, vec3 _c, sf::Color _color);
 
-		Quaternion getNormal();
+		vec3 getNormal();
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		void predraw(vec3 camerapos, quat camerarotation);
 		
 		void draw(sf::RenderWindow &window);
 		
 	private:
 		sf::ConvexShape shape;
-		Quaternion a_draw, b_draw, c_draw;
-	
+		vec3 a_draw, b_draw, c_draw;	
 };
 
 #endif

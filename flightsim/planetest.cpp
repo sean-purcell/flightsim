@@ -36,12 +36,12 @@ void update_list(Drawable* &start, float dt){
 	}
 }
 		
-void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+void predraw_list(Drawable* &start, vec3 camerapos, quat camerarotation){
 	Drawable* iter = start;
 	int length=0;
 
 	while (iter!=NULL){
-		iter->predraw(camerapos, camerarotation, camerarotationinverse);
+		iter->predraw(camerapos, camerarotation);
 		iter = iter->next;
 		length++;
 	}
@@ -83,10 +83,8 @@ int main()
 
 	objects->insert(terrain);
 		
-	Quaternion camerapos(0, 0, 0, 0);
-	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
-	Quaternion camerarotationinverse;
-	Quaternion temprotation(0, 0, 0, 0);
+	vec3 camerapos(0, 0, 0);
+	quat camerarotation(1, 0, 0, 0);
 	sf::Mouse::setPosition(sf::Vector2i(screenwidth/2, screenheight/2),window);
 
 	sf::Clock gameClock;
@@ -102,8 +100,6 @@ int main()
 			}
 		}
 		
-		camerarotation.normalize();
-		
 		left  = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		right = (float) sf::Keyboard::isKeyPressed(sf::Keyboard::D);
 		up	= (float) sf::Keyboard::isKeyPressed(sf::Keyboard::W);
@@ -116,11 +112,10 @@ int main()
 		update_list(objects, frame.asSeconds());	//can add time clocking later, right now simulation time is set to frame speed
 		updateMovTerrain(aircraft->pos);
 		
-		camerapos = Quaternion(aircraft->pos - aircraft->facing * vec3(0, 0, 5));
-		camerarotation = Quaternion(inverse(aircraft->facing));
-		camerarotationinverse = Quaternion(aircraft->facing);
+		camerapos = aircraft->pos - aircraft->facing * vec3(0, 0, 5);
+		camerarotation = inverse(aircraft->facing);
 
-		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
+		predraw_list(objects, camerapos, camerarotation);
 		
 		draw_list(objects, window);
 		

@@ -4,9 +4,9 @@
 #include "drawable.hpp"
 #include "windowinfo.hpp"
 
-Quaternion GLOBAL_LIGHT_DIRECTION = Quaternion(0, 0, 1, 0.4).normalized();
+vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.4));
 
-Sphere::Sphere(Quaternion _pos, float _radius, sf::Color _color):
+Sphere::Sphere(vec3 _pos, float _radius, sf::Color _color):
 	Drawable()
 	{
 	pos = _pos;
@@ -14,8 +14,8 @@ Sphere::Sphere(Quaternion _pos, float _radius, sf::Color _color):
 	color = _color;
 }
 
-void Sphere::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
-	draw_pos = camerarotation * ((pos-camerapos)* camerarotationinverse);
+void Sphere::predraw(vec3 camerapos, quat camerarotation){	//
+	draw_pos = camerarotation * (pos - camerapos);
 	
 	distanceFromCamera = draw_pos.z;
 	
@@ -28,7 +28,7 @@ void Sphere::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion
 	else
 		shape.setRadius(render_radius);
 		
-	shape.setPosition(draw_pos.getScreenPos()+sf::Vector2f(-render_radius,-render_radius));
+	shape.setPosition(getScreenPos(draw_pos)+sf::Vector2f(-render_radius,-render_radius));
 	//std::cout<<"radius:"<<render_radius<<std::endl;
 }
 
@@ -36,7 +36,7 @@ void Sphere::draw(sf::RenderWindow &window){
 	window.draw(shape);
 }
 
-Line::Line(Quaternion _start, Quaternion _end, sf::Color _color):
+Line::Line(vec3 _start, vec3 _end, sf::Color _color):
 	Drawable()
 	{
 	start = _start;
@@ -44,11 +44,9 @@ Line::Line(Quaternion _start, Quaternion _end, sf::Color _color):
 	color = _color;
 }
 
-void Line::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){	//
-	drawStart = camerarotation * ((start-camerapos)* camerarotationinverse);
-	drawEnd = camerarotation * ((end-camerapos)* camerarotationinverse);
-
-
+void Line::predraw(vec3 camerapos, quat camerarotation){	//
+	drawStart = camerarotation * (start-camerapos);
+	drawEnd = camerarotation * (end-camerapos);
 	
 	vertices[0].color = color;
 	vertices[1].color = color;
@@ -62,11 +60,10 @@ void Line::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion c
 		shouldDraw = true;
 	}
 
-	distanceFromCamera = ((drawStart+drawEnd)/2).z;
+	distanceFromCamera = ((drawStart+drawEnd)/2.f).z;
 	
-	vertices[0].position = drawStart.getScreenPos();
-
-	vertices[1].position = drawEnd.getScreenPos();
+	vertices[0].position = getScreenPos(drawStart);
+	vertices[1].position = getScreenPos(drawEnd);
 
 					
 	//std::cout<<"radius:"<<render_radius<<std::endl;
@@ -79,13 +76,13 @@ void Line::draw(sf::RenderWindow &window){
 Triangle::Triangle()
 : Drawable()
 {
-	a = Quaternion(0, 0, 0);
-	b = Quaternion(0, 0, 0);
-	c = Quaternion(0, 0, 0);
+	a = vec3(0, 0, 0);
+	b = vec3(0, 0, 0);
+	c = vec3(0, 0, 0);
 	color = sf::Color(0, 0, 0);
 }
 
-Triangle::Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color): Drawable()
+Triangle::Triangle(vec3 _a, vec3 _b, vec3 _c, sf::Color _color): Drawable()
 {
 	a = _a;
 	b = _b;
@@ -93,15 +90,15 @@ Triangle::Triangle(Quaternion _a, Quaternion _b, Quaternion _c, sf::Color _color
 	color = _color;
 }
 
-Quaternion Triangle::getNormal(){
-	return ((b-a).cross(c-a)).normalized();
+vec3 Triangle::getNormal(){
+	return normalize(cross(b-a, c-a));
 }
 
-void Triangle::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+void Triangle::predraw(vec3 camerapos, quat camerarotation){
 #define eq(a, b) (fabs(a.x-b.x)<1e-3 && fabs(a.y-b.y)<1e-3)
-	a_draw = camerarotation * ((a-camerapos)* camerarotationinverse);
-	b_draw = camerarotation * ((b-camerapos)* camerarotationinverse);
-	c_draw = camerarotation * ((c-camerapos)* camerarotationinverse);
+	a_draw = camerarotation * (a-camerapos);
+	b_draw = camerarotation * (b-camerapos);
+	c_draw = camerarotation * (c-camerapos);
 
 	if ( (a_draw.z<0) and (b_draw.z<0) and (c_draw.z<0) ) {
 		shouldDraw = false;
@@ -109,15 +106,15 @@ void Triangle::predraw(Quaternion camerapos, Quaternion camerarotation, Quaterni
 	} else
 		shouldDraw = true;
 		
-	distanceFromCamera = ((a_draw + b_draw + c_draw)/3).z;
+	distanceFromCamera = ((a_draw + b_draw + c_draw)/3.f).z;
 	
 	sf::Vector2f
-		a0 = clipLineToScreen(a_draw,c_draw).getScreenPos(),
-		a1 = clipLineToScreen(a_draw,b_draw).getScreenPos(),
-		b0 = clipLineToScreen(b_draw,a_draw).getScreenPos(),
-		b1 = clipLineToScreen(b_draw,c_draw).getScreenPos(),
-		c0 = clipLineToScreen(c_draw,b_draw).getScreenPos(),
-		c1 = clipLineToScreen(c_draw,a_draw).getScreenPos();
+		a0 = getScreenPos(clipLineToScreen(a_draw,c_draw)),
+		a1 = getScreenPos(clipLineToScreen(a_draw,b_draw)),
+		b0 = getScreenPos(clipLineToScreen(b_draw,a_draw)),
+		b1 = getScreenPos(clipLineToScreen(b_draw,c_draw)),
+		c0 = getScreenPos(clipLineToScreen(c_draw,b_draw)),
+		c1 = getScreenPos(clipLineToScreen(c_draw,a_draw));
 
 	if(eq(a0, a1) && eq(b0, b1) && eq(c0, c1)) {
 		shape.setPointCount(3);
@@ -134,7 +131,7 @@ void Triangle::predraw(Quaternion camerapos, Quaternion camerarotation, Quaterni
 		shape.setPoint(5, a0);
 	}
 	
-	int lmao = 255*(0.4+0.6*fabs(GLOBAL_LIGHT_DIRECTION.dot(getNormal())));
+	int lmao = 255*(0.4+0.6*fabs(dot(GLOBAL_LIGHT_DIRECTION, getNormal())));
 	shape.setFillColor(color*sf::Color(lmao, lmao, lmao));
 #undef eq
 }

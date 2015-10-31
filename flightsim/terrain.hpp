@@ -34,7 +34,6 @@ class TerrainChunk : public DrawableGroup {
 	private:
 		// the additional value at the end is to allow getHeight to
 		// access outside the bounds and function properly
-		float heightmap[CHUNKCOUNT+2][CHUNKCOUNT+2];
 		Triangle triangles[CHUNKCOUNT*CHUNKCOUNT*2];
 		std::pair<float, int> dists[CHUNKCOUNT * CHUNKCOUNT];
 		Terrain &t;
@@ -46,7 +45,7 @@ class TerrainChunk : public DrawableGroup {
 		TerrainChunk(int x, int z, Terrain &t);
 		~TerrainChunk();
 
-		void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		void predraw(vec3 camerapos, quat camerarotation);
 };
 
 class ChunkManager{

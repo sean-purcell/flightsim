@@ -1,10 +1,9 @@
 #ifndef DRAWABLE_HPP
 #define DRAWABLE_HPP
 
-#include <SFML/Window.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 #include "glmheaders.hpp"
-#include "quaternion.hpp"
 
 class Drawable{
 	public:
@@ -13,8 +12,8 @@ class Drawable{
 		bool shouldRemove;
 		Drawable * next;
 		Drawable * child;
-		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){};
-		virtual void draw(sf::RenderWindow &window){};
+		virtual void predraw(vec3 camerapos, quat camerarotation);
+		virtual void draw(sf::RenderWindow &window);
 		
 		Drawable();
 		
@@ -31,11 +30,6 @@ Drawable* mergeSort(Drawable*);
 Drawable* merge(Drawable*, Drawable*);
 Drawable* split(Drawable*);
 
-
-
-
-
-
 class DrawableGroup: public Drawable
 {
 	public:
@@ -44,12 +38,14 @@ class DrawableGroup: public Drawable
 		virtual ~DrawableGroup();
 		
 		void insertInto(Drawable* item);
-		virtual void predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse);
+		virtual void predraw(vec3 camerapos, quat camerarotation);
 		
 		void draw(sf::RenderWindow &window);
 };
 
 sf::Vector2f getScreenPos(vec3 q);
+
+vec3 clipLineToScreen(vec3 A, vec3 B);
 
 #endif
 

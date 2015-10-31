@@ -1,5 +1,4 @@
 #include "drawable.hpp"
-#include "quaternion.hpp"
 #include "windowinfo.hpp"
 
 #include "glmheaders.hpp"
@@ -22,7 +21,13 @@ void Drawable::insert(Drawable* item){
 	iter->next = item;
 }
 
+void Drawable::predraw(vec3 camerapos, quat camerarotation) {
+}
+
 void Drawable::update(float dt){
+}
+
+void Drawable::draw(sf::RenderWindow &window) {
 }
 
 Drawable* mergeSort(Drawable *start) {
@@ -91,12 +96,12 @@ void DrawableGroup::insertInto(Drawable *item) {
 	child = item;
 }
 
-void DrawableGroup::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+void DrawableGroup::predraw(vec3 camerapos, quat camerarotation){
 	shouldDraw = false;
 	Drawable *iter = child;
 	int count = 0;
 	while (iter != NULL){
-		iter->predraw(camerapos, camerarotation, camerarotationinverse);
+		iter->predraw(camerapos, camerarotation);
 		shouldDraw = shouldDraw || iter->shouldDraw;
 		distanceFromCamera += iter->distanceFromCamera;
 		iter = iter->next;
@@ -123,5 +128,17 @@ sf::Vector2f getScreenPos(vec3 v){
 	return sf::Vector2f(
 		ratio*(screenwidth/2.0)*v.x/v.z + (screenwidth/2.0),
 		-ratio*(screenwidth/2.0)*v.y/v.z + (screenheight/2.0) );
+}
+
+vec3 clipLineToScreen(vec3 A, vec3 B){
+	// if A is z-positive, returns z
+	// if A is z-negative, returns a point on the line connecting A and B which is just in front of the camera
+	if (A.z>0) 
+		return A;
+	else if(B.z > 0) {
+		return A + (B-A)*((0.0001f-A.z)/(B.z-A.z));
+	} else {
+		return vec3(NAN, NAN, NAN);
+	}
 }
 

@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 #include "terrain.hpp"
 #include "drawable.hpp"
@@ -52,76 +53,6 @@ float Terrain::getHeight(float x, float y){
 
 Drawable* Terrain::getChunk(IntPair key){
 	return new TerrainChunk(key.first, key.second, *this);
-	//Returns a pointer to a linked list of Triangle objects that form a CHUNK of terrain that extend from (x*CHUNKWIDTH, z*CHUNKWIDTH) to ((x+1)*CHUNKWIDTH, (z+1)*CHUNKWIDTH)
-	int x = key.first;
-	int z = key.second; 
-
-	Drawable* head = new Drawable();
-	Drawable* iter = head;
-
-	float array[CHUNKCOUNT+1][CHUNKCOUNT+1];
-	for (int i=0; i<CHUNKCOUNT+1; i++){
-		for (int j=0; j<CHUNKCOUNT+1; j++){
-			//array[i][j]=fmax(noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT),0.0);
-			//array[i][j]=noise.GetHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
-			array[i][j] = getHeight((float)(i+CHUNKCOUNT*x)*CHUNKWIDTH/CHUNKCOUNT, (float)(j+CHUNKCOUNT*z)*CHUNKWIDTH/CHUNKCOUNT);
-		}
-	}
-
-	/*for (int i=0; i<CHUNKCOUNT; i++){
-		for (int j=0; j<CHUNKCOUNT; j++){
-			array[i][j]=sqrt(fabs(array[i][j]));
-		}
-	}*/
-	
-	//sf::Color color(192 + std::rand() % 64, 192 + std::rand() % 64, 192 + std::rand() % 64);
-	sf::Color color = TERRAINCOLOR;
-
-	Quaternion start = Quaternion(0, x*CHUNKWIDTH, SEALEVEL, z*CHUNKWIDTH);
-
-	Quaternion q1, q2, q3, q4;
-	
-	for (int i=0; i<CHUNKCOUNT; i++){
-		for (int j=0; j<CHUNKCOUNT; j++){
-			
-			q1 = Quaternion(0, (float)i*CHUNKWIDTH/CHUNKCOUNT, array[i][j], (float)j*CHUNKWIDTH/CHUNKCOUNT);
-			q2 = Quaternion(0, (float)(i+1)*CHUNKWIDTH/CHUNKCOUNT, array[i+1][j], (float)j*CHUNKWIDTH/CHUNKCOUNT);
-			q3 = Quaternion(0, (float)i*CHUNKWIDTH/CHUNKCOUNT, array[i][j+1], (float)(j+1)*CHUNKWIDTH/CHUNKCOUNT);
-			q4 = Quaternion(0, (float)(i+1)*CHUNKWIDTH/CHUNKCOUNT, array[i+1][j+1], (float)(j+1)*CHUNKWIDTH/CHUNKCOUNT);
-			
-			q1=q1+start;
-			q2=q2+start;
-			q3=q3+start;
-			q4=q4+start;
-			
-			if (srandBit(i+x,j+z)){
-				if ((q1.y != q2.y) || (q2.y != q3.y)){
-					iter->next = new Triangle(q1, q2, q3, color);
-					iter = iter->next;
-				}
-				if ((q4.y != q2.y) || (q2.y != q3.y)){
-					iter->next = new Triangle(q4, q2, q3, color);
-					iter = iter->next;
-				}
-
-			}
-			else{
-				if ((q1.y != q4.y) || (q4.y != q3.y)){
-					iter->next = new Triangle(q1, q4, q3, color);
-					iter = iter->next;
-				}
-				if ((q1.y != q2.y) || (q2.y != q4.y)){
-					iter->next = new Triangle(q1, q4, q2, color);				
-					iter = iter->next;
-				}
-			}
-		}
-	}
-	
-	Drawable* ret = head->next;
-	head->next = 0;
-	delete head;
-	return (Drawable*)(new DrawableGroup(ret));
 }
 
 float interp(float a, float b, float r) {
@@ -131,22 +62,6 @@ float interp(float a, float b, float r) {
 float TerrainChunk::getHeight(float x, float y) {
 	return t.getHeight(x * CHUNKRATIO + this->x * CHUNKWIDTH,
 		y * CHUNKRATIO + this->z * CHUNKWIDTH);
-	int x0 = (int) x;
-	int y0 = (int) y;
-	int x1 = x + 1;
-	int y1 = y + 1;
-
-	float xfrac = x - x0;
-	float yfrac = y - y0;
-
-	float x0y0 = heightmap[x0][y0];
-	float x1y0 = heightmap[x1][y0];
-	float x0y1 = heightmap[x0][y1];
-	float x1y1 = heightmap[x1][y1];
-
-	return interp(interp(x0y0, x1y0, xfrac),
-				  interp(x1y0, x1y1, xfrac),
-				  yfrac);
 }
 
 TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t)
@@ -155,20 +70,6 @@ TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t)
 	z(_z),
 	t(_t)
 {
-	for(int i = 0; i <= CHUNKCOUNT; i++) {
-		for(int j = 0; j <= CHUNKCOUNT; j++) {
-			heightmap[i][j] = t.getHeight(
-				x * CHUNKWIDTH + i * CHUNKRATIO,
-				z * CHUNKWIDTH + j * CHUNKRATIO);
-		}
-	}
-	for(int i = 0; i <= CHUNKCOUNT; i++) {
-		heightmap[i][CHUNKCOUNT+1] = heightmap[i][CHUNKCOUNT];
-	}
-	for(int i = 0; i <= CHUNKCOUNT; i++) {
-		heightmap[CHUNKCOUNT+1][i] = heightmap[CHUNKCOUNT][i];
-	}
-	heightmap[CHUNKCOUNT+1][CHUNKCOUNT+1] = heightmap[CHUNKCOUNT][CHUNKCOUNT];
 }
 
 TerrainChunk::~TerrainChunk() {
@@ -183,7 +84,7 @@ float min(float a, float b) {
 	return a < b ? a : b;
 }
 
-void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse) {
+void TerrainChunk::predraw(vec3 camerapos, quat camerarotation) {
 	shouldDraw = true;
 	float dist;
 	float _x = camerapos.x;
@@ -213,8 +114,6 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 	//int TCOUNT = CHUNKCOUNT;
 	TCOUNT = TCOUNT < 1 ? 1 : TCOUNT;
 
-	//std::cout << "x: " << x << ", z: " << z << ", TCOUNT: " << TCOUNT << std::endl;
-
 	float TRATIO = CHUNKWIDTH / TCOUNT;
 	float HRATIO = CHUNKCOUNT / (float) TCOUNT;
 
@@ -231,14 +130,13 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 
 
 	sort(dists, dists + TCOUNT * TCOUNT, std::greater<std::pair<float,int> >());
-	Quaternion start = Quaternion(x * CHUNKWIDTH, SEALEVEL, z * CHUNKWIDTH);
-	Quaternion q1, q2, q3, q4;
+	vec3 start = vec3(x * CHUNKWIDTH, SEALEVEL, z * CHUNKWIDTH);
+	vec3 c1, c2, c3, c4;
 
 	for(int k = 0; k < TCOUNT * TCOUNT; k++) {
 		int idx = dists[k].second;
 		int _x = idx / TCOUNT;
 		int _z = idx % TCOUNT;
-		//std::cout << k << ": " << _x << ", " << _z << std::endl;
 
 		float x0 = _x * TRATIO;
 		float x1 = (_x + 1) * TRATIO;
@@ -250,30 +148,30 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 		float x1z0 = getHeight((_x+1) * HRATIO, (_z+0) * HRATIO);
 		float x1z1 = getHeight((_x+1) * HRATIO, (_z+1) * HRATIO);
 
-		q1 = Quaternion(x0, x0z0, z0);
-		q2 = Quaternion(x1, x1z0, z0);
-		q3 = Quaternion(x0, x0z1, z1);
-		q4 = Quaternion(x1, x1z1, z1);
+		c1 = vec3(x0, x0z0, z0);
+		c2 = vec3(x1, x1z0, z0);
+		c3 = vec3(x0, x0z1, z1);
+		c4 = vec3(x1, x1z1, z1);
 
-		q1 = q1 + start;
-		q2 = q2 + start;
-		q3 = q3 + start;
-		q4 = q4 + start;
+		c1 = c1 + start;
+		c2 = c2 + start;
+		c3 = c3 + start;
+		c4 = c4 + start;
 
 		if (srandBit(_x+x*TCOUNT,_z+z*TCOUNT)) {
-			triangles[2*k  ].a = q1;
-			triangles[2*k  ].b = q2;
-			triangles[2*k  ].c = q3;
-			triangles[2*k+1].a = q4;
-			triangles[2*k+1].b = q2;
-			triangles[2*k+1].c = q3;
+			triangles[2*k  ].a = c1;
+			triangles[2*k  ].b = c2;
+			triangles[2*k  ].c = c3;
+			triangles[2*k+1].a = c4;
+			triangles[2*k+1].b = c2;
+			triangles[2*k+1].c = c3;
 		} else {
-			triangles[2*k  ].a = q1;
-			triangles[2*k  ].b = q4;
-			triangles[2*k  ].c = q3;
-			triangles[2*k+1].a = q1;
-			triangles[2*k+1].b = q4;
-			triangles[2*k+1].c = q2;
+			triangles[2*k  ].a = c1;
+			triangles[2*k  ].b = c4;
+			triangles[2*k  ].c = c3;
+			triangles[2*k+1].a = c1;
+			triangles[2*k+1].b = c4;
+			triangles[2*k+1].c = c2;
 		}
 
 		triangles[2*k  ].color = TERRAINCOLOR;
@@ -286,8 +184,8 @@ void TerrainChunk::predraw(Quaternion camerapos, Quaternion camerarotation, Quat
 			triangles[2 * k + 1].next = NULL;
 		}
 
-		triangles[2 * k].predraw(camerapos, camerarotation, camerarotationinverse);
-		triangles[2 * k+1].predraw(camerapos, camerarotation, camerarotationinverse);
+		triangles[2 * k].predraw(camerapos, camerarotation);
+		triangles[2 * k+1].predraw(camerapos, camerarotation);
 	}
 }
 

@@ -54,12 +54,12 @@ void update_list(Drawable** start, float dt){
 	std::cout<<"length:"<<length<<std::endl;
 }
 		 
-void predraw_list(Drawable* &start, Quaternion camerapos, Quaternion camerarotation, Quaternion camerarotationinverse){
+void predraw_list(Drawable* &start, vec3 camerapos, quat camerarotation){
 	Drawable* iter = start;
 	int length=0;
  
 	while (iter!=NULL){
-		iter->predraw(camerapos, camerarotation, camerarotationinverse);
+		iter->predraw(camerapos, camerarotation);
 		iter = iter->next;
 		length++;
 	}
@@ -112,11 +112,10 @@ int main()
 	//objects->insert(new Triangle(Quaternion(2,8,2), Quaternion(2,2,8), Quaternion(8,2,2), sf::Color(255,255,0)));
 	//objects->insert(new Triangle(Quaternion(12,8,2), Quaternion(24,-23,58), Quaternion(18,22,22), sf::Color(255,100,100)));
 	//objects->insert(new Triangle(Quaternion(0,-8,59), Quaternion(0,-23,58), Quaternion(0,-22,22), sf::Color(100,100,200)));
-	Quaternion camerapos(0,0,0,0);
-	Quaternion cameravel(0,0,0,0);
-	Quaternion camerarotation (Quaternion(1,0,0,0).normalized());
-	Quaternion camerarotationinverse;
-	Quaternion temprotation(0,0,0,0);
+	vec3 camerapos(0,0,0);
+	vec3 cameravel(0,0,0);
+	quat camerarotation (1,0,0,0);
+	quat temprotation(0,0,0,0);
 	 
 	int oldMouseX = screenwidth/2;
 	int oldMouseY = screenheight/2;
@@ -143,7 +142,7 @@ int main()
 				 
 				if ((dMouseX!=0) or (dMouseY!=0)){
 					//std::cout<<dMouseX<<" "<<dMouseY<<std::endl;
-					temprotation = Quaternion(1, -0.003*dMouseY, -0.003*dMouseX, 0).normalized();
+					temprotation = normalize(quat(1, -0.003*dMouseY, -0.003*dMouseX, 0));
 					camerarotation = temprotation * camerarotation;
 					 
 					oldMouseX+=dMouseX;
@@ -154,15 +153,13 @@ int main()
 			}
 		}
 		 
-		camerarotation.normalize();
-		camerarotationinverse = camerarotation.inverse();
-		camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
-		camerapos = camerapos + camerarotationinverse * (Quaternion(0,0,0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
-		camerapos = camerapos + camerarotationinverse * (Quaternion(0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D), 0, 0) * camerarotation);
-		camerapos = camerapos + camerarotationinverse * (Quaternion(0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A), 0, 0) * camerarotation);
+		camerapos = camerapos + (vec3(0,0, 10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::W)) * camerarotation);
+		camerapos = camerapos + (vec3(0,0, -10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::S)) * camerarotation);
+		camerapos = camerapos + (vec3(10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::D), 0, 0) * camerarotation);
+		camerapos = camerapos + (vec3(-10.11 * (float)sf::Keyboard::isKeyPressed(sf::Keyboard::A), 0, 0) * camerarotation);
 		 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-			cameravel = cameravel * 0.95;
+			cameravel = cameravel * 0.95f;
 		 
 		//dcamerapos.x=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::D)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 		//dcamerapos.y=(float)sf::Keyboard::isKeyPressed(sf::Keyboard::Z)-(float)sf::Keyboard::isKeyPressed(sf::Keyboard::X);
@@ -173,10 +170,10 @@ int main()
 		camerapos = camerapos + cameravel;
 		 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-			camerarotation=Quaternion(1, 0, 0 , 0.01).normalized()*camerarotation;
+			camerarotation=normalize(quat(1, 0, 0 , 0.01))*camerarotation;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)){
-			camerarotation=Quaternion(1, 0, 0, -0.01).normalized()*camerarotation;
+			camerarotation=normalize(quat(1, 0, 0, -0.01))*camerarotation;
 		}
 		 
 		window.clear(sf::Color(100, 100, 240));
@@ -186,7 +183,7 @@ int main()
 
 		update_list(&objects, 1);
 		
-		predraw_list(objects, camerapos, camerarotation, camerarotationinverse);
+		predraw_list(objects, camerapos, camerarotation);
 		 
 		draw_list(objects, window);
 		 
