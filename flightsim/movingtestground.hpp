@@ -39,7 +39,7 @@ Drawable *initializeTestTerrain() {
 	return iter;
 }
 
-void updateMovTerrain(Quaternion pos) {
+void updateMovTerrain(vec3 pos) {
 	int x = ((int) pos.x) / SCALE;
 	int z = ((int) pos.z) / SCALE;
 	for(int i = -MOVGRIDWID/2; i < MOVGRIDWID/2; i++) {

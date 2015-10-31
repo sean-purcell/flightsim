@@ -14,8 +14,6 @@ int screenwidth=800;
 int screenheight=600;
 sf::Vector2i size(screenwidth, screenheight);
  
-#include "quaternion.hpp"
- 
 #include "drawable.hpp"
 #include "shapes.hpp"
  

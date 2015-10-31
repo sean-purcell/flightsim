@@ -3,7 +3,6 @@
 #include "glmheaders.hpp"
 
 #include "aircraft.hpp"
-#include "quaternion.hpp"
 #include "windowinfo.hpp"
 #include "drawable.hpp"
 #include "util.hpp"
