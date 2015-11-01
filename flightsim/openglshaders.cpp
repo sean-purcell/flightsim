@@ -19,15 +19,16 @@
 // Shader sources
 const GLchar* vertexSource =
     VERSION
-    INV "vec2 position;"
+    INV "vec3 position;"
     INV "vec3 color;"
+    INV "float s;"
     OUTV "vec3 Color;"
     "uniform mat4 trans;"
     "uniform mat4 proj;"
     "uniform mat4 view;"
     "void main() {"
     "   Color = color;"
-    "   gl_Position = proj * view * trans * vec4(position, 0, 1.0);"
+    "   gl_Position = proj * view * trans * vec4(position, 1.0);"
     "}";
 
 const GLchar* fragmentSource =
@@ -35,6 +36,6 @@ const GLchar* fragmentSource =
     INF "vec3 Color;"
     OUTF "vec4 outColor;"
     "void main() {"
-    "   outColor = vec4(Color, 1.0);"
+    "    outColor = vec4(Color, (3 - Color.x - Color.y - Color.z) / 3);"
     "}";
 
