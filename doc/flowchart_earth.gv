@@ -1,0 +1,63 @@
+digraph flowchart_sim
+{
+	fontname = "Helvetica"
+	fontsize = 8
+	
+	node 
+	[
+		fontname = "Helvetica"
+		fontsize = 8
+		shape = "record"
+	]
+
+	edge 
+	[
+		fontname = "Helvetica"
+		fontsize = 8
+	]
+	
+	launchpad
+	[
+		label = "{launchpad.ino|
+			read accelerometer at\l
+			regular intervals\l}"
+	]
+	
+	serialreader
+	[
+		label = "{serialreader.cpp|
+			poll serial port for\l
+			raw accelerometer data\l}"
+	]
+	
+	angler
+	[
+		label = "{angler.cpp|
+			interpret raw acceleration;\l
+			do trig stuffs;\l
+			return angular accelerations\l
+			for pitch and roll based on\l
+			joystick orientation\l}"
+	]
+	
+	javarobot
+	[
+		label = "{javarobot.java|
+			fire vk events\l
+			based on joystick input\l}"
+	]
+	
+	earth
+	[
+		label = "{Google Earth.exe|
+			flight simulator\l
+			will react to vk events\l
+			from javarobot\l}"
+	]
+	
+	launchpad -> serialreader [label = " send accelerometer data\n encoded in bytes"][arrowhead = "none"]
+	serialreader -> angler [label = " send accelerometer\n data as ints"]
+	javarobot -> serialreader [label = " check for input"]
+	earth -> javarobot [arrowhead = "none"]
+
+}
