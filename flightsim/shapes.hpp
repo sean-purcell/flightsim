@@ -14,8 +14,6 @@ class Sphere: public Drawable
 		
 		Sphere(vec3 _pos, float _radius, sf::Color _color);
 		
-		void predraw(vec3 camerapos, quat camerarotation);
-		
 		void draw(sf::RenderWindow &window);
 		
 	private:
@@ -33,8 +31,6 @@ class Line: public Drawable
 		
 		Line(vec3 _start, vec3 _end, sf::Color _color);
 
-		void predraw(vec3 camerapos, quat camerarotation);
-		
 		void draw(sf::RenderWindow &window);
 		
 	private:
@@ -53,8 +49,6 @@ class Triangle: public Drawable
 		Triangle(vec3 _a, vec3 _b, vec3 _c, sf::Color _color);
 
 		vec3 getNormal();
-		
-		void predraw(vec3 camerapos, quat camerarotation);
 		
 		void draw(sf::RenderWindow &window);
 		

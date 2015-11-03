@@ -14,7 +14,7 @@ class Drawable{
 		Drawable * child;
 		virtual void predraw(vec3 camerapos, quat camerarotation);
 		virtual void draw(sf::RenderWindow &window);
-		
+
 		Drawable();
 		
 		virtual ~Drawable();

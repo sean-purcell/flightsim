@@ -6,6 +6,7 @@
 #include "drawable.hpp"
 #include "shapes.hpp"
 #include "simplexnoise.hpp"
+#include "openglheaders.hpp"
 
 typedef std::pair<int, int> IntPair;
 typedef std::map<IntPair, Drawable*> ChunkMap;
@@ -30,22 +31,20 @@ class Terrain{
 		Simplex pers;
 };
 
-class TerrainChunk : public DrawableGroup {
+class TerrainChunk : public Drawable {
 	private:
-		// the additional value at the end is to allow getHeight to
-		// access outside the bounds and function properly
-		Triangle triangles[CHUNKCOUNT*CHUNKCOUNT*2];
+		GLuint vbo, ebo;
 		std::pair<float, int> dists[CHUNKCOUNT * CHUNKCOUNT];
 		Terrain &t;
 		int x, z;
 
 		float getHeight(float x, float y);
 
+		void initVertices();
+
 	public:
 		TerrainChunk(int x, int z, Terrain &t);
 		~TerrainChunk();
-
-		void predraw(vec3 camerapos, quat camerarotation);
 };
 
 class ChunkManager{

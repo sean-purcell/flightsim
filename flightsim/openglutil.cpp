@@ -108,3 +108,21 @@ void initProjmatrix() {
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
 }
 
+void initVertexAttribs() {
+	GLint posLoc = glGetAttribLocation(shader, "position");
+	GLint normLoc = glGetAttribLocation(shader, "normal");
+	GLint colourLoc = glGetAttribLocation(shader, "color");
+
+	glEnableVertexAttribArray(posLoc);
+	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)0);
+
+	glEnableVertexAttribArray(normLoc);
+	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)(3 * sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(colourLoc);
+	glVertexAttribPointer(colourLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)(6 * sizeof(GLfloat)));
+}
+

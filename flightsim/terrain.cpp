@@ -29,7 +29,6 @@ int srandBit(int i, int j){
 	return (rand()>(RAND_MAX)/2);
 }
 
-
 sf::Color getColor(int x, int z, int q) {
 	srand((x * 65537 + z) * (q ? 1 : -1));
 	return sf::Color(rand() % 256, rand() % 256, rand() % 256);
@@ -64,129 +63,124 @@ float TerrainChunk::getHeight(float x, float y) {
 		y * CHUNKRATIO + this->z * CHUNKWIDTH);
 }
 
-TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t)
-	: DrawableGroup(&triangles[0]),
+TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t) :
 	x(_x),
 	z(_z),
 	t(_t)
 {
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
 }
 
 TerrainChunk::~TerrainChunk() {
-	for(int i = 0; i < CHUNKCOUNT*CHUNKCOUNT*2; i++) {
-		triangles[i].next = NULL;
-		triangles[i].child = NULL;
-	}
-	child = NULL;
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
 }
 
 float min(float a, float b) {
 	return a < b ? a : b;
 }
 
-void TerrainChunk::predraw(vec3 camerapos, quat camerarotation) {
-	shouldDraw = true;
-	float dist;
-	float _x = camerapos.x;
-	float _y = camerapos.y;
-	float _z = camerapos.z;
+void TerrainChunk::initVertices() {
+	float *heights = new float[(CHUNKCOUNT + 3) *
+		(CHUNKCOUNT + 3)];
+	float *vertices = new float[(3 + 3 + 3) *
+		(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1)];
+	GLshort *indices = new GLshort[CHUNKCOUNT *
+		CHUNKCOUNT * 3 * 2];
 
-	float dx;
-	float dz;
-
-	if(_x >= x * CHUNKWIDTH && _x <= (x+1) * CHUNKWIDTH) {
-		dx = 0;
-	} else {
-		dx = min(fabs(_x - x * CHUNKWIDTH),
-			fabs(_x - (x + 1) * CHUNKWIDTH));
-	}
-	if(_z >= z * CHUNKWIDTH && _z <= (z + 1) * CHUNKWIDTH) {
-		dz = 0;
-	} else {
-		dz = min(fabs(_z - z * CHUNKWIDTH),
-			fabs(_z - (z + 1) * CHUNKWIDTH));
-	}
-
-	dist = sqrt(dx * dx + dz * dz + _y * _y);
-	this->distanceFromCamera = dist;
-
-	int TCOUNT = CHUNKCOUNT - (int) (dist / CHUNKDEGRADEDIST);
-	//int TCOUNT = CHUNKCOUNT;
-	TCOUNT = TCOUNT < 1 ? 1 : TCOUNT;
-
-	float TRATIO = CHUNKWIDTH / TCOUNT;
-	float HRATIO = CHUNKCOUNT / (float) TCOUNT;
-
-	for(int i = 0; i < TCOUNT; i++) {
-		for(int j = 0; j < TCOUNT; j++) {
-			float dx = _x - (x * CHUNKWIDTH + (i + 0.5) * TRATIO);
-			float dz = _z - (z * CHUNKWIDTH + (j + 0.5) * TRATIO);
-			float dy = _y - getHeight((i + 0.5) * TRATIO, (j + 0.5) * TRATIO);
-			dists[i * TCOUNT + j] = std::pair<float, int>(
-				dx * dx + dz * dz + dy * dy,
-				i * TCOUNT + j);
+	for(int i = -1; i <= CHUNKCOUNT + 1; i++) {
+		for(int j = -1; j <= CHUNKCOUNT + 1; j++) {
+			float x0 = i * CHUNKRATIO;
+			float z0 = j * CHUNKRATIO;
+			heights[(i+1) * (CHUNKCOUNT + 3) + j+1] = t.getHeight(
+				x0 + this->x * CHUNKWIDTH,
+				z0 + this->z * CHUNKWIDTH);
 		}
 	}
 
-
-	sort(dists, dists + TCOUNT * TCOUNT, std::greater<std::pair<float,int> >());
+	int idx = 0;
 	vec3 start = vec3(x * CHUNKWIDTH, SEALEVEL, z * CHUNKWIDTH);
-	vec3 c1, c2, c3, c4;
+	for(int i = 0; i <= CHUNKCOUNT; i++) {
+		for(int j = 0; j <= CHUNKCOUNT; j++) {
+			float x0 = i * CHUNKRATIO;
+			float z0 = j * CHUNKRATIO;
 
-	for(int k = 0; k < TCOUNT * TCOUNT; k++) {
-		int idx = dists[k].second;
-		int _x = idx / TCOUNT;
-		int _z = idx % TCOUNT;
+			float height = heights[(i+1) * (CHUNKCOUNT+3)
+				+ (j+1)];
 
-		float x0 = _x * TRATIO;
-		float x1 = (_x + 1) * TRATIO;
-		float z0 = _z * TRATIO;
-		float z1 = (_z + 1) * TRATIO;
+			vec3 v = vec3(x0, height, z0);
 
-		float x0z0 = getHeight((_x+0) * HRATIO, (_z+0) * HRATIO);
-		float x0z1 = getHeight((_x+0) * HRATIO, (_z+1) * HRATIO);
-		float x1z0 = getHeight((_x+1) * HRATIO, (_z+0) * HRATIO);
-		float x1z1 = getHeight((_x+1) * HRATIO, (_z+1) * HRATIO);
+			v = v + start;
 
-		c1 = vec3(x0, x0z0, z0);
-		c2 = vec3(x1, x1z0, z0);
-		c3 = vec3(x0, x0z1, z1);
-		c4 = vec3(x1, x1z1, z1);
+			vertices[idx * 9 + 0] = v.x;
+			vertices[idx * 9 + 1] = v.y;
+			vertices[idx * 9 + 2] = v.z;
 
-		c1 = c1 + start;
-		c2 = c2 + start;
-		c3 = c3 + start;
-		c4 = c4 + start;
+			vec3 norm(0,0,0);
+			int dx[] = {1,-1,0,0};
+			int dz[] = {0,0,-1,1};
 
-		if (srandBit(_x+x*TCOUNT,_z+z*TCOUNT)) {
-			triangles[2*k  ].a = c1;
-			triangles[2*k  ].b = c2;
-			triangles[2*k  ].c = c3;
-			triangles[2*k+1].a = c4;
-			triangles[2*k+1].b = c2;
-			triangles[2*k+1].c = c3;
-		} else {
-			triangles[2*k  ].a = c1;
-			triangles[2*k  ].b = c4;
-			triangles[2*k  ].c = c3;
-			triangles[2*k+1].a = c1;
-			triangles[2*k+1].b = c4;
-			triangles[2*k+1].c = c2;
+			for(int k = 0; k < 4; k++) {
+				vec3 edge(dx[k],
+					heights[(i + dx[k] + 1) * (CHUNKCOUNT+3)
+					+ (j + dz[k] + 1)],
+					dz[k]);
+
+				vec3 up(0, 1, 0);
+
+				norm += cross(cross(edge, up), edge);
+			}
+
+			norm = normalize(norm);
+
+			vertices[idx * 9 + 3] = norm.x;
+			vertices[idx * 9 + 4] = norm.y;
+			vertices[idx * 9 + 5] = norm.z;
+
+			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.r / 256.f;
+			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.g / 256.f;
+			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.b / 256.f;
+
+			idx++;
 		}
-
-		triangles[2*k  ].color = TERRAINCOLOR;
-		triangles[2*k+1].color = TERRAINCOLOR;
-
-		triangles[2 * k].next = &triangles[2 * k + 1];
-		if(k != TCOUNT * TCOUNT - 1) {
-			triangles[2 * k + 1].next = &triangles[2 * k + 2];
-		} else {
-			triangles[2 * k + 1].next = NULL;
-		}
-
-		triangles[2 * k].predraw(camerapos, camerarotation);
-		triangles[2 * k+1].predraw(camerapos, camerarotation);
 	}
+
+	idx = 0;
+	for(int i = 0; i < CHUNKCOUNT; i++) {
+		for(int j = 0; j < CHUNKCOUNT; j++) {
+			int
+				c1 = (i + 0) * (CHUNKCOUNT + 1) + (j + 0),
+				c2 = (i + 1) * (CHUNKCOUNT + 1) + (j + 0),
+				c3 = (i + 0) * (CHUNKCOUNT + 1) + (j + 1),
+				c4 = (i + 1) * (CHUNKCOUNT + 1) + (j + 1);
+			if(srandBit(i + this->x * CHUNKCOUNT,
+				j + this->z * CHUNKCOUNT)) {
+				indices[idx++] = c1;
+				indices[idx++] = c2;
+				indices[idx++] = c3;
+				
+				indices[idx++] = c4;
+				indices[idx++] = c2;
+				indices[idx++] = c3;
+			} else {
+				indices[idx++] = c1;
+				indices[idx++] = c2;
+				indices[idx++] = c4;
+
+				indices[idx++] = c1;
+				indices[idx++] = c3;
+				indices[idx++] = c4;
+			}
+		}
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (3 + 3 + 3) *
+		(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLshort) * CHUNKCOUNT
+		* CHUNKCOUNT * 3 * 2, indices, GL_STATIC_DRAW);
 }
 
 ChunkManager::ChunkManager(Terrain _terrain):
@@ -258,3 +252,4 @@ void ChunkManager::freeChunk(IntPair key){
 int ChunkManager::isLoaded(IntPair key){
 	return loaded.find(key)!=loaded.end();
 }
+
