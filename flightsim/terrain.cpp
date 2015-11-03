@@ -50,7 +50,7 @@ float Terrain::getHeight(float x, float y){
 	return noise.getValue(x, y);
 }
 
-Drawable* Terrain::getChunk(IntPair key){
+TerrainChunk* Terrain::getChunk(IntPair key){
 	return new TerrainChunk(key.first, key.second, *this);
 }
 
@@ -66,7 +66,9 @@ float TerrainChunk::getHeight(float x, float y) {
 TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t) :
 	x(_x),
 	z(_z),
-	t(_t)
+	t(_t),
+	shouldRemove(false),
+	next(NULL)
 {
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -88,7 +90,7 @@ void TerrainChunk::initVertices() {
 		(CHUNKCOUNT + 3)];
 	float *vertices = new float[(3 + 3 + 3) *
 		(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1)];
-	GLshort *indices = new GLshort[CHUNKCOUNT *
+	GLushort *indices = new GLushort[CHUNKCOUNT *
 		CHUNKCOUNT * 3 * 2];
 
 	for(int i = -1; i <= CHUNKCOUNT + 1; i++) {
@@ -179,8 +181,20 @@ void TerrainChunk::initVertices() {
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (3 + 3 + 3) *
 		(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1), vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLshort) * CHUNKCOUNT
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * CHUNKCOUNT
 		* CHUNKCOUNT * 3 * 2, indices, GL_STATIC_DRAW);
+
+	free(heights);
+	free(vertices);
+	free(indices);
+}
+
+void TerrainChunk::draw() {
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+	glDrawElements(GL_TRIANGLES, CHUNKCOUNT * CHUNKCOUNT * 2 * 3,
+		GL_UNSIGNED_SHORT, (GLvoid *) 0);
 }
 
 ChunkManager::ChunkManager(Terrain _terrain):
@@ -189,16 +203,16 @@ ChunkManager::ChunkManager(Terrain _terrain):
 
 int len(Drawable *d);
 
-Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
+TerrainChunk* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	//x,z are the coordinates of the player
 	//distanceToLoad is the range around the player that you want to load chunks in
 	int xchunk = floor(x/CHUNKWIDTH);
 	int zchunk = floor(z/CHUNKWIDTH);
 	
 	IntPair key;
-	
-	Drawable* head = new Drawable;
-	Drawable* iter = head;
+
+	TerrainChunk *head = NULL;
+	TerrainChunk **iter = &head;
 	
 	
 	//remove any unneeded chunks
@@ -215,21 +229,20 @@ Drawable* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	
 	//add any chunks that aren't in
 	
+	int len = 0;
 	for (int i=xchunk-chunksAround; i<=xchunk+chunksAround; i++){
 		for (int j=zchunk-chunksAround; j<=zchunk+chunksAround; j++){
 			key = IntPair(i,j);
 			if (!isLoaded(key)){
 				loadChunk(key);
-				iter->next = loaded[key];
-				iter = iter->next;
+				*iter = loaded[key];
+				iter = &(*iter)->next;
+				len++;
 			}
 		}
 	}
 	
-	Drawable* ret = head->next;
-	head->next = 0;
-	delete head;
-	return static_cast<Drawable *>(ret);
+	return head;
 }
 
 void ChunkManager::loadChunk(IntPair key){

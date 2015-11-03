@@ -8,8 +8,10 @@
 #include "simplexnoise.hpp"
 #include "openglheaders.hpp"
 
+class TerrainChunk;
+
 typedef std::pair<int, int> IntPair;
-typedef std::map<IntPair, Drawable*> ChunkMap;
+typedef std::map<IntPair, TerrainChunk*> ChunkMap;
 
 //default width and height of simplex noise generation
 #define CHUNKCOUNT 32	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
@@ -20,7 +22,7 @@ typedef std::map<IntPair, Drawable*> ChunkMap;
 class Terrain{
 	public:
 		Terrain(int _seed, int _octaveN);
-		Drawable* getChunk(IntPair);
+		TerrainChunk* getChunk(IntPair);
 		float getHeight(float x, float y);
 	private:
 		int seed;
@@ -31,10 +33,9 @@ class Terrain{
 		Simplex pers;
 };
 
-class TerrainChunk : public Drawable {
+class TerrainChunk {
 	private:
 		GLuint vbo, ebo;
-		std::pair<float, int> dists[CHUNKCOUNT * CHUNKCOUNT];
 		Terrain &t;
 		int x, z;
 
@@ -45,12 +46,17 @@ class TerrainChunk : public Drawable {
 	public:
 		TerrainChunk(int x, int z, Terrain &t);
 		~TerrainChunk();
+
+		void draw();
+
+		TerrainChunk *next;
+		bool shouldRemove;
 };
 
 class ChunkManager{
 	public:
 		ChunkManager(Terrain _terrain);
-		Drawable* getNewChunks(float x, float z, int chunksAround);	//deallocates old chunks, returns pointer to new chunks
+		TerrainChunk* getNewChunks(float x, float z, int chunksAround);	//deallocates old chunks, returns pointer to new chunks
 	private:
 		Terrain terrain;
 		int loadedChunks;

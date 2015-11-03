@@ -21,21 +21,26 @@ const GLchar* vertexSource =
     VERSION
     INV "vec3 position;"
     INV "vec3 color;"
-    INV "float s;"
+    INV "vec3 normal;"
     OUTV "vec3 Color;"
-    "uniform mat4 trans;"
+    OUTV "vec3 Normal;"
     "uniform mat4 proj;"
     "uniform mat4 view;"
     "void main() {"
     "   Color = color;"
-    "   gl_Position = proj * view * trans * vec4(position, 1.0);"
+    "   Normal = normal;"
+    "   gl_Position = proj * view * vec4(position, 1.0);"
     "}";
 
 const GLchar* fragmentSource =
     VERSION
     INF "vec3 Color;"
+    INF "vec3 Normal;"
     OUTF "vec4 outColor;"
+    "uniform vec3 LIGHT_DIR;"
     "void main() {"
-    "    outColor = vec4(Color, 1.0f);"
+    "    vec3 tmp = vec3(0.4, 0.4, 0.4) + vec3(0.6, 0.6, 0.6) * abs(dot(LIGHT_DIR, Normal));"
+    "    outColor = vec4(tmp * Color, 1.0);"
+    "    outColor = vec4(1.0,1.0,1.0,1.0);"
     "}";
 

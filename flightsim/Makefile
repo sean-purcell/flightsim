@@ -3,7 +3,7 @@ OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
 LIB=-Iinc/ $(EXTRALIB)
 
-FLAGS=-O3 -std=c++11 -Wno-deprecated-declarations
+FLAGS=-g -std=c++11 -Wno-deprecated-declarations
 LFLAGS= -lsfml-window -lsfml-system -lsfml-graphics -L/usr/local/lib
 
 UNAME_S := $(shell uname -s)
@@ -25,8 +25,8 @@ planetest: bin bin/planetest.o $(OBJECTS)
 terraintest: bin bin/terraintest.o $(OBJECTS)
 	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
-opengltest: bin bin/opengltest.o
-	g++ -o bin/opengltest $(word 2,$^) bin/openglutil.o bin/openglshaders.o $(LIB) $(FLAGS) $(LFLAGS) -flto
+opengltest: bin bin/opengltest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o
+	g++ -o bin/opengltest $(word 2,$^) bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)

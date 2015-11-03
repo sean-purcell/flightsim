@@ -9,6 +9,7 @@
 
 #include "openglshaders.hpp"
 #include "openglutil.hpp"
+#include "terrain.hpp"
 
 GLint uniTrans;
 GLint uniView;
@@ -22,74 +23,70 @@ quat camerarotation(1,0,0,0);
 bool left, right, up, down;
 int mx, my;
 
+Terrain terrain(0, 0);
+ChunkManager chunkmanager(terrain);
+TerrainChunk *chunks;
+
+void drawTerrain() {
+	TerrainChunk *iter = chunks;
+	while(iter) {
+		iter->draw();
+		iter = iter->next;
+	}
+}
+
+void updateTerrain() {
+	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 0);
+	if(!chunks) {
+		chunks = nchunks;
+	} else {
+		TerrainChunk *iter = chunks;
+		while(iter->next) iter = iter->next;
+		iter->next = nchunks;
+	}
+
+	int len = 0;
+	TerrainChunk **cur = &chunks;
+	while(*cur) {
+		if((*cur)->shouldRemove) {
+			*cur = (*cur)->next;
+		} else {
+			cur = &(*cur)->next;
+			len++;
+		}
+	}
+	std::cout << "number of chunks: " << len << std::endl;
+}
+
+void initTerrain() {
+	std::srand(time(NULL));
+	
+	int seed = std::rand() % 65536;
+	std::cout << "seed: " << seed << std::endl;
+	terrain = Terrain(seed, 10);
+	chunkmanager = ChunkManager(terrain);
+
+	chunks = NULL;
+	updateTerrain();
+}
+
 void init() // Called before main loop to set up the program
 {
 // Create Vertex Array Object
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	// Create a Vertex Buffer Object and copy the vertex data to it
-	glGenBuffers(1, &vbo);
-
-	GLfloat vertices[] = {
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // 000
-		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, // 001
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // 010
-		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, // 100
-		-0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // 011
-		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 101
-		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, // 110
-		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, // 111
-	};
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Create an element array
-	glGenBuffers(1, &ebo0);
-	glGenBuffers(1, &ebo1);
-
-	GLuint elements0[] = {
-		0, 1, 2,
-		4, 1, 2,
-		0, 1, 3,
-		5, 1, 3,
-		0, 2, 3,
-		6, 2, 3,
-	};
-	GLuint elements1[] = {
-		7, 4, 5,
-		1, 4, 5,
-		7, 4, 6,
-		2, 4, 6,
-		7, 5, 6,
-		3, 5, 6,
-	};
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo0);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements0), elements0, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo1);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements1), elements1, GL_STATIC_DRAW);
-
 	GLuint shaderProgram = initShaders();
 	initProjmatrix();
-
-	// Specify the layout of the vertex data
-	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-
-	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
-	glEnableVertexAttribArray(colAttrib);
-	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	initVertexAttribs();
 
 	uniView = glGetUniformLocation(shaderProgram, "view");
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-std::cout << "init done\n";
+	initTerrain();
+
+	std::cout << "init done\n";
 }
 
 float ang = 0.f;
@@ -124,22 +121,13 @@ void display()
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	mat4 trans(1.f);
-	trans = rotate(trans, ang, glm::vec3(.0f, 1.f, 0.f));
-
 	mat4 view(1.f);
 	view = translate(view, -camerapos);
 	view = mat4_cast(camerarotation) * view;
 
-	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, value_ptr(trans));
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
-	// Draw a rectangle from the 2 triangles using 6 indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo0);
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo1);
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
+	drawTerrain();
 
 	glutSwapBuffers();
 }
@@ -183,7 +171,7 @@ void mouseMoveFunc(int x, int y) {
 
 int main(int argc, char **argv)
 {
-	initializeGLWindow(argc, argv, 1024, 1024);
+	initializeGLWindow(argc, argv, 800, 600);
 
 	// passes reshape and display functions to the OpenGL machine for callback
 	glutDisplayFunc(display);
