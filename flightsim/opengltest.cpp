@@ -5,17 +5,22 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <iomanip>
 
 #include "openglshaders.hpp"
+#include "openglutil.hpp"
 
-// This is just an example using basic glut functionality.
-// If you want specific Apple functionality, look up AGL
-
-std::chrono::high_resolution_clock::time_point t_start;
 GLint uniTrans;
+GLint uniView;
 GLuint vao;
 GLuint vbo;
 GLuint ebo0, ebo1;
+
+vec3 camerapos(0, 0, 3);
+quat camerarotation(1,0,0,0);
+
+bool left, right, up, down;
+int mx, my;
 
 void init() // Called before main loop to set up the program
 {
@@ -66,44 +71,8 @@ void init() // Called before main loop to set up the program
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo1);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements1), elements1, GL_STATIC_DRAW);
 
-	// Create and compile the vertex shader
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSource, NULL);
-	glCompileShader(vertexShader);
-
-	GLint success = 0;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if(success != GL_TRUE) {
-		GLint logSize = 0;
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logSize);
-		// The maxLength includes the NULL character
-		std::vector<GLchar> errorLog(logSize);
-		glGetShaderInfoLog(vertexShader, logSize, &logSize, &errorLog[0]);
-		std::cout << &errorLog[0] << std::endl;
-	}
-
-	// Create and compile the fragment shader
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-	glCompileShader(fragmentShader);
-	success = 0;
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if(success != GL_TRUE) {
-		GLint logSize = 0;
-		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
-		// The maxLength includes the NULL character
-		std::vector<GLchar> errorLog(logSize);
-		glGetShaderInfoLog(fragmentShader, logSize, &logSize, &errorLog[0]);
-		std::cout << &errorLog[0] << std::endl;
-	}
-
-	// Link the vertex and fragment shader into a shader program
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glBindFragDataLocation(shaderProgram, 0, "outColor");
-	glLinkProgram(shaderProgram);
-	glUseProgram(shaderProgram);
+	GLuint shaderProgram = initShaders();
+	initProjmatrix();
 
 	// Specify the layout of the vertex data
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
@@ -114,24 +83,9 @@ void init() // Called before main loop to set up the program
 	glEnableVertexAttribArray(colAttrib);
 	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 
-	uniTrans = glGetUniformLocation(shaderProgram, "trans");
-	glm::mat4 trans(1.f);
-	trans = rotate(trans, 1.f, glm::vec3(1.0f, 0.f, 0.f));
-	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
+	uniView = glGetUniformLocation(shaderProgram, "view");
 
-	GLint uniView = glGetUniformLocation(shaderProgram, "view");
-	glm::mat4 view = glm::lookAt(
-		glm::vec3(0.f, 2.f, -2.f),
-	glm::vec3(0.f, 0.f, 0.f),
-	glm::vec3(0.f, 1.f, 0.f)
-	);
-	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
-
-	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
-	glm::mat4 proj = glm::infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
-	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
-
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -140,10 +94,29 @@ std::cout << "init done\n";
 
 float ang = 0.f;
 
+void tick() {
+	ang += 0.05f;
+	if(ang > 2 * M_PI) ang -= 2 * M_PI;
+
+	
+	camerapos = camerapos + (vec3(0,0, -0.1 * (float) up) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, 0.1 * (float) down) * camerarotation);
+	camerapos = camerapos + (vec3(0.1 * (float) right, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(-0.1 * (float) left, 0, 0) * camerarotation);
+
+	std::cout << std::setprecision(3) << std::fixed
+		<< "(" << camerapos.x << "," << camerapos.y << "," << camerapos.z << ")";
+	vec3 facing = camerarotation * vec3(0, 0, 1);
+	std::cout 
+		<< "(" << facing.x << "," << facing.y << "," << facing.z << ")" << std::endl;
+}
+
 // Called at the start of the program, after a glutPostRedisplay() and during idle
 // to display a frame
 void display()
 {
+
+	tick();
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -151,17 +124,16 @@ void display()
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 trans(1.f);
-	//trans = translate(trans, glm::vec3(0.f,-1.f,4.f));
+	mat4 trans(1.f);
 	trans = rotate(trans, ang, glm::vec3(.0f, 1.f, 0.f));
-	//trans = rotate(trans, (float)M_PI/2, glm::vec3(1.f,0.f,0.f));
 
-	ang += 0.05f;
-	//if(ang > 2 * M_PI) ang -= 2 * M_PI;
+	mat4 view(1.f);
+	view = translate(view, -camerapos);
+	view = mat4_cast(camerarotation) * view;
 
-	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
+	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, value_ptr(trans));
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
-	
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo0);
 	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
@@ -172,63 +144,56 @@ void display()
 	glutSwapBuffers();
 }
 
-// Called every time a window is resized to resize the projection matrix
-void reshape(int w, int h)
-{
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-0.1, 0.1, -float(h)/(10.0*float(w)), float(h)/(10.0*float(w)), 0.5, 1000.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+void idle() {
+	glutPostRedisplay();
 }
 
 void keyboardDownFunc(unsigned char c, int x, int y) {
 	std::cout << "down:" << c << std::endl;
+
+	switch(c | 0x20) {
+	case 'a': left = true; break;
+	case 'w': up = true; break;
+	case 's': down = true; break;
+	case 'd': right = true; break;
+	}
 }
 
 void keyboardUpFunc(unsigned char c, int x, int y) {
 	std::cout << "up  :" << c << std::endl;
+
+	switch(c | 0x20) {
+	case 'a': left = false; break;
+	case 'w': up = false; break;
+	case 's': down = false; break;
+	case 'd': right = false; break;
+	}
+}
+
+void mouseMoveFunc(int x, int y) {
+	int dx = x - mx;
+	int dy = y - my;
+
+	quat rot = normalize(quat(1, 0.003*dy, 0.003*dx, 0));
+	camerarotation = rot * camerarotation;
+
+	mx = x;
+	my = y;
 }
 
 int main(int argc, char **argv)
 {
-
-	glutInit(&argc, argv); // Initializes glut
-
-	// Sets up a double buffer with RGBA components and a depth component
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA
-#ifdef __APPLE__
-	 | GLUT_3_2_CORE_PROFILE
-#endif
-	);
-
-	// Sets the window size to 512*512 square pixels
-	glutInitWindowSize(512, 512);
-
-	// Sets the window position to the upper left
-	glutInitWindowPosition(0, 0);
-
-	// Creates a window using internal glut functionality
-	glutCreateWindow("Hello!");
-
-#ifdef __linux__
-	glewExperimental = GL_TRUE;
-	glewInit();
-#endif
+	initializeGLWindow(argc, argv, 1024, 1024);
 
 	// passes reshape and display functions to the OpenGL machine for callback
-	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
-	glutIdleFunc(display);
-std::printf("%s\n%s\n", 
-		glGetString(GL_RENDERER),  // e.g. Intel HD Graphics 3000 OpenGL Engine
-		glGetString(GL_VERSION)    // e.g. 3.2 INTEL-8.0.61
-		);
+	glutIdleFunc(idle);
 
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardFunc(keyboardDownFunc);
 	glutKeyboardUpFunc(keyboardUpFunc);
+	glutMotionFunc(mouseMoveFunc);
+	glutPassiveMotionFunc(mouseMoveFunc);
 
 	init();
 

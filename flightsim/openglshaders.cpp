@@ -36,6 +36,6 @@ const GLchar* fragmentSource =
     INF "vec3 Color;"
     OUTF "vec4 outColor;"
     "void main() {"
-    "    outColor = vec4(Color, (3 - Color.x - Color.y - Color.z) / 3);"
+    "    outColor = vec4(Color, 1.0f);"
     "}";
 

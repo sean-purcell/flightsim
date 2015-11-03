@@ -26,7 +26,7 @@ terraintest: bin bin/terraintest.o $(OBJECTS)
 	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 opengltest: bin bin/opengltest.o
-	g++ -o bin/opengltest $(word 2,$^) bin/openglshaders.o $(LIB) $(FLAGS) $(LFLAGS) -flto
+	g++ -o bin/opengltest $(word 2,$^) bin/openglutil.o bin/openglshaders.o $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)
