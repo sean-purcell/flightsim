@@ -75,6 +75,8 @@ TerrainChunk::TerrainChunk(int _x, int _z, Terrain &_t) :
 	glGenBuffers(1, &ebo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+	initVertices();
 }
 
 TerrainChunk::~TerrainChunk() {
@@ -144,8 +146,8 @@ void TerrainChunk::initVertices() {
 			vertices[idx * 9 + 5] = norm.z;
 
 			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.r / 256.f;
-			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.g / 256.f;
-			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.b / 256.f;
+			vertices[idx * 9 + 7] = (float) TERRAINCOLOR.g / 256.f;
+			vertices[idx * 9 + 8] = (float) TERRAINCOLOR.b / 256.f;
 
 			idx++;
 		}
@@ -180,26 +182,10 @@ void TerrainChunk::initVertices() {
 		}
 	}
 
-	float nvertices[] = {
-		0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f,
-		-1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f,
-	};
-
-	GLushort nindices[] = {0, 1, 2};
-
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-
-
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (3 + 3 + 3) *
-	//	(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1), vertices, GL_STATIC_DRAW);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * CHUNKCOUNT
-	//	* CHUNKCOUNT * 3 * 2, indices, GL_STATIC_DRAW);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(nvertices), nvertices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(nindices), nindices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (3 + 3 + 3) *
+		(CHUNKCOUNT + 1) * (CHUNKCOUNT + 1), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * CHUNKCOUNT
+		* CHUNKCOUNT * 3 * 2, indices, GL_STATIC_DRAW);
 
 	free(heights);
 	free(vertices);
@@ -210,8 +196,8 @@ void TerrainChunk::draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	updateVertexAttribs();
-	glDrawElements(GL_TRIANGLES, 3, //CHUNKCOUNT * CHUNKCOUNT * 2 * 3,
-		GL_UNSIGNED_SHORT, (GLvoid *) 0);
+	glDrawElements(GL_TRIANGLES, CHUNKCOUNT * CHUNKCOUNT * 2 * 3,
+		GL_UNSIGNED_SHORT, 0);
 }
 
 ChunkManager::ChunkManager(Terrain _terrain):

@@ -41,6 +41,5 @@ const GLchar* fragmentSource =
     "void main() {"
     "    vec3 tmp = vec3(0.4, 0.4, 0.4) + vec3(0.6, 0.6, 0.6) * abs(dot(LIGHT_DIR, Normal));"
     "    outColor = vec4(tmp * Color, 1.0);"
-    "    outColor = vec4(1.0,1.0,1.0,1.0);"
     "}";
 

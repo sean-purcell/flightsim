@@ -120,6 +120,10 @@ void initVertexAttribs() {
 }
 
 void updateVertexAttribs() {
+	glEnableVertexAttribArray(posloc);
+	glEnableVertexAttribArray(normloc);
+	glEnableVertexAttribArray(colloc);
+
 	glVertexAttribPointer(posloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)0);
 	glVertexAttribPointer(normloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),

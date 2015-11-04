@@ -25,6 +25,8 @@ Terrain terrain(0, 0);
 ChunkManager chunkmanager(terrain);
 TerrainChunk *chunks;
 
+vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.4));
+
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
 	while(iter) {
@@ -34,7 +36,7 @@ void drawTerrain() {
 }
 
 void updateTerrain() {
-	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 0);
+	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 30);
 	if(!chunks) {
 		chunks = nchunks;
 	} else {
@@ -80,24 +82,12 @@ void init() // Called before main loop to set up the program
 
 	uniView = glGetUniformLocation(shaderProgram, "view");
 
-	//glEnable(GL_DEPTH_TEST);
+	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
+	glUniform3fv(light, 1, value_ptr(GLOBAL_LIGHT_DIRECTION));
+
+	glEnable(GL_DEPTH_TEST);
 
 	initTerrain();
-	GLint posLoc = glGetAttribLocation(shaderProgram, "position");
-	GLint normLoc = glGetAttribLocation(shaderProgram, "normal");
-	GLint colourLoc = glGetAttribLocation(shaderProgram, "color");
-
-	glEnableVertexAttribArray(posLoc);
-	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
-		(void*)0);
-
-	glEnableVertexAttribArray(normLoc);
-	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
-		(void*)(3 * sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(colourLoc);
-	glVertexAttribPointer(colourLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
-		(void*)(6 * sizeof(GLfloat)));
 
 	std::cout << "init done\n";
 }
@@ -109,10 +99,10 @@ void tick() {
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
 	
-	camerapos = camerapos + (vec3(0,0, -0.1 * (float) up) * camerarotation);
-	camerapos = camerapos + (vec3(0,0, 0.1 * (float) down) * camerarotation);
-	camerapos = camerapos + (vec3(0.1 * (float) right, 0, 0) * camerarotation);
-	camerapos = camerapos + (vec3(-0.1 * (float) left, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, -10. * (float) up) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, 10. * (float) down) * camerarotation);
+	camerapos = camerapos + (vec3(10. * (float) right, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(-10. * (float) left, 0, 0) * camerarotation);
 
 	std::cout << std::setprecision(3) << std::fixed
 		<< "(" << camerapos.x << "," << camerapos.y << "," << camerapos.z << ")";
