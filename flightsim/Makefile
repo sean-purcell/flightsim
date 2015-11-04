@@ -3,7 +3,7 @@ OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
 LIB=-Iinc/ $(EXTRALIB)
 
-FLAGS=-g -std=c++11 -Wno-deprecated-declarations
+FLAGS=-O3 -std=c++11 -Wno-deprecated-declarations
 LFLAGS= -lsfml-window -lsfml-system -lsfml-graphics -L/usr/local/lib
 
 UNAME_S := $(shell uname -s)

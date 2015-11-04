@@ -11,7 +11,7 @@ static GLint projloc;
 static GLint posloc, normloc, colloc;
 static mat4 proj;
 
-static int w, h;
+int w, h;
 
 void reshape(int _w, int _h) {
 	w = _w; h = _h;

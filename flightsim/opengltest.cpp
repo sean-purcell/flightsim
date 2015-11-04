@@ -36,7 +36,7 @@ void drawTerrain() {
 }
 
 void updateTerrain() {
-	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 30);
+	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 15);
 	if(!chunks) {
 		chunks = nchunks;
 	} else {
@@ -49,7 +49,9 @@ void updateTerrain() {
 	TerrainChunk **cur = &chunks;
 	while(*cur) {
 		if((*cur)->shouldRemove) {
-			*cur = (*cur)->next;
+			TerrainChunk *next = (*cur)->next;
+			delete *cur;
+			*cur = next;
 		} else {
 			cur = &(*cur)->next;
 			len++;
@@ -99,16 +101,18 @@ void tick() {
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
 	
-	camerapos = camerapos + (vec3(0,0, -10. * (float) up) * camerarotation);
-	camerapos = camerapos + (vec3(0,0, 10. * (float) down) * camerarotation);
-	camerapos = camerapos + (vec3(10. * (float) right, 0, 0) * camerarotation);
-	camerapos = camerapos + (vec3(-10. * (float) left, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, -50. * (float) up) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, 50. * (float) down) * camerarotation);
+	camerapos = camerapos + (vec3(50. * (float) right, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(-50. * (float) left, 0, 0) * camerarotation);
 
 	std::cout << std::setprecision(3) << std::fixed
 		<< "(" << camerapos.x << "," << camerapos.y << "," << camerapos.z << ")";
 	vec3 facing = camerarotation * vec3(0, 0, 1);
 	std::cout 
 		<< "(" << facing.x << "," << facing.y << "," << facing.z << ")" << std::endl;
+
+	updateTerrain();
 }
 
 // Called at the start of the program, after a glutPostRedisplay() and during idle
@@ -120,8 +124,7 @@ void display()
 
 	glBindVertexArray(vao);
 
-	// Clear the screen to black
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClearColor(0.39f, 0.39f, 0.94f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	mat4 view(1.f);
