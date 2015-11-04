@@ -8,6 +8,7 @@
 
 static GLuint shader;
 static GLint projloc;
+static GLint posloc, normloc, colloc;
 static mat4 proj;
 
 static int w, h;
@@ -109,20 +110,21 @@ void initProjmatrix() {
 }
 
 void initVertexAttribs() {
-	GLint posLoc = glGetAttribLocation(shader, "position");
-	GLint normLoc = glGetAttribLocation(shader, "normal");
-	GLint colourLoc = glGetAttribLocation(shader, "color");
+	posloc = glGetAttribLocation(shader, "position");
+	normloc = glGetAttribLocation(shader, "normal");
+	colloc = glGetAttribLocation(shader, "color");
 
-	glEnableVertexAttribArray(posLoc);
-	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+	glEnableVertexAttribArray(posloc);
+	glEnableVertexAttribArray(normloc);
+	glEnableVertexAttribArray(colloc);
+}
+
+void updateVertexAttribs() {
+	glVertexAttribPointer(posloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)0);
-
-	glEnableVertexAttribArray(normLoc);
-	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+	glVertexAttribPointer(normloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)(3 * sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(colourLoc);
-	glVertexAttribPointer(colourLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+	glVertexAttribPointer(colloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)(6 * sizeof(GLfloat)));
 }
 

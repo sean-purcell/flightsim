@@ -14,8 +14,6 @@
 GLint uniTrans;
 GLint uniView;
 GLuint vao;
-GLuint vbo;
-GLuint ebo0, ebo1;
 
 vec3 camerapos(0, 0, 3);
 quat camerarotation(1,0,0,0);
@@ -82,9 +80,24 @@ void init() // Called before main loop to set up the program
 
 	uniView = glGetUniformLocation(shaderProgram, "view");
 
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 
 	initTerrain();
+	GLint posLoc = glGetAttribLocation(shaderProgram, "position");
+	GLint normLoc = glGetAttribLocation(shaderProgram, "normal");
+	GLint colourLoc = glGetAttribLocation(shaderProgram, "color");
+
+	glEnableVertexAttribArray(posLoc);
+	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)0);
+
+	glEnableVertexAttribArray(normLoc);
+	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)(3 * sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(colourLoc);
+	glVertexAttribPointer(colourLoc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+		(void*)(6 * sizeof(GLfloat)));
 
 	std::cout << "init done\n";
 }
@@ -116,8 +129,8 @@ void display()
 	tick();
 
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
- // Clear the screen to black
+
+	// Clear the screen to black
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

@@ -5,4 +5,5 @@ void initializeGLWindow(int argc, char **argv, int w, int h);
 GLuint initShaders();
 void initProjmatrix();
 void initVertexAttribs();
+void updateVertexAttribs();
 
