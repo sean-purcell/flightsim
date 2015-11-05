@@ -41,10 +41,12 @@ const GLchar* fragmentSource =
     INF "float dist;"
     OUTF "vec4 outColor;"
     "uniform vec3 LIGHT_DIR;"
-    "uniform vec3 SKY_COLOR;"
+    "uniform vec3 FOG_COLOR;"
     "uniform float horizon;"
     "void main() {"
     "    vec3 tmp = vec3(0.4, 0.4, 0.4) + vec3(0.6, 0.6, 0.6) * max(dot(LIGHT_DIR, Normal), 0);"
-    "    outColor = vec4(tmp * Color, 1.0f);"
+    "    float alpha = dist / horizon;"
+    "    alpha = min(alpha, 1);"
+    "    outColor = vec4(alpha * FOG_COLOR + (1-alpha) * tmp * Color, 1.0f);"
     "}";
 

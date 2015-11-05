@@ -29,6 +29,12 @@ const int chunksAround = 20;
 
 const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.2));
 const vec3 SKY_COLOR = vec3(0.39f, 0.39f, 0.94f);
+const vec3 FOG_COLOR = vec3(0.75f, 0.75f, 0.75f);
+
+// min_alt = (scaling factor for amplitude) * (maximum value of amplitude noise) *
+//   (sum of geometric series for maximum value of persistence)
+const float MIN_ALT = 160 * 2.1 * 1 / (1 - 0.7);
+const float HORIZON_DIST = chunksAround * 10 * CHUNKWIDTH;
 
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
@@ -36,6 +42,84 @@ void drawTerrain() {
 		iter->draw();
 		iter = iter->next;
 	}
+}
+
+GLuint horizonVbo = 0;
+GLuint horizonEbo = 0;
+void drawHorizon() {
+	GLfloat vertices[108];
+
+	GLubyte indices[] = {
+		0, 8, 5,
+		0, 9, 5,
+		1, 9, 7,
+		1, 11, 7,
+		3, 11, 6,
+		3, 10, 6,
+		2, 10, 4,
+		2, 8, 4,
+	};
+	if(horizonVbo == 0 && horizonEbo == 0) {
+		glGenBuffers(1, &horizonVbo);
+		glGenBuffers(1, &horizonEbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	} else {
+		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
+	}
+	updateVertexAttribs();
+
+	static int dx[] = {0, 0, 0, 0, -1, 1, -1, 1, 0, 1, -1, 0};
+	static int dz[] = {0, 0, 0, 0, -1, -1, 1, 1, -1, 0, 0, 1};
+
+	int cx = (int)(camerapos.x / CHUNKWIDTH);
+	int cz = (int)(camerapos.z / CHUNKWIDTH);
+
+	vec3 corners[] = {
+		vec3((cx - chunksAround) * CHUNKWIDTH, -MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
+		vec3((cx + chunksAround+1) * CHUNKWIDTH, -MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
+		vec3((cx - chunksAround) * CHUNKWIDTH, -MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
+		vec3((cx + chunksAround+1) * CHUNKWIDTH, -MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
+	};
+
+	for(int i = 0; i < 4; i++) {
+		vec3 v = corners[i];
+		vertices[i * 9 + 0] = v.x;
+		vertices[i * 9 + 1] = v.y;
+		vertices[i * 9 + 2] = v.z;
+	}
+
+	for(int i = 4; i < 12; i++) {
+		vec3 v = vec3(dx[i], 0, dz[i]);
+		v = v * HORIZON_DIST;
+		v = v + corners[i % 4];
+
+		vertices[i * 9 + 0] = v.x;
+		vertices[i * 9 + 1] = v.y;
+		vertices[i * 9 + 2] = v.z;
+	}
+
+	for(int i = 0; i < 12; i++) {
+		vertices[i * 9 + 3] = GLOBAL_LIGHT_DIRECTION.x;
+		vertices[i * 9 + 4] = GLOBAL_LIGHT_DIRECTION.y;
+		vertices[i * 9 + 5] = GLOBAL_LIGHT_DIRECTION.z;
+
+		vertices[i * 9 + 6] = FOG_COLOR.x;
+		vertices[i * 9 + 7] = FOG_COLOR.y;
+		vertices[i * 9 + 8] = FOG_COLOR.z;
+	}
+	for(int i = 0; i < 12; i++) {
+		std::cout << i << ": (" << vertices[i * 9 + 0] << "," << vertices[i * 9 + 1] << "," << vertices[i * 9 + 2] << ")" << std::endl;
+	}
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_BYTE, 0);
 }
 
 void updateTerrain() {
@@ -88,9 +172,11 @@ void init() // Called before main loop to set up the program
 
 	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
 	glUniform3fv(light, 1, value_ptr(GLOBAL_LIGHT_DIRECTION));
+	GLint sky = glGetUniformLocation(shaderProgram, "FOG_COLOR");
+	glUniform3fv(sky, 1, value_ptr(FOG_COLOR));
 
 	GLint horizon = glGetUniformLocation(shaderProgram, "horizon");
-	glUniform1f(horizon, chunksAround * CHUNKWIDTH);
+	glUniform1f(horizon, 0.8f * chunksAround * CHUNKWIDTH);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -139,6 +225,7 @@ void display()
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
 	drawTerrain();
+	drawHorizon();
 
 	glutSwapBuffers();
 }
