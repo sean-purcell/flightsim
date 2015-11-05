@@ -10,10 +10,10 @@
 #include "simplexnoise.hpp"
 #include "openglutil.hpp"
 
-#define WATERCOLOR sf::Color(255,10,10)
-#define TERRAINCOLOR sf::Color(50,200,50)
-#define MOUNTAINCOLOR sf::Color(70,70,70)
-#define SEALEVEL 0
+const vec3 WATERCOLOR(1.0f, 0.06f, 0.06f);
+const vec3 TERRAINCOLOR(0.2f, 0.8f, 0.2f);
+const vec3 MOUNTAINCOLOR(0.27f, 0.27f, 0.27f);
+const float SEALEVEL = 0;
 
 float heightDistort(float height){
 	//if you want to change how height is displayed, touch this instead of anything else please
@@ -39,7 +39,7 @@ sf::Color getColor(int x, int z, int q) {
 
 Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 	octaves(_octaves),
-	frequency(0.5e-2),
+	frequency(0.0625e-2),
 	noise(frequency, 0.5, 25, _octaves, seed),
 	amp(frequency * 1e-1, 0.3, 1, 3, 2*seed+1),
 	pers(frequency * 1e-1, 0.3, 1, 3, 3*seed+7) {
@@ -47,7 +47,7 @@ Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 }
 
 float Terrain::getHeight(float x, float y){
-	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 20*(1.1+amp.getValue(x, y)), octaves, seed);
+	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 160*(1.1+amp.getValue(x, y)), octaves, seed);
 	return noise.getValue(x, y);
 }
 
@@ -145,9 +145,9 @@ void TerrainChunk::initVertices() {
 			vertices[idx * 9 + 4] = norm.y;
 			vertices[idx * 9 + 5] = norm.z;
 
-			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.r / 256.f;
-			vertices[idx * 9 + 7] = (float) TERRAINCOLOR.g / 256.f;
-			vertices[idx * 9 + 8] = (float) TERRAINCOLOR.b / 256.f;
+			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.x;
+			vertices[idx * 9 + 7] = (float) TERRAINCOLOR.y;
+			vertices[idx * 9 + 8] = (float) TERRAINCOLOR.z;
 
 			idx++;
 		}

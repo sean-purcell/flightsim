@@ -25,7 +25,10 @@ Terrain terrain(0, 0);
 ChunkManager chunkmanager(terrain);
 TerrainChunk *chunks;
 
-vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.4));
+const int chunksAround = 20;
+
+const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.2));
+const vec3 SKY_COLOR = vec3(0.39f, 0.39f, 0.94f);
 
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
@@ -36,7 +39,7 @@ void drawTerrain() {
 }
 
 void updateTerrain() {
-	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, 15);
+	TerrainChunk *nchunks = chunkmanager.getNewChunks(camerapos.x, camerapos.z, chunksAround);
 	if(!chunks) {
 		chunks = nchunks;
 	} else {
@@ -57,7 +60,6 @@ void updateTerrain() {
 			len++;
 		}
 	}
-	std::cout << "number of chunks: " << len << std::endl;
 }
 
 void initTerrain() {
@@ -86,6 +88,9 @@ void init() // Called before main loop to set up the program
 
 	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
 	glUniform3fv(light, 1, value_ptr(GLOBAL_LIGHT_DIRECTION));
+
+	GLint horizon = glGetUniformLocation(shaderProgram, "horizon");
+	glUniform1f(horizon, chunksAround * CHUNKWIDTH);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -124,7 +129,7 @@ void display()
 
 	glBindVertexArray(vao);
 
-	glClearColor(0.39f, 0.39f, 0.94f, 1.0f);
+	glClearColor(SKY_COLOR.r, SKY_COLOR.g, SKY_COLOR.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	mat4 view(1.f);
