@@ -47,7 +47,9 @@ Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 }
 
 float Terrain::getHeight(float x, float y){
-	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 160*(1.1+amp.getValue(x, y)), octaves, seed);
+	float ampl = 1.1 + amp.getValue(x, y);
+	ampl = ampl * ampl;
+	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 160*ampl, octaves, seed);
 	return noise.getValue(x, y);
 }
 

@@ -28,12 +28,12 @@ TerrainChunk *chunks;
 const int chunksAround = 20;
 
 const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.2));
-const vec3 SKY_COLOR = vec3(0.39f, 0.39f, 0.94f);
+const vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
 const vec3 FOG_COLOR = vec3(0.75f, 0.75f, 0.75f);
 
 // min_alt = (scaling factor for amplitude) * (maximum value of amplitude noise) *
 //   (sum of geometric series for maximum value of persistence)
-const float MIN_ALT = 160 * 2.1 * 1 / (1 - 0.7);
+const float MIN_ALT = -160 * 2.1 * 1 / (1 - 0.7);
 const float HORIZON_DIST = chunksAround * 10 * CHUNKWIDTH;
 
 void drawTerrain() {
@@ -81,10 +81,10 @@ void drawHorizon() {
 	int cz = (int)(camerapos.z / CHUNKWIDTH);
 
 	vec3 corners[] = {
-		vec3((cx - chunksAround) * CHUNKWIDTH, -MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, -MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx - chunksAround) * CHUNKWIDTH, -MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, -MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
+		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
+		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
+		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
+		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
 	};
 
 	for(int i = 0; i < 4; i++) {
@@ -112,9 +112,6 @@ void drawHorizon() {
 		vertices[i * 9 + 6] = FOG_COLOR.x;
 		vertices[i * 9 + 7] = FOG_COLOR.y;
 		vertices[i * 9 + 8] = FOG_COLOR.z;
-	}
-	for(int i = 0; i < 12; i++) {
-		std::cout << i << ": (" << vertices[i * 9 + 0] << "," << vertices[i * 9 + 1] << "," << vertices[i * 9 + 2] << ")" << std::endl;
 	}
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
@@ -173,10 +170,13 @@ void init() // Called before main loop to set up the program
 	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
 	glUniform3fv(light, 1, value_ptr(GLOBAL_LIGHT_DIRECTION));
 	GLint sky = glGetUniformLocation(shaderProgram, "FOG_COLOR");
-	glUniform3fv(sky, 1, value_ptr(FOG_COLOR));
+	glUniform3fv(sky, 1, value_ptr(SKY_COLOR));
 
 	GLint horizon = glGetUniformLocation(shaderProgram, "horizon");
-	glUniform1f(horizon, 0.8f * chunksAround * CHUNKWIDTH);
+	GLint horizoncoeff = glGetUniformLocation(shaderProgram, "horizoncoeff");
+	float horizonval = 0.8 * chunksAround * CHUNKWIDTH;
+	glUniform1f(horizon, horizonval);
+	glUniform1f(horizoncoeff, pow(horizonval, -2));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -225,7 +225,7 @@ void display()
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
 	drawTerrain();
-	drawHorizon();
+	//drawHorizon();
 
 	glutSwapBuffers();
 }
