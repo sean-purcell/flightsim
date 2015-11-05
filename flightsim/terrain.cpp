@@ -39,7 +39,7 @@ sf::Color getColor(int x, int z, int q) {
 
 Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 	octaves(_octaves),
-	frequency(0.0625e-2),
+	frequency(0.016e-2),
 	noise(frequency, 0.5, 25, _octaves, seed),
 	amp(frequency * 1e-1, 0.3, 1, 3, 2*seed+1),
 	pers(frequency * 1e-1, 0.3, 1, 3, 3*seed+7) {
@@ -49,7 +49,7 @@ Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 float Terrain::getHeight(float x, float y){
 	float ampl = 1.1 + amp.getValue(x, y);
 	ampl = ampl * ampl;
-	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 160*ampl, octaves, seed);
+	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 640*ampl, octaves, seed);
 	return noise.getValue(x, y);
 }
 
