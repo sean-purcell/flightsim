@@ -3,11 +3,7 @@
 
 #include "glmheaders.hpp"
 
-#include "drawable.hpp"
-#include <SFML/Graphics.hpp>
-
-class Aircraft: public Drawable	//currently a hacked together proof of concept using a sphere.
-	//IT DOESN'T INHERIT FROM SPHERE BECAUSE IT WILL EVENTUALLY NOT BE A SPHERE (hopefully)
+class Aircraft
 {
 	public:
 		float g;
@@ -31,6 +27,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		float rho;
 		float dragcoeff;
 		float rudderdampcoeff;
+		float rolldampcoeff;
 
 		vec3 pos, velocity, omega;
 		quat facing;
@@ -39,11 +36,7 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		
 		Aircraft();
 		
-		void predraw(vec3 camerapos, quat camerarotation);
-		
 		void update(float dt);
-		
-		void draw(sf::RenderWindow &window);
 
 		void applyForces(float dt);
 
@@ -60,13 +53,6 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		float tElevator();
 
 		float tRudder();
-		
-	private:
-		float radius;
-		float render_radius;
-		vec3 draw_pos;
-		sf::Color color;
-		sf::CircleShape shape;
 };
 
 #endif

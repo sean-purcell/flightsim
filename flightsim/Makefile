@@ -19,8 +19,8 @@ endif
 
 all: planetest terraintest opengltest
 
-planetest: bin bin/planetest.o $(OBJECTS)
-	g++ -o bin/planetest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto
+planetest: bin bin/planetest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/aircraft.o bin/util.o
+	g++ -o bin/planetest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 terraintest: bin bin/terraintest.o $(OBJECTS)
 	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto

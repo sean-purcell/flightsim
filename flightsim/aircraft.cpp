@@ -3,11 +3,9 @@
 #include "glmheaders.hpp"
 
 #include "aircraft.hpp"
-#include "windowinfo.hpp"
-#include "drawable.hpp"
 #include "util.hpp"
 
-float up = 0, down = 0, left = 0, right = 0;
+extern float up, down, left, right;
 
 void Aircraft::init_params() {
 	g = -9.8;
@@ -31,43 +29,20 @@ void Aircraft::init_params() {
 	rho = 1.225;
 	dragcoeff = 0.3;
 	rudderdampcoeff = 100;
+	rolldampcoeff = 0;
 }
 
 Aircraft::Aircraft(){
 	init_params();
 
-	pos = vec3(1, 10000, 1);		//real component must be zero
+	pos = vec3(1, 500, 1);
 	facing = quat(1, 0, 0, 0);	//orientation
-	velocity = vec3(0, 0, 0);	//real component must be zero
+	velocity = vec3(0, 0, 500);
 	omega = vec3(0, 0, 0);
-	
-	next = NULL;
-	child = NULL;
-}
-
-void Aircraft::predraw(vec3 camerapos, quat camerarotation){
-	draw_pos = camerarotation * (pos-camerapos);
-	
-	distanceFromCamera = draw_pos.z;
-	
-	render_radius = ratio * (screenwidth / 2) * radius/distanceFromCamera;
-	
-	shape.setFillColor(color);
-
-	if (draw_pos.z<0)
-		shape.setRadius(0);
-	else
-		shape.setRadius(render_radius);
-		
-	shape.setPosition(getScreenPos(draw_pos)+sf::Vector2f(-render_radius,-render_radius));
 }
 
 void Aircraft::update(float dt){
 	applyForces(dt);
-}
-
-void Aircraft::draw(sf::RenderWindow &window){
-	window.draw(shape);
 }
 
 void Aircraft::applyForces(float dt) {
@@ -124,15 +99,15 @@ vec3 Aircraft::fDrag() {
 
 float Aircraft::tAileron() {
 	float effect = left * maxaileron + right * minaileron;
-	quat ailangl = angleAxis(-aoi + effect, vec3(-1, 0, 0));
-	quat ailangr = angleAxis(aoi + effect, vec3( 1, 0, 0));
+	quat ailangl = angleAxis(-aoi - effect, vec3(-1, 0, 0));
+	quat ailangr = angleAxis(aoi - effect, vec3( 1, 0, 0));
 
 	vec3 anl = facing * (ailangl * (vec3(0, 1, 0)));
 	vec3 anr = facing * (ailangr * (vec3(0, 1, 0)));
 
 	vec3 v = this->velocity * -1.0f;
-	vec3 vl = v + facing * (vec3(0, -this->omega.z * aileronradius, 0));
-	vec3 vr = v + facing * (vec3(0, this->omega.z * aileronradius, 0));
+	vec3 vl = v;// + facing * rolldampcoeff * (vec3(0, -this->omega.z * aileronradius, 0));
+	vec3 vr = v;// + facing * rolldampcoeff * (vec3(0, this->omega.z * aileronradius, 0));
 
 	vec3 liftl = anl * rho * aileronarea * (float) fabs(dot(vl, anl)) * (dot(vl, anl));
 	vec3 liftr = anr * rho * aileronarea * (float) fabs(dot(vr, anr)) * (dot(vr, anr));
