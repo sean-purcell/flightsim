@@ -28,7 +28,7 @@ TerrainChunk *chunks;
 
 const int chunksAround = 20;
 
-const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.2));
+const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.1));
 const vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
 const vec3 FOG_COLOR = vec3(0.75f, 0.75f, 0.75f);
 

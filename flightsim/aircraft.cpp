@@ -29,7 +29,7 @@ void Aircraft::init_params() {
 	rho = 1.225;
 	dragcoeff = 0.3;
 	rudderdampcoeff = 100;
-	rolldampcoeff = 0;
+	rolldampcoeff = 50;
 }
 
 Aircraft::Aircraft(){
@@ -69,6 +69,7 @@ void Aircraft::applyForces(float dt) {
 	if(dot(omega, omega) > 1e-10) {
 		quat omegaVersor = angleAxis(length(omega) * dt, facing * omega);
 		facing = omegaVersor * facing;
+		facing = normalize(facing);
 	}
 
 	std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing * (vec3(0, 0, 1))) << std::endl;
@@ -106,8 +107,8 @@ float Aircraft::tAileron() {
 	vec3 anr = facing * (ailangr * (vec3(0, 1, 0)));
 
 	vec3 v = this->velocity * -1.0f;
-	vec3 vl = v;// + facing * rolldampcoeff * (vec3(0, -this->omega.z * aileronradius, 0));
-	vec3 vr = v;// + facing * rolldampcoeff * (vec3(0, this->omega.z * aileronradius, 0));
+	vec3 vl = v + rolldampcoeff * (facing * (vec3(0, -this->omega.z * aileronradius, 0)));
+	vec3 vr = v + rolldampcoeff * (facing * (vec3(0, this->omega.z * aileronradius, 0)));
 
 	vec3 liftl = anl * rho * aileronarea * (float) fabs(dot(vl, anl)) * (dot(vl, anl));
 	vec3 liftr = anr * rho * aileronarea * (float) fabs(dot(vr, anr)) * (dot(vr, anr));
