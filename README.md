@@ -44,6 +44,9 @@ se101-lab
 - Energia 16 (Launchpad Tiva C TM4C123): http://energia.nu/download/
 - Orbit Booster Pack (Accelerometer and other stuff): https://www.digilentinc.com/Products/Detail.cfm?NavPath=2,396,1181&Prod=ORBIT-BOOSTER or https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1314193/View?ou=220517
 - SFML 2.3.2 (C++ graphics): http://www.sfml-dev.org/download/sfml/2.3.2/
+- Boost (serial port stuffs): http://www.boost.org/
+	- Note that only a small subset of boost is required by asio. See: http://www.boost.org/doc/libs/1_59_0/doc/html/boost_asio/using.html
+	- Building: b2 --with-system --with-thread --with-date_time --with-regex --with-serialization [toolset=<insert compiler stuffs here; see "5.2.2 Identify Your Toolset" from getting started guide in index.html>] stage
 
 #### References
 - Lab 2 Specifications: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1313255/View?ou=220517
