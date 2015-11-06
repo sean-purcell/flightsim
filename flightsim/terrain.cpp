@@ -235,7 +235,7 @@ TerrainChunk* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	//add any chunks that aren't in
 	
 	int len = 0;
-	for (int i=xchunk-chunksAround; i<=xchunk+chunksAround; i++){
+	for (int i=0; i>=xchunk-chunksAround; i = (i >= xchunk ? xchunk + (xchunk-i)-1 : xchunk + xchunk-i)){
 		for (int j=zchunk-chunksAround; j<=zchunk+chunksAround; j++){
 			key = IntPair(i,j);
 			if (!isLoaded(key)){
@@ -243,6 +243,7 @@ TerrainChunk* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 				*iter = loaded[key];
 				iter = &(*iter)->next;
 				len++;
+				if(len == 10) return head;
 			}
 		}
 	}
