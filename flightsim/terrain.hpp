@@ -15,7 +15,7 @@ typedef std::map<IntPair, TerrainChunk*> ChunkMap;
 
 //default width and height of simplex noise generation
 #define CHUNKCOUNT 32	//how many triangles wide makeup a CHUNK, it's nice if this is a power of 2
-#define CHUNKWIDTH 2048. //how wide/deep is the CHUNK in DISTANCE UNITS
+#define CHUNKWIDTH 1024. //how wide/deep is the CHUNK in DISTANCE UNITS
 #define CHUNKRATIO (CHUNKWIDTH/CHUNKCOUNT)
 #define CHUNKDEGRADEDIST 25 // the distance increments it gets less accurate at
 
