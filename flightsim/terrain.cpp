@@ -11,7 +11,7 @@
 #include "openglutil.hpp"
 
 const vec3 WATERCOLOR(1.0f, 0.06f, 0.06f);
-const vec3 TERRAINCOLOR(0.2f, 0.8f, 0.2f);
+const vec3 TERRAINCOLOR = vec3(132, 85, 38) / 255.f;
 const vec3 MOUNTAINCOLOR(0.27f, 0.27f, 0.27f);
 const float SEALEVEL = 0;
 
