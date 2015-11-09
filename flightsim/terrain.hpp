@@ -47,6 +47,9 @@ class TerrainChunk {
 		TerrainChunk(int x, int z, Terrain &t);
 		~TerrainChunk();
 
+		float getAmplitude(float x, float y);
+		float getPersistence(float x, float y);
+
 		void draw();
 
 		TerrainChunk *next;

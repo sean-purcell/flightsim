@@ -9,11 +9,14 @@
 #include "shapes.hpp"
 #include "simplexnoise.hpp"
 #include "openglutil.hpp"
+#include "biome-processor.hpp"
 
 const vec3 WATERCOLOR(1.0f, 0.06f, 0.06f);
 const vec3 TERRAINCOLOR = vec3(132, 85, 38) / 255.f;
 const vec3 MOUNTAINCOLOR(0.27f, 0.27f, 0.27f);
 const float SEALEVEL = 0;
+
+std::vector<unsigned char> biomeColors = loadBiomeImage("biomes.png")
 
 float heightDistort(float height){
 	//if you want to change how height is displayed, touch this instead of anything else please
@@ -46,10 +49,20 @@ Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 	// frequency, persistence, amplitude, octaves, randomseed
 }
 
+
+float getAmplitude(float x, float y){
+	return ampl.getValue(x,y);
+}
+
+float getPersistence(float x, float y){
+	return pers.getValue(x,y);
+}
+
+
 float Terrain::getHeight(float x, float y){
-	float ampl = 1.1 + amp.getValue(x, y);
+	float ampl = 1.1 + getAmplitude(x, y);
 	ampl = ampl * ampl;
-	noise.set(frequency, 0.4+0.3*pers.getValue(x, y), 320*ampl, octaves, seed);
+	noise.set(frequency, 0.4+0.3*getPersistence(x, y), 320*ampl, octaves, seed);
 	return noise.getValue(x, y);
 }
 
@@ -147,9 +160,11 @@ void TerrainChunk::initVertices() {
 			vertices[idx * 9 + 4] = norm.y;
 			vertices[idx * 9 + 5] = norm.z;
 
-			vertices[idx * 9 + 6] = (float) TERRAINCOLOR.x;
-			vertices[idx * 9 + 7] = (float) TERRAINCOLOR.y;
-			vertices[idx * 9 + 8] = (float) TERRAINCOLOR.z;
+			vec3 vcolor = getBiomeColor(t.getPersistence(x*CHUNKWIDTH+x0, z*CHUNKWIDTH+z0), t.getAmplitude(x*CHUNKWIDTH+x0, z*CHUNKWIDTH+z0), biomeColors);
+
+			vertices[idx * 9 + 6] = (float) vcolor.x;
+			vertices[idx * 9 + 7] = (float) vcolor.y;
+			vertices[idx * 9 + 8] = (float) vcolor.z;
 
 			idx++;
 		}
@@ -271,4 +286,3 @@ void ChunkManager::freeChunk(IntPair key){
 int ChunkManager::isLoaded(IntPair key){
 	return loaded.find(key)!=loaded.end();
 }
-
