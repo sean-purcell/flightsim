@@ -17,7 +17,7 @@ endif
 
 .PHONY: all planetest opengltest terraintest
 
-all: planetest terraintest opengltest
+all: planetest opengltest
 
 planetest: bin bin/planetest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/aircraft.o bin/util.o bin/biome-processor.o bin/lodepng.o
 	g++ -o bin/planetest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
