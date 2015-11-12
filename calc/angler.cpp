@@ -4,15 +4,15 @@
 #include <algorithm>
 
 
- double STICK[] = {0, 1, 0};        // direction of gravity when controller is in rest state
- double PITCH_AXIS[] = {1, 0, 0};   // direction of pitch axis when controller is in rest state
+ double STICK[] = {-1, 0, 0};        // direction of gravity when controller is in rest state
+ double PITCH_AXIS[] = {0, 1, 0};   // direction of pitch axis when controller is in rest state
  double ROLL_AXIS[] = {0, 0, -1};   // direction of roll axis when controller is in rest state
 
  double PITCH_PERP[] = {0, 0, 1};   // vector rotated 90 degrees counterclockwise about PITCH_AXIS from STICK direction
  double ROLL_PERP[] = {1, 0, 0};    // vector rotated 90 degrees counterclockwise about ROLL_AXIS from STICK direction
 
- double scale_pitch = 1 / 3.0;      // responsiveness of controller [rad/s per rad]
- double scale_roll = 4 / 3.0;       // responsiveness of controller [rad/s per rad]
+ double scale_pitch = 1; //1 / 3.0;      // responsiveness of controller [rad/s per rad]
+ double scale_roll = 1; //4 / 3.0;       // responsiveness of controller [rad/s per rad]
  double max_theta = acos(-1) / 2;   // magnitude of max rotation of controller; input clipped at this value if input is higher
 
 /** Check that the rotation axes make sense.
