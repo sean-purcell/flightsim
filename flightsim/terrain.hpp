@@ -24,6 +24,9 @@ class Terrain{
 		Terrain(int _seed, int _octaveN);
 		TerrainChunk* getChunk(IntPair);
 		float getHeight(float x, float y);
+		float getAmplitude(float x, float y);
+		float getPersistence(float x, float y);
+
 	private:
 		int seed;
 		int octaves;
@@ -46,9 +49,6 @@ class TerrainChunk {
 	public:
 		TerrainChunk(int x, int z, Terrain &t);
 		~TerrainChunk();
-
-		float getAmplitude(float x, float y);
-		float getPersistence(float x, float y);
 
 		void draw();
 

@@ -16,7 +16,7 @@ const vec3 TERRAINCOLOR = vec3(132, 85, 38) / 255.f;
 const vec3 MOUNTAINCOLOR(0.27f, 0.27f, 0.27f);
 const float SEALEVEL = 0;
 
-std::vector<unsigned char> biomeColors = loadBiomeImage("biomes.png")
+std::vector<unsigned char> biomeColors = loadBiomeImage(std::string("biomes.png"));
 
 float heightDistort(float height){
 	//if you want to change how height is displayed, touch this instead of anything else please
@@ -42,7 +42,7 @@ sf::Color getColor(int x, int z, int q) {
 
 Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 	octaves(_octaves),
-	frequency(0.032e-2),
+	frequency(0.064e-2),
 	noise(frequency, 0.5, 25, _octaves, seed),
 	amp(frequency * 1e-1, 0.3, 1, 3, 2*seed+1),
 	pers(frequency * 1e-1, 0.3, 1, 3, 3*seed+7) {
@@ -50,11 +50,11 @@ Terrain::Terrain(int _seed, int _octaves) : seed(_seed),
 }
 
 
-float getAmplitude(float x, float y){
-	return ampl.getValue(x,y);
+float Terrain::getAmplitude(float x, float y){
+	return amp.getValue(x,y);
 }
 
-float getPersistence(float x, float y){
+float Terrain::getPersistence(float x, float y){
 	return pers.getValue(x,y);
 }
 
@@ -62,7 +62,7 @@ float getPersistence(float x, float y){
 float Terrain::getHeight(float x, float y){
 	float ampl = 1.1 + getAmplitude(x, y);
 	ampl = ampl * ampl;
-	noise.set(frequency, 0.4+0.3*getPersistence(x, y), 320*ampl, octaves, seed);
+	noise.set(frequency, 0.4+0.3*getPersistence(x, y), 160*ampl, octaves, seed);
 	return noise.getValue(x, y);
 }
 

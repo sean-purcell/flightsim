@@ -17,16 +17,16 @@ endif
 
 .PHONY: all planetest opengltest terraintest
 
-all: planetest terraintest opengltest
+all: planetest opengltest
 
-planetest: bin bin/planetest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/aircraft.o bin/util.o
+planetest: bin bin/planetest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/aircraft.o bin/util.o bin/biome-processor.o bin/lodepng.o
 	g++ -o bin/planetest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 terraintest: bin bin/terraintest.o $(OBJECTS)
 	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
-opengltest: bin bin/opengltest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o
-	g++ -o bin/opengltest $(word 2,$^) bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o $(LIB) $(FLAGS) $(LFLAGS) -flto
+opengltest: bin bin/opengltest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/biome-processor.o bin/lodepng.o
+	g++ -o bin/opengltest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)

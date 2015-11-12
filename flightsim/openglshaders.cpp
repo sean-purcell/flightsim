@@ -31,7 +31,7 @@ const GLchar* vertexSource =
     "   Color = color;"
     "   Normal = normal;"
     "   gl_Position = proj * view * vec4(position, 1.0);"
-    "   dist = gl_Position.z;"
+    "   dist = sqrt(gl_Position.z * gl_Position.z + gl_Position.x * gl_Position.x + gl_Position.y * gl_Position.y);"
     "}";
 
 const GLchar* fragmentSource =
