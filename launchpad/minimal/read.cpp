@@ -37,24 +37,30 @@ int main()
 
         // Input loop
 
+        int num = 0;
         short input = 0;
-        unsigned char  data[2] = {0};
+        unsigned char data[2] = {0};
 
         while (true)
         {
             std::cout << ">>> ";
-            std::cin >> input;
-            if (input < 1)
+            std::cin >> num;
+            if (num < 1)
                 break;
 
-            while (input != 0)
+            while (num-- != 0)
             {
+                // Find alignment byte
+
+                do
+                    boost::asio::read(port, boost::asio::buffer(data, 1));
+                while (data[0] != 0xFF);
+
+                // Read short
+
                 boost::asio::read(port, boost::asio::buffer(data, 2));
-		unsigned short a =  0;
-		a |= data[1];
-		a |= (data[0] << 8);
-                std::cout <<a<<endl;
-                --input;
+                unsigned short a = ((data[0] << 8) | (data[1]));
+                std::cout << a << endl;
             }
             std::cout << "\n";
         }

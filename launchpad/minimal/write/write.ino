@@ -13,8 +13,13 @@ void setup()
 
 void loop()
 {
-  short a; 
-  Serial.write( (byte)((counter & 0xFF00) >> 8));
-  Serial.write((byte)(counter++ & 0x00FF));
+  writeShort(counter++);
   delay(interval);  
+}
+
+void writeShort(short a)
+{
+  Serial.write(0xFF);  // Marker for alignment to prevent read.cpp from desyncing with byte stream
+  Serial.write((byte)(a >> 8));
+  Serial.write((byte)(a));
 }
