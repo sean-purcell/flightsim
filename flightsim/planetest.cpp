@@ -11,6 +11,7 @@
 #include "openglutil.hpp"
 #include "terrain.hpp"
 #include "aircraft.hpp"
+#include "biome-processor.hpp"
 
 GLint uniTrans;
 GLint uniView;
@@ -29,8 +30,7 @@ TerrainChunk *chunks;
 const int chunksAround = 20;
 
 const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.1));
-const vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
-const vec3 FOG_COLOR = vec3(0.75f, 0.75f, 0.75f);
+vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
 
 // min_alt = (scaling factor for amplitude) * (maximum value of amplitude noise) *
 //   (sum of geometric series for maximum value of persistence)
@@ -41,87 +41,14 @@ auto prevtime = std::chrono::high_resolution_clock::now();
 
 Aircraft aircraft;
 
+const char *biomeFile = "biome-earth.png";
+
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
 	while(iter) {
 		iter->draw();
 		iter = iter->next;
 	}
-}
-
-GLuint horizonVbo = 0;
-GLuint horizonEbo = 0;
-void drawHorizon() {
-	GLfloat vertices[108];
-
-	GLubyte indices[] = {
-		0, 8, 5,
-		0, 9, 5,
-		1, 9, 7,
-		1, 11, 7,
-		3, 11, 6,
-		3, 10, 6,
-		2, 10, 4,
-		2, 8, 4,
-	};
-	if(horizonVbo == 0 && horizonEbo == 0) {
-		glGenBuffers(1, &horizonVbo);
-		glGenBuffers(1, &horizonEbo);
-
-		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
-
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	} else {
-		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
-	}
-	updateVertexAttribs();
-
-	static int dx[] = {0, 0, 0, 0, -1, 1, -1, 1, 0, 1, -1, 0};
-	static int dz[] = {0, 0, 0, 0, -1, -1, 1, 1, -1, 0, 0, 1};
-
-	int cx = (int)(camerapos.x / CHUNKWIDTH);
-	int cz = (int)(camerapos.z / CHUNKWIDTH);
-
-	vec3 corners[] = {
-		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
-	};
-
-	for(int i = 0; i < 4; i++) {
-		vec3 v = corners[i];
-		vertices[i * 9 + 0] = v.x;
-		vertices[i * 9 + 1] = v.y;
-		vertices[i * 9 + 2] = v.z;
-	}
-
-	for(int i = 4; i < 12; i++) {
-		vec3 v = vec3(dx[i], 0, dz[i]);
-		v = v * HORIZON_DIST;
-		v = v + corners[i % 4];
-
-		vertices[i * 9 + 0] = v.x;
-		vertices[i * 9 + 1] = v.y;
-		vertices[i * 9 + 2] = v.z;
-	}
-
-	for(int i = 0; i < 12; i++) {
-		vertices[i * 9 + 3] = GLOBAL_LIGHT_DIRECTION.x;
-		vertices[i * 9 + 4] = GLOBAL_LIGHT_DIRECTION.y;
-		vertices[i * 9 + 5] = GLOBAL_LIGHT_DIRECTION.z;
-
-		vertices[i * 9 + 6] = FOG_COLOR.x;
-		vertices[i * 9 + 7] = FOG_COLOR.y;
-		vertices[i * 9 + 8] = FOG_COLOR.z;
-	}
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_BYTE, 0);
 }
 
 void updateTerrain() {
@@ -149,8 +76,13 @@ void updateTerrain() {
 }
 
 void initTerrain() {
+	loadBiomeImage(biomeFile);
+	SKY_COLOR = vec3(biomeColors[200 * 200 * 3 + 0],
+		biomeColors[200 * 200 * 3 + 1],
+		biomeColors[200 * 200 * 3 + 2]);
+
 	std::srand(time(NULL));
-	
+
 	int seed = std::rand() % 65536;
 	std::cout << "seed: " << seed << std::endl;
 	terrain = Terrain(seed, 10);
@@ -170,6 +102,8 @@ void init() // Called before main loop to set up the program
 	initProjmatrix();
 	initVertexAttribs();
 
+	initTerrain();
+
 	uniView = glGetUniformLocation(shaderProgram, "view");
 
 	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
@@ -184,8 +118,6 @@ void init() // Called before main loop to set up the program
 	glUniform1f(horizoncoeff, pow(horizonval, -2));
 
 	glEnable(GL_DEPTH_TEST);
-
-	initTerrain();
 
 	aircraft = Aircraft();
 	prevtime = std::chrono::high_resolution_clock::now();
@@ -283,6 +215,13 @@ void mouseMoveFunc(int x, int y) {
 int main(int argc, char **argv)
 {
 	initializeGLWindow(argc, argv, 800, 600);
+
+	for(int i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--biome") == 0) {
+			biomeFile = argv[i + 1];
+			i++;
+		}
+	}
 
 	// passes reshape and display functions to the OpenGL machine for callback
 	glutDisplayFunc(display);

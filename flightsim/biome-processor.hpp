@@ -7,7 +7,9 @@
 
 #include "openglheaders.hpp"
 
-std::vector<unsigned char> loadBiomeImage(std::string filename);
+extern std::vector<unsigned char> biomeColors;
+
+void loadBiomeImage(std::string filename);
 
 vec3 getBiomeColor(float persistence, float amplitude, std::vector<unsigned char> &image);
 

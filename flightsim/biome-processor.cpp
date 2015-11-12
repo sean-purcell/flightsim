@@ -2,7 +2,9 @@
 #include "biome-processor.hpp"
 #include "openglutil.hpp"
 
-std::vector<unsigned char> loadBiomeImage(const std::string filename){
+std::vector<unsigned char> biomeColors;
+
+void loadBiomeImage(const std::string filename){
 	//reads biome image into img
 
 	std::vector<unsigned char> image;
@@ -10,7 +12,7 @@ std::vector<unsigned char> loadBiomeImage(const std::string filename){
 	unsigned error = lodepng::decode(image, width, height, filename);
 	if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
-	return image;
+	biomeColors = image;
 }
 
 vec3 getBiomeColor(float persistence, float amplitude, std::vector<unsigned char> &image){
