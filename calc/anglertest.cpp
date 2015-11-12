@@ -1,5 +1,5 @@
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include <SFML/System.hpp>
 #include "angler.hpp"
 #include "rotation.hpp"
@@ -18,7 +18,7 @@ sf::Vector2i size(screenwidth, screenheight);
 int main()
 {
     check_asserts();
-    int x, y, z;
+    short x, y, z;
     double a, b, c, d;
     char in;
 
@@ -37,8 +37,8 @@ int main()
                 cin >> x >> y >> z;
                 if (x == y && y == z && z == 0)
                     break;
-                cout << "Change in pitch: " << pitcher(x, y, z) << endl;
-                cout << "Change in roll: " << roller(x, y, z) << endl;
+                cout << "Change in pitch: " << jpitch(x, y, z) << endl;
+                cout << "Change in roll: " << jroll(x, y, z) << endl;
             }
         }
         else if (in == '2')

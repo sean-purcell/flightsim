@@ -7,26 +7,24 @@
 
 Euler::Euler(){}
 
-/** If using ZYX convention:
+/** With ZYX convention:
  *      xE points north
  *      yE points east
  *      zE points down
  *  All parameters are in radians.
  */
-Euler::Euler(float na, float nb, float nc, int nconvention)
+Euler::Euler(float bank, float elevation, float heading)
 {
-    a = na;
-    b = nb;
-    c = nc;
-    convention = nconvention;
+    roll = bank;
+    pitch = elevation;
+    yaw = heading;
 }
 
-/** Returns an Tait-Bryan angle representation of the given rotation quaternion.
+/** Returns an Tait-Bryan z-y-x angle representation of the given rotation quaternion.
  * Maths: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
  */
-Euler Euler::fromRotation(Quaternion r, int convention)
+Euler Euler::fromRotation(Quaternion r)
 {
-    assert(convention == CONVENTION_ZYX);
     float q0 = r.w;
     float q1 = r.x;
     float q2 = r.y;
@@ -39,42 +37,37 @@ Euler Euler::fromRotation(Quaternion r, int convention)
     return Euler(a, b, c);
 }
 
-/** Return the quaternion representation of these Tait-Bryan angles.
+/** Return the quaternion representation of these Tait-Bryan z-y-x angles.
  * Maths: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
  */
 Quaternion Euler::toQuaternion()
 {
-    assert(convention == CONVENTION_ZYX);
-
-    Quaternion labyaw = Quaternion(cos(c/2), 0, 0, sin(c/2));
-    Quaternion labpitch = Quaternion(cos(b/2), 0, sin(b/2), 0);
-    Quaternion labroll = Quaternion(cos(a/2), sin(a/2), 0, 0);
+    Quaternion labyaw = Quaternion(cos(yaw/2), 0, 0, sin(yaw/2));
+    Quaternion labpitch = Quaternion(cos(pitch/2), 0, sin(pitch/2), 0);
+    Quaternion labroll = Quaternion(cos(roll/2), sin(roll/2), 0, 0);
 
     return labyaw * labpitch * labroll;
 }
 
 /** Returns a roll angle in the range (-180, 180] degrees.
  */
-float Euler::bank()
+float Euler::rolld()
 {
-    assert(convention == CONVENTION_ZYX);
-    return degrees(a);
+    return degrees(roll);
 }
 
 /** Returns a pitch angle in the range [-90, 90] degrees.
  */
-float Euler::elevation()
+float Euler::pitchd()
 {
-    assert(convention == CONVENTION_ZYX);
-    return degrees(b);
+    return degrees(pitch);
 }
 
 /** Returns a yaw angle in the range [0, 360) degrees.
  */
-float Euler::heading()
+float Euler::yawd()
 {
-    assert(convention == CONVENTION_ZYX);
-    float h = degrees(c);
+    float h = degrees(yaw);
     if (h < 0) h += 360; // heading is positive
     return h;
 }
@@ -83,7 +76,7 @@ std::string Euler::toString()
 {
 	std::ostringstream os;
 	os << std::setprecision(3) << std::fixed;
-	os << "(" << heading() << "," << elevation() << "," << bank() << ")";
+	os << "(" << yawd() << "," << pitchd() << "," << rolld() << ")";
 	return os.str();
 }
 

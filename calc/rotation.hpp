@@ -4,24 +4,22 @@
 #include <cmath>
 #include "quaternion.hpp"
 
-const int CONVENTION_ZYX = 0;
 const float PI = acos(-1);
 
+/** These angles are with ZYX convention.
+ */
 class Euler
 {
     public:
-        float a, b, c; // Extrinsically rotate in sequence a, b, c or intrinsically rotate in sequence c, b, a
-        int convention;
-
+        float roll, pitch, yaw; // Extrinsically rotate in sequence roll, pitch, yaw
+                                // or intrinsically rotate in sequence yaw, pitch, roll
         Euler();
-        Euler(float na, float nb, float nc, int nconvention=CONVENTION_ZYX);
-        static Euler fromRotation(Quaternion r, int convention=CONVENTION_ZYX);
-        static Euler fromDirection(Quaternion a, int convention=CONVENTION_ZYX);
-        static Euler fromDirection(float x, float y, float z, int convention=CONVENTION_ZYX);
+        Euler(float bank, float elevation, float heading);
+        static Euler fromRotation(Quaternion r);
 
-        float heading();        // Only with ZYX convention
-        float elevation();      // Only with ZYX convention
-        float bank();           // Only with ZYX convention
+        float yawd();
+        float pitchd();
+        float rolld();
 
         Quaternion toQuaternion();
         std::string toString();
