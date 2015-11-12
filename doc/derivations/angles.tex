@@ -49,32 +49,32 @@
 		\item Roll by $\phi$ about $x_b$.
 	\end{enumerate}
 	Note that the body frame rotates with the aircraft as we go through the procedure. 
-	Note also that right hand rule convention is always followed. 
+	Note also that right hand rule convention is always followed.
+	
+	Note that this can be equivalently represented with the $z$-$y$-$x$ (extrinsic rotations) convention:
+	\begin{enumerate}
+		\item Roll by $\phi$ about $x_E$.		
+		\item Pitch by $\theta$ about $y_E$.
+		\item Yaw by $\psi$ about $z_E$.		
+	\end{enumerate}
 	
 	\section{Controller}
 	
 	We want to control the pitch and roll of the aircraft. 
 	(We've given up on yaw because using gravity with the Launchpad only gives us about two detectable axes of rotation.)
 	
-	More specifically, we want to map the angular orientation of the joystick to an angular velocity about a pitch or roll axis. 
-	Let $\vec{g}_c$ be the acceleration of gravity in the coordinate system of the control column.
+	More specifically, we want to map the angular position of the joystick to
+	an angular position for the elevators and ailerons in the flightsim physics calculations. 
+	Let $\vec{g}$ be the acceleration of gravity in the coordinate system of the control column.
 	Then define the following functions:
 	\begin{itemize}
-		\item $\text{pitcher} : \vec{g}_c \mapsto \dot{\theta}$
-		\item $\text{roller} : \vec{g}_c \mapsto \dot{\phi}$
-	\end{itemize} 
+		\item $\text{jpitch} : \vec{g} \mapsto \theta$
+		\item $\text{jroll} : \vec{g} \mapsto \phi$
+	\end{itemize}
 	
-	If we wanted to be more accurate, the controller would not modify the angular velocity of the aircraft directly, 
-	but rather adjust the position of simulated elevators and ailerons. 
-	This would ensure that the aircraft is reliably uncontrollable if we stalled it or whatever.
+	\section{Method: Simple projection}
 	
-	If the controller is too aggresive, it could flip the aircraft 180 degrees away from its velocity and it would be flying backwards, which isn't very realistic. 
-	(Hopefully the simulated flight dynamics stuffs would provide a resistive force to prevent this sort of thing from happening. 
-	If so, then controlling the angular velocity might be not too inaccurate.) But for now, we'll assume that the controller directly controls angular velocity of the aircraft, because it's simpler that way.
-	
-	\section{First Method: Simple projection}
-	
-	We want the orientation of the controller to mirror the direction of the change in angular velocity of the aircraft. 
+	We want the position of the controller to correspond the position of the elevators and ailerons.
 	i.e., if we pitch the controller forwards, we expect the aircraft to do the same. 
 	
 	We will define three mutually orthogonal axes in the reference frame of the controller with the following unit vectors:
@@ -83,34 +83,51 @@
 		\item $\vec{p}$ (\verb|PITCH_AXIS|) : The rotation axis for pitch. Points right when controller is in rest state.
 		\item $\vec{r}$ (\verb|ROLL_AXIS|) : The rotation axis for roll. Points forward when controller is in rest state.
 	\end{itemize}
-	For convenience, we will also define the following two unit vectors:
-	\begin{itemize}
-		\item $\vec{p}_\perp$ (\verb|PITCH_PERP|) : The vector obtained by rotating $\vec{s}$ 90 degrees CCW about $\vec{p}$.
-		\item $\vec{r}_\perp$ (\verb|ROLL_PERP|) :  The vector obtained by rotating $\vec{s}$ 90 degrees CCW about $\vec{r}$.
-	\end{itemize}
 	
 	The Launchpad will detect an acceleration vector $\vec{g}$ that is pointing out from the centre of the Earth. 
 	Assuming that other accelerations such as those from moving the controller are negligible, we now have a vertical reference. 
 	
 	Assume the following:
 	\begin{itemize}
-		\item If $\vec{g} \parallel \verb|STICK|$, then $\dot{\theta} = \dot{\phi} = \SI{0}{\radian\per\second}$
-		\item For pitching, consider only the projection of $\vec{g}$ in the $\langle \vec{s}, \vec{p}_\perp \rangle$-plane.
-		\item For rolling, consider only the projection of $\vec{g}$ in the $\langle \vec{s}, \vec{r}_\perp \rangle$-plane.
+		\item If $\vec{g} \parallel \verb|STICK|$, then $\theta = \phi = \SI{0}{\radian}$
+		\item For pitching, consider only the projection of $\vec{g}$ in the $\langle \vec{s}, \vec{r} \rangle$-plane.
+		\item For rolling, consider only the projection of $\vec{g}$ in the $\langle \vec{s}, \vec{p} \rangle$-plane.
 	\end{itemize}
-	Let $k_1$ be a scaling factor for pitch and $k_2$ be a scaling factor for roll, both in radians per second per radian. Then:
-		$$\dot{\theta} = -k_1\;\text{atan2}(\vec{g} \cdot \vec{p}_\perp, \vec{g} \cdot \vec{s})$$
-		$$\dot{\phi} = -k_2\;\text{atan2}(\vec{g} \cdot \vec{r}_\perp, \vec{g} \cdot \vec{s})$$
-	To establish a maximum rate, we can replace the output of $\text{atan2}$ with a specified max angle if the value is exceeded.
 	
-	\subsection{Issues}
+	\textbf{Joystick Pitch}
+	
+	Here, $\theta$ increases as you tilt the joystick back
+	and $\theta$ decreases as you tilt the joystick forwards.
+	That is, the sign of the angular displacement is as you would expect
+	from a right hand rule rotation of the joystick about $\vec{p}$.	
+	\begin{center}\includegraphics{jpitch.png}\end{center}
+	However, keep in mind that in the joystick reference frame,
+	$\vec{g}$ will appear to rotate clockwise about $\vec{p}$ as $\theta$ increases,
+	opposite of right hand rule. From trig,
+		$$\theta = \text{atan2}(\vec{g} \cdot \vec{r}, \vec{g} \cdot \vec{s})$$	
+	\textbf{Joystick Roll}
+	
+	Here, $\phi$ increases as you tilt the joystick right
+	and $\phi$ decreases as you tilt the joystick left.
+	That is, the sign of the angular displacement is as you would expect
+	from a right hand rule rotation of the joystick about $\vec{r}$.
+	\begin{center}\includegraphics{jroll.png}\end{center}
+	However, keep in mind that in the joystick reference frame,
+	$\vec{g}$ will appear to rotate clockwise about $\vec{r}$ as 
+	$\phi$ increases, opposite of right hand rule. From trig,
+		$$\phi = \text{atan2}(-\vec{g} \cdot \vec{p}, \vec{g} \cdot \vec{s})$$
+
+	We can cap $\theta$ and $\phi$ at $\tfrac{\pi}{2}$ and $\tfrac{-\pi}{2}$ to avoid excessive angles.
+	
+	\subsection{Limitations}
 	
 	Consider the case where we roll the controller left more than 90$\si{\degree}$. 
-	The above formulas will suddenly output maximum pitch, which is not good.
+	The above formulas will suddenly output maximum pitch, which is not an intuitive response.
+	This happens because as soon as we roll left more than 90$\si{\degree}$, the projection of $\vec{g}$ onto the $\langle \vec{s}, \vec{p}_\perp \rangle$-plane suddenly jumps from point up to pointing down,
+	which is the same as a sudden jump from 0$\si{\degree}$ to 180$\si{\degree}$.
+	
+	In normal operation, the user shouldn't really tilt the controller more than 90$\si{\degree}$ from the vertical, so hopefully this won't really matter.
 		
-	
-	
-	
 	\section{References}
 
 	\urlstyle{same}
@@ -118,6 +135,8 @@
 	\begin{itemize}
 		\item Tait-Bryan angles: \url{https://en.wikipedia.org/wiki/Euler_angles#Tait.E2.80.93Bryan_angles}	
 		\item Degrees of freedom (mechanics): \url{https://en.wikipedia.org/wiki/Degrees_of_freedom_(mechanics)}
+		\item Orientation, Rotation, Velocity and Acceleration,
+and the SRM: \url{http://www.sedris.org/wg8home/Documents/WG80485.pdf}
 	\end{itemize}
 
 \end{document}
