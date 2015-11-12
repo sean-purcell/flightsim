@@ -4,7 +4,7 @@
 
 int baud = 9600;
 int interval = 50;
-unsigned char counter = 0;
+short counter = 0;
 
 void setup()
 {
@@ -13,6 +13,8 @@ void setup()
 
 void loop()
 {
-  Serial.write(counter++);
+  short a; 
+  Serial.write( (byte)((counter & 0xFF00) >> 8));
+  Serial.write((byte)(counter++ & 0x00FF));
   delay(interval);  
 }

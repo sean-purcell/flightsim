@@ -11,14 +11,14 @@ int main()
     // Set up
 
     boost::asio::serial_port_base::baud_rate BAUD( 9600 );
-    boost::asio::serial_port_base::character_size CSIZE( 8 );
+    boost::asio::serial_port_base::character_size CHARSIZE( 8 );
     boost::asio::serial_port_base::flow_control FLOW( boost::asio::serial_port_base::flow_control::none );
     boost::asio::serial_port_base::parity PARITY( boost::asio::serial_port_base::parity::none );
     boost::asio::serial_port_base::stop_bits STOP( boost::asio::serial_port_base::stop_bits::one );
 
-    std::string port_name;
-    std::cout << "Serial port: ";
-    std::cin >> port_name;
+    std::string port_name = "/dev/tty.usbmodem0E217381";
+    //std::cout << "Serial port: ";
+    //std::cin >> port_name;
 
     boost::asio::io_service io;
     try
@@ -26,7 +26,7 @@ int main()
        boost::asio::serial_port port(io, port_name);
 
         port.set_option( BAUD );
-        port.set_option( CSIZE );
+        port.set_option( CHARSIZE );
         port.set_option( FLOW );
         port.set_option( PARITY );
         port.set_option( STOP );
@@ -37,8 +37,8 @@ int main()
 
         // Input loop
 
-        int input = 0;
-        unsigned char data[1] = {0};
+        short input = 0;
+        unsigned char  data[2] = {0};
 
         while (true)
         {
@@ -49,8 +49,11 @@ int main()
 
             while (input != 0)
             {
-                boost::asio::read(port, boost::asio::buffer(data, 1));
-                std::cout << data[0] << " ";
+                boost::asio::read(port, boost::asio::buffer(data, 2));
+		unsigned short a =  0;
+		a |= data[1];
+		a |= (data[0] << 8);
+                std::cout <<a<<endl;
                 --input;
             }
             std::cout << "\n";
