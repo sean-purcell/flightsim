@@ -11,7 +11,7 @@ extern "C" {
 
 
 /* ------------------------------------------------------------ */
-/*				Local Type Definitions		*/
+/*                    Local Type Definitions                    */
 /* ------------------------------------------------------------ */
 #define DEMO_0		0
 #define DEMO_1		2
@@ -23,21 +23,21 @@ extern "C" {
 
 
 /* ------------------------------------------------------------ */
-/*				Global Variables		*/
+/*                     Global Variables	                        */
 /* ------------------------------------------------------------ */
 extern int xchOledMax; // defined in OrbitOled.c
 extern int ychOledMax; // defined in OrbitOled.c
 
 
-/* ------------------------------------------------------------ */
-/*				Local Variables			*/
-//* ------------------------------------------------------------ */
+/* ----------------------------------------------------------- */
+/*                     Local Variables                         */
+/* ----------------------------------------------------------- */
 char	chSwtCur;
 char	chSwtPrev;
 bool	fClearOled;
 
 /* ------------------------------------------------------------ */
-/*				Forward Declarations							*/
+/*                     Forward Declarations                     */
 /* ------------------------------------------------------------ */
 void DeviceInit();
 char CheckSwitches();
@@ -54,61 +54,79 @@ void RocketStop(int xcoUpdate, int ycoUpdate, bool fDir);
 char I2CGenTransmit(char * pbData, int cSize, bool fRW, char bAddr);
 bool I2CGenIsNotIdle();
 
-
 void setup()
 {
 	DeviceInit();
-
 	Serial.begin(9600);
 }
 
-short	dataX, dataY, dataZ;
+short	dataX = 0, dataY = 0, dataZ = 0;
 
 char 	chPwrCtlReg = 0x2D;
 char 	chX0Addr = 0x32;
 char 	chY0Addr = 0x34;
 char 	chZ0Addr = 0x36;
 
-#define UNDEFINED
+char 	rgchReadAccl[] = {0, 0, 0};
+char 	rgchWriteAccl[] = {0, 0};
 
-char 	rgchReadAccl[] = {
-	0, 0, 0            };
-char 	rgchWriteAccl[] = {
-	0, 0            };
+/* ------------------------------------------------------------ */
+/*                            Loop                              */
+/* ------------------------------------------------------------ */
+
+#define DEBUG2
+
 void loop()
 {
-#ifdef UNDEFINED
-	/* get info from accelerometer */
+	readAccel();
+	delay(50);
 
-	/*
-	 * Read the X data register
-	 */
+	#ifdef DEBUG0
+		Serial.print("TESTING\n");
+	#endif
+
+	#ifdef DEBUG1
+		Serial.print(dataX, DEC);
+		Serial.print(',');
+		Serial.print(dataY, DEC);
+		Serial.print(',');
+		Serial.println(dataZ, DEC);
+	#endif
+
+	#ifdef DEBUG2
+		send(dataX, dataY, dataZ);
+	#endif
+
+	#ifdef DEBUG3
+		if (Serial.available())
+		{
+			Serial.read();
+			send(dataX, dataY, dataZ)
+		}
+	#endif
+
+}
+
+/** Get info from accelerometer.
+ * Read the X, Y, and Z data registers, and put the
+ * values into the global short variables dataX, dataY, dataZ.
+ */
+void readAccel()
+{
+	// Get the X
 	rgchReadAccl[0] = chX0Addr;
 	I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
-
 	dataX = (rgchReadAccl[2] << 8) | rgchReadAccl[1];
 
+	// Get the Y
 	rgchReadAccl[0] = chY0Addr;
 	I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
-
 	dataY = (rgchReadAccl[2] << 8) | rgchReadAccl[1];
 
+	// Get the Z
 	rgchReadAccl[0] = chZ0Addr;
 	I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
-
 	dataZ = (rgchReadAccl[2] << 8) | rgchReadAccl[1];	
-#endif
-
-#ifndef UNDEFINED
-	Serial.print("TESTING\n");
-#endif
-#ifdef UNDEFINED
-	Serial.print((int)dataX);
-	Serial.print(',');
-	Serial.print((int)dataY);
-	Serial.print(',');
-	Serial.println((int)dataZ);
-#endif
 }
 
 /* ------------------------------------------------------------ */
