@@ -77,9 +77,9 @@ void updateTerrain() {
 
 void initTerrain() {
 	loadBiomeImage(biomeFile);
-	SKY_COLOR = vec3(biomeColors[200 * 200 * 3 + 0],
-		biomeColors[200 * 200 * 3 + 1],
-		biomeColors[200 * 200 * 3 + 2]);
+	SKY_COLOR = vec3(biomeColors[200 * 200 * 4 + 0],
+		biomeColors[200 * 200 * 4 + 1],
+		biomeColors[200 * 200 * 4 + 2]) / 255.f;
 
 	std::srand(time(NULL));
 

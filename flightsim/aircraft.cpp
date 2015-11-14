@@ -35,9 +35,9 @@ void Aircraft::init_params() {
 Aircraft::Aircraft(){
 	init_params();
 
-	pos = vec3(1, 10000, 1);
+	pos = vec3(1, 1000, 1);
 	facing = quat(1, 0, 0, 0);	//orientation
-	velocity = vec3(0, 0, 0);
+	velocity = vec3(0, 0, 500);
 	omega = vec3(0, 0, 0);
 }
 
