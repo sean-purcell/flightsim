@@ -27,7 +27,7 @@ void Aircraft::init_params() {
 	rudderarea = 0.3;
 	rudderradius = 8;
 	rho = 1.225;
-	dragcoeff = 0.3;
+	dragcoeff = 0.2;
 	rudderdampcoeff = 100;
 	rolldampcoeff = 50;
 }
