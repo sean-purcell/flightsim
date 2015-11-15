@@ -39,6 +39,7 @@ bool	fClearOled;
 /* ------------------------------------------------------------ */
 /*                     Forward Declarations                     */
 /* ------------------------------------------------------------ */
+void readAccel();
 void DeviceInit();
 char CheckSwitches();
 void OrbitSetOled();

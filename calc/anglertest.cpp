@@ -1,9 +1,11 @@
 #include <iostream>
 #include <cstdio>
 #include <SFML/System.hpp>
+#include <boost/asio.hpp>
 #include "angler.hpp"
 #include "rotation.hpp"
 #include "quaternion.hpp"
+#include "serialin.hpp"
 
 using namespace std;
 
@@ -27,6 +29,7 @@ int main()
         cout << "1. Joystick" << endl;
         cout << "2. Euler to quaternion" << endl;
         cout << "3. Quaternion to Euler" << endl;
+        cout << "4. Serial" << endl;
         cout << "0. Exit" << endl;
         cin >> in;
 
@@ -65,6 +68,29 @@ int main()
                     break;
                 Euler e = Euler::fromRotation(Quaternion(a, b, c, d));
                 cout << "Tait-Bryan angles: " << e.toString() << endl;
+            }
+        }
+        else if (in == '4')
+        {
+            string port_name;
+            cout << "Serial port: ";
+            cin >> port_name;
+
+            boost::asio::serial_port * port = initSerial(port_name);
+            if (port)
+            {
+               cout << "Opened serial port." << endl;
+               char data[6] = {0};
+               char header[] = "\xFE\xFF";
+               while (true)
+               {
+                   readSerial(port, data, 6, header);
+                   short x = getShort(data, 0);
+                   short y = getShort(data, 2);
+                   short z = getShort(data, 4);
+                   cout << "Change in pitch: " << jpitch(x, y, z) << endl;
+                   cout << "Change in roll: " << jroll(x, y, z) << endl;
+               }
             }
         }
         else
