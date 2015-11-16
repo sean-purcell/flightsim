@@ -27,7 +27,7 @@ void Aircraft::init_params() {
 	rudderarea = 0.3;
 	rudderradius = 8;
 	rho = 1.225;
-	dragcoeff = 0.3;
+	dragcoeff = 0.2;
 	rudderdampcoeff = 100;
 	rolldampcoeff = 50;
 }
@@ -35,9 +35,9 @@ void Aircraft::init_params() {
 Aircraft::Aircraft(){
 	init_params();
 
-	pos = vec3(1, 10000, 1);
+	pos = vec3(1, 1000, 1);
 	facing = quat(1, 0, 0, 0);	//orientation
-	velocity = vec3(0, 0, 0);
+	velocity = vec3(0, 0, 500);
 	omega = vec3(0, 0, 0);
 }
 

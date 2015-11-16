@@ -5,37 +5,13 @@
 #include <iostream>
 
 #include "terrain.hpp"
-#include "drawable.hpp"
-#include "shapes.hpp"
 #include "simplexnoise.hpp"
 #include "openglutil.hpp"
 #include "biome-processor.hpp"
 
-const vec3 WATERCOLOR(1.0f, 0.06f, 0.06f);
-const vec3 TERRAINCOLOR = vec3(132, 85, 38) / 255.f;
-const vec3 MOUNTAINCOLOR(0.27f, 0.27f, 0.27f);
-const float SEALEVEL = 0;
-
-std::vector<unsigned char> biomeColors = loadBiomeImage(std::string("biomes.png"));
-
-float heightDistort(float height){
-	//if you want to change how height is displayed, touch this instead of anything else please
-	return 3*(height);
-}
-
-float srandTheta(int i, int j){
-	srand(i*65537+j);
-	return ((float)rand()/RAND_MAX)*2*M_PI;
-}
-
 int srandBit(int i, int j){
 	srand(i*65537 + j);
 	return (rand()>(RAND_MAX)/2);
-}
-
-sf::Color getColor(int x, int z, int q) {
-	srand((x * 65537 + z) * (q ? 1 : -1));
-	return sf::Color(rand() % 256, rand() % 256, rand() % 256);
 }
 
 //implemented based on pseudocode on en.wikipedia.org/wiki/Perlin_noise
@@ -57,7 +33,6 @@ float Terrain::getAmplitude(float x, float y){
 float Terrain::getPersistence(float x, float y){
 	return pers.getValue(x,y);
 }
-
 
 float Terrain::getHeight(float x, float y){
 	float ampl = 1.1 + getAmplitude(x, y);
@@ -122,7 +97,7 @@ void TerrainChunk::initVertices() {
 	}
 
 	int idx = 0;
-	vec3 start = vec3(x * CHUNKWIDTH, SEALEVEL, z * CHUNKWIDTH);
+	vec3 start = vec3(x * CHUNKWIDTH, 0, z * CHUNKWIDTH);
 	for(int i = 0; i <= CHUNKCOUNT; i++) {
 		for(int j = 0; j <= CHUNKCOUNT; j++) {
 			float x0 = i * CHUNKRATIO;
