@@ -41,7 +41,7 @@ auto prevtime = std::chrono::high_resolution_clock::now();
 
 Aircraft aircraft;
 
-const char *biomeFile = "biome-earth.png";
+const char *biomeFile = "resources/biome-earth.png";
 
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
