@@ -9,9 +9,9 @@ extern float up, down, left, right;
 
 void Aircraft::init_params() {
 	g = -9.8;
-	mass = 23500;
-	thrust = 62300 * 2;
-	aoi = 10 * M_PI / 180;
+	mass = 16770;
+	thrust = 79200 * 2;
+	aoi = 5 * M_PI / 180;
 	maxaileron = 45 * M_PI / 180;
 	minaileron = -45 * M_PI / 180;
 	maxelevator = 24 * M_PI / 180;

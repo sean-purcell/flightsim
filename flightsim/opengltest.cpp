@@ -10,6 +10,7 @@
 #include "openglshaders.hpp"
 #include "openglutil.hpp"
 #include "terrain.hpp"
+#include "biome-processor.hpp"
 
 GLint uniTrans;
 GLint uniView;
@@ -18,7 +19,8 @@ GLuint vao;
 vec3 camerapos(0, 0, 3);
 quat camerarotation(1,0,0,0);
 
-bool left, right, up, down;
+float left = 0, right = 0, up = 0, down = 0;
+float mf = 0, ml = 0, mr = 0, mb = 0;
 int mx, my;
 
 Terrain terrain(0, 0);
@@ -27,14 +29,17 @@ TerrainChunk *chunks;
 
 const int chunksAround = 20;
 
-const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.2));
-const vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
-const vec3 FOG_COLOR = vec3(0.75f, 0.75f, 0.75f);
+const vec3 GLOBAL_LIGHT_DIRECTION = normalize(vec3(0, 1, 0.1));
+vec3 SKY_COLOR = vec3(135, 206, 235) / 255.f;
 
 // min_alt = (scaling factor for amplitude) * (maximum value of amplitude noise) *
 //   (sum of geometric series for maximum value of persistence)
 const float MIN_ALT = -160 * 2.1 * 1 / (1 - 0.7);
 const float HORIZON_DIST = chunksAround * 10 * CHUNKWIDTH;
+
+auto prevtime = std::chrono::high_resolution_clock::now();
+
+const char *biomeFile = "biome-earth.png";
 
 void drawTerrain() {
 	TerrainChunk *iter = chunks;
@@ -42,81 +47,6 @@ void drawTerrain() {
 		iter->draw();
 		iter = iter->next;
 	}
-}
-
-GLuint horizonVbo = 0;
-GLuint horizonEbo = 0;
-void drawHorizon() {
-	GLfloat vertices[108];
-
-	GLubyte indices[] = {
-		0, 8, 5,
-		0, 9, 5,
-		1, 9, 7,
-		1, 11, 7,
-		3, 11, 6,
-		3, 10, 6,
-		2, 10, 4,
-		2, 8, 4,
-	};
-	if(horizonVbo == 0 && horizonEbo == 0) {
-		glGenBuffers(1, &horizonVbo);
-		glGenBuffers(1, &horizonEbo);
-
-		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
-
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	} else {
-		glBindBuffer(GL_ARRAY_BUFFER, horizonVbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, horizonEbo);
-	}
-	updateVertexAttribs();
-
-	static int dx[] = {0, 0, 0, 0, -1, 1, -1, 1, 0, 1, -1, 0};
-	static int dz[] = {0, 0, 0, 0, -1, -1, 1, 1, -1, 0, 0, 1};
-
-	int cx = (int)(camerapos.x / CHUNKWIDTH);
-	int cz = (int)(camerapos.z / CHUNKWIDTH);
-
-	vec3 corners[] = {
-		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz - chunksAround) * CHUNKWIDTH),
-		vec3((cx - chunksAround) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
-		vec3((cx + chunksAround+1) * CHUNKWIDTH, MIN_ALT, (cz + chunksAround+1) * CHUNKWIDTH),
-	};
-
-	for(int i = 0; i < 4; i++) {
-		vec3 v = corners[i];
-		vertices[i * 9 + 0] = v.x;
-		vertices[i * 9 + 1] = v.y;
-		vertices[i * 9 + 2] = v.z;
-	}
-
-	for(int i = 4; i < 12; i++) {
-		vec3 v = vec3(dx[i], 0, dz[i]);
-		v = v * HORIZON_DIST;
-		v = v + corners[i % 4];
-
-		vertices[i * 9 + 0] = v.x;
-		vertices[i * 9 + 1] = v.y;
-		vertices[i * 9 + 2] = v.z;
-	}
-
-	for(int i = 0; i < 12; i++) {
-		vertices[i * 9 + 3] = GLOBAL_LIGHT_DIRECTION.x;
-		vertices[i * 9 + 4] = GLOBAL_LIGHT_DIRECTION.y;
-		vertices[i * 9 + 5] = GLOBAL_LIGHT_DIRECTION.z;
-
-		vertices[i * 9 + 6] = FOG_COLOR.x;
-		vertices[i * 9 + 7] = FOG_COLOR.y;
-		vertices[i * 9 + 8] = FOG_COLOR.z;
-	}
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_BYTE, 0);
 }
 
 void updateTerrain() {
@@ -144,8 +74,13 @@ void updateTerrain() {
 }
 
 void initTerrain() {
+	loadBiomeImage(biomeFile);
+	SKY_COLOR = vec3(biomeColors[200 * 200 * 4 + 0],
+		biomeColors[200 * 200 * 4 + 1],
+		biomeColors[200 * 200 * 4 + 2]) / 255.f;
+
 	std::srand(time(NULL));
-	
+
 	int seed = std::rand() % 65536;
 	std::cout << "seed: " << seed << std::endl;
 	terrain = Terrain(seed, 10);
@@ -165,6 +100,8 @@ void init() // Called before main loop to set up the program
 	initProjmatrix();
 	initVertexAttribs();
 
+	initTerrain();
+
 	uniView = glGetUniformLocation(shaderProgram, "view");
 
 	GLint light = glGetUniformLocation(shaderProgram, "LIGHT_DIR");
@@ -180,7 +117,7 @@ void init() // Called before main loop to set up the program
 
 	glEnable(GL_DEPTH_TEST);
 
-	initTerrain();
+	prevtime = std::chrono::high_resolution_clock::now();
 
 	std::cout << "init done\n";
 }
@@ -188,21 +125,25 @@ void init() // Called before main loop to set up the program
 float ang = 0.f;
 
 void tick() {
+	using namespace std::chrono;
 	ang += 0.05f;
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
+	auto time = high_resolution_clock::now();
+	float dt = duration_cast<duration<float> >(time - prevtime).count();
+	prevtime = time;
+
+	quat mov = quat(1, 0, 0, 0);
+	mov = angleAxis(5.f* dt * (right - left), vec3(0, 1, 0)) * mov;
+	mov = angleAxis(2.5f* dt * (down - up), vec3(1, 0, 0)) * mov;
+	camerarotation = mov * camerarotation;
+	std::cout << camerarotation.w << "," << camerarotation.x << "," << camerarotation.y << "," << camerarotation.z << std::endl;
 	
-	camerapos = camerapos + (vec3(0,0, -50. * (float) up) * camerarotation);
-	camerapos = camerapos + (vec3(0,0, 50. * (float) down) * camerarotation);
-	camerapos = camerapos + (vec3(50. * (float) right, 0, 0) * camerarotation);
-	camerapos = camerapos + (vec3(-50. * (float) left, 0, 0) * camerarotation);
-
-	std::cout << std::setprecision(3) << std::fixed
-		<< "(" << camerapos.x << "," << camerapos.y << "," << camerapos.z << ")";
-	vec3 facing = camerarotation * vec3(0, 0, 1);
-	std::cout 
-		<< "(" << facing.x << "," << facing.y << "," << facing.z << ")" << std::endl;
-
+	camerapos = camerapos + (vec3(0,0, 50. * (float) mf) * camerarotation);
+	camerapos = camerapos + (vec3(0,0, -50. * (float) mb) * camerarotation);
+	camerapos = camerapos + (vec3(50. * (float) ml, 0, 0) * camerarotation);
+	camerapos = camerapos + (vec3(-50. * (float) mr, 0, 0) * camerarotation);
+	
 	updateTerrain();
 }
 
@@ -210,7 +151,6 @@ void tick() {
 // to display a frame
 void display()
 {
-
 	tick();
 
 	glBindVertexArray(vao);
@@ -221,6 +161,7 @@ void display()
 	mat4 view(1.f);
 	view = translate(view, -camerapos);
 	view = mat4_cast(camerarotation) * view;
+	view = mat4_cast(angleAxis((float)M_PI, vec3(0,1,0))) * view;
 
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
@@ -242,6 +183,10 @@ void keyboardDownFunc(unsigned char c, int x, int y) {
 	case 'w': up = true; break;
 	case 's': down = true; break;
 	case 'd': right = true; break;
+	case 'i': mf = true; break;
+	case 'j': ml = true; break;
+	case 'l': mr = true; break;
+	case 'k': mb = true; break;
 	}
 }
 
@@ -253,23 +198,27 @@ void keyboardUpFunc(unsigned char c, int x, int y) {
 	case 'w': up = false; break;
 	case 's': down = false; break;
 	case 'd': right = false; break;
+	case 'i': mf = false; break;
+	case 'j': ml = false; break;
+	case 'l': mr = false; break;
+	case 'k': mb = false; break;
 	}
 }
 
 void mouseMoveFunc(int x, int y) {
-	int dx = x - mx;
-	int dy = y - my;
-
-	quat rot = normalize(quat(1, 0.003*dy, 0.003*dx, 0));
-	camerarotation = rot * camerarotation;
-
-	mx = x;
-	my = y;
+	return;
 }
 
 int main(int argc, char **argv)
 {
 	initializeGLWindow(argc, argv, 800, 600);
+
+	for(int i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--biome") == 0) {
+			biomeFile = argv[i + 1];
+			i++;
+		}
+	}
 
 	// passes reshape and display functions to the OpenGL machine for callback
 	glutDisplayFunc(display);
