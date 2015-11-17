@@ -1,7 +1,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <cstdlib>
-#include "serialin.hpp"
+#include "serial.hpp"
 
 /** Assuming big endian (MSB first).
  */
@@ -15,18 +15,28 @@ short getShort(const char *buffer, int start)
  * Then it reads len bytes from serial port into a char array and returns it.
  * Returned array does not include header.
  */
-void readSerial(boost::asio::serial_port * port, char * data, int len = 6, const char header[] = "\xFE\xFF")
+bool readSerial(boost::asio::serial_port * port, char * data, int len = 6, const char header[] = "\xFE\xFF")
 {
-    int m = 0;
-    while (header[m] != 0)
+    try
     {
-        boost::asio::read(*port, boost::asio::buffer(data, 1));
-        if (data[0] == header[m])
-            ++m;
-        else
-            m = 0;
+        int m = 0;
+        while (header[m] != 0)
+        {
+            boost::asio::read(*port, boost::asio::buffer(data, 1));
+            if (data[0] == header[m])
+                ++m;
+            else
+                m = 0;
+        }
+        boost::asio::read(*port, boost::asio::buffer(data, len));
     }
-    boost::asio::read(*port, boost::asio::buffer(data, len));
+    catch (const boost::system::system_error &ex)
+    {
+        std::cout << ex.what() << "\n";
+        std::cout << "Error: Could not open serial port.\n";
+        return false;
+    }
+    return true;
 }
 
 boost::asio::serial_port * initSerial(std::string port_name)
