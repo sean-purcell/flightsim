@@ -1,6 +1,6 @@
 void send(short a, short b, short c)
 {
-    writeShort(0xFEFF);
+    writeShort(0x8080);
     writeShort(a);
     writeShort(b);
     writeShort(c);

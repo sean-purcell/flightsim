@@ -29,7 +29,7 @@ int main()
         cout << "1. Joystick" << endl;
         cout << "2. Euler to quaternion" << endl;
         cout << "3. Quaternion to Euler" << endl;
-        cout << "4. Serial" << endl;
+        cout << "4. Blocking Serial Read" << endl;
         cout << "0. Exit" << endl;
         cin >> in;
 
@@ -76,25 +76,31 @@ int main()
             cout << "Serial port: ";
             cin >> port_name;
 
-            Serial port(port_name, 6, "\xFE\xFF");
+            Serial port(port_name, 6, "\x80\x80");
             try
             {
-                if (port.status == 0)
+                if (port.status == Serial::IDLE)
                 {
-                   cout << "Opened serial port." << endl;
-                   while (1)
+                   int input;
+                   cout << "Opened serial port. Type in number of bytes to try and read.\n";
+
+                   do
                    {
-                       cin >> port_name;
-                       if (port.read(6))
+                       cin >> input;
+                       for (int i = 0; i < input; ++i)
                        {
-                           short x = getShort(port.data, 0);
-                           short y = getShort(port.data, 2);
-                           short z = getShort(port.data, 4);
-                           cout << ">>> Input: " << x << " " << y << " " << z << endl;
-                           cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
-                           cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                           if (port.read(6))
+                           {
+                               short x = getShort(port.data, 0);
+                               short y = getShort(port.data, 2);
+                               short z = getShort(port.data, 4);
+                               cout << ">>> Input: " << x << " " << y << " " << z << endl;
+                               cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+                               cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                           }
                        }
                    }
+                   while (input > 0);
                 }
             }
             catch (const boost::system::system_error &ex)
