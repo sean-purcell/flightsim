@@ -30,11 +30,14 @@ int main()
         cout << "2. Euler to quaternion" << endl;
         cout << "3. Quaternion to Euler" << endl;
         cout << "4. Blocking Serial Read" << endl;
+        cout << "5. Timeout Serial Read Abort" << endl;
+        cout << "6. Timeout Serial Read Finish" << endl;
         cout << "0. Exit" << endl;
         cin >> in;
 
         if (in == '1')
         {
+            cout << "Input gx, gy, and gz. Input all 0 to exit." << endl;
             while (1)
             {
                 cin >> x >> y >> z;
@@ -46,6 +49,7 @@ int main()
         }
         else if (in == '2')
         {
+            cout << "Input roll, pitch, yaw. Input yaw = 360 to exit." << endl;
             while (1)
             {
                 cin >> a >> b >> c;
@@ -61,6 +65,7 @@ int main()
         }
         else if (in == '3')
         {
+            cout << "Input quaternion comonents. Input all 0 to exit." << endl;
             while (1)
             {
                 cin >> a >> b >> c >> d;
@@ -94,7 +99,7 @@ int main()
                                short x = getShort(port.data, 0);
                                short y = getShort(port.data, 2);
                                short z = getShort(port.data, 4);
-                               cout << ">>> Input: " << x << " " << y << " " << z << endl;
+                               printf(">>> Input: %d %d %d\n", x, y, z);
                                cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
                                cout << "    Change in roll: " << jroll(x, y, z) << endl;
                            }
@@ -108,6 +113,44 @@ int main()
                 std::cout << ex.what() << "\n";
                 std::cout << "Error: Could not open serial port.\n";
             }
+        }
+        else if (in == '5')
+        {
+            string port_name;
+            cout << "Serial port: ";
+            cin >> port_name;
+
+            Serial port(port_name, 6, "\x80\x80");
+            if (port.status == Serial::IDLE)
+            {
+               int input;
+               cout << "Opened serial port. Type in timeout duration in milliseconds, or -2 to quit.\n";
+
+               port.mode = Serial::MODE_ABORT;
+
+               do
+               {
+                   cin >> input;
+                   if (port.read(6, input))
+                   {
+                       short x = getShort(port.data, 0);
+                       short y = getShort(port.data, 2);
+                       short z = getShort(port.data, 4);
+                       printf(">>> Input: %d %d %d\n", x, y, z);
+                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                   }
+                   else
+                   {
+                       cout << ">>> TIMEOUT" << endl;
+                   }
+               }
+               while (input > -2);
+            }
+        }
+        else if (in == '6')
+        {
+
         }
         else
             break;

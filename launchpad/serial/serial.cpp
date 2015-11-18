@@ -129,6 +129,8 @@ bool Serial::read(int nbytes, int timeout)
     if (timeout < 0)
         return blocking_read(nbytes);
 
+    printf(">>> Entering.\n");
+
     return timeout_read(nbytes, timeout);
 }
 
@@ -184,14 +186,22 @@ bool Serial::timeout_read(int nbytes, int timeout)
 {
     // Start seeking thread
 
+    printf("   status: %d\n", status);
     status = SEEKING;
+    printf("   status: %d\n", status);
     this->nbytes = nbytes;
+    printf("   nbytes: %d\n", nbytes);
     port->get_io_service().reset();
-    async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
+    printf("   RESET\n", nbytes);
+    //async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
+    //boost::asio::async_read(*port, boost::asio::buffer(data, 1), boost::bind(&dummy, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+    printf("   ENTER\n", nbytes);
 
     // Start timeout timer
 
     timer->expires_from_now(boost::posix_time::milliseconds(timeout));
+    printf("   SET EXPIRE %p\n", timer);
+    std::cout << "    XP = " << boost::posix_time::to_iso_string(timer->expires_at()) << std::endl;
     timer->async_wait
     (
         boost::bind
@@ -200,7 +210,9 @@ bool Serial::timeout_read(int nbytes, int timeout)
             boost::asio::placeholders::error
         )
     );
-    port->get_io_service().run();
+    printf("   ASYNC WAIT\n", nbytes);
+    port->get_io_service().run(); // TODO: Wait, if time_out doesn't cancel reading operations, wouldn't this block until those are done?
+    printf("   RUN\n", nbytes);
 
     return status == IDLE;
 }
@@ -214,9 +226,12 @@ bool Serial::timeout_read(int nbytes, int timeout)
  */
 void Serial::async_next(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
+    printf("   -- Async %s %d\n", error.message().c_str(), bytes_transferred);
+    printf("      Status %d\n", status);
     if (error == boost::asio::error::operation_aborted)
     /* Read timed out, so reset seeker and return. */
     {
+        printf("      ABORT\n");
         status = IDLE;
         seeker = 0;
         return;
@@ -233,6 +248,7 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * Go on to the next byte.
      */
     {
+        printf("      SEEK\n");
         async_seek_header(bytes_transferred);
     }
     else if (status == READING)
@@ -240,6 +256,7 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * the important bytes into the data char array.
      */
     {
+        printf("      READ\n");
         async_read(this->nbytes, bytes_transferred);
     }
     else if (status == IDLE)
@@ -247,10 +264,16 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * If there is a notify function set for reading operations, invoke it.
      */
     {
+        printf("      FINISH\n");
         timer->cancel();
         if (read_notify)
             read_notify(error, bytes_transferred);
     }
+}
+
+void dummy(const boost::system::error_code& error, std::size_t bytes_transferred)
+{
+    printf("        LLOLOLOLOKLOLOLOLOLOLOKOKOKFPKSFIJIOSJFIOJDIO\n");
 }
 
 /** Handler method invoked by async_next.
@@ -267,18 +290,20 @@ void Serial::async_seek_header(int bytes_transferred)
     if (bytes_transferred)
     /* Check if byte correspondings with header. */
     {
+        printf("          + seek > compare\n");
         if (data[0] == header[seeker]) ++seeker;
         else seeker = 0;
     }
     if (seeker < header.length())
     /* We're not done finding the header yet. Read the next byte. */
     {
+        printf("          + seek > async_read\n");
         boost::asio::async_read
         (
             *port, boost::asio::buffer(data, 1),
             boost::bind
             (
-                &Serial::async_next, this,
+                &dummy,
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred
             )
@@ -287,6 +312,7 @@ void Serial::async_seek_header(int bytes_transferred)
     else
     /* We found the header. Go on to the data reading operation. */
     {
+        printf("          + seek > end\n");
         seeker = 0;
         status = READING;
         async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);

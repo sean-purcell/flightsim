@@ -20,7 +20,6 @@ class Serial
         /* Backend stuff */
         boost::asio::serial_port *port;
         boost::asio::deadline_timer *timer;
-        bool read_error;
         int status;
 
         /* User can access these directly */
@@ -38,7 +37,8 @@ class Serial
         void reinit(std::string port_name);
         bool read(int nbytes, int timeout=-1);
         void abort();
-    private:
+
+        /* Hidden stuff */
         bool blocking_read(int nbytes);
         void blocking_seek_header();
 
@@ -51,6 +51,8 @@ class Serial
         int seeker;
         int nbytes;
 };
+
+void dummy(const boost::system::error_code& error, std::size_t bytes_transferred);
 
 /*class Serial
 {
