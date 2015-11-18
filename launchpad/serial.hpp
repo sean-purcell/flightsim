@@ -8,32 +8,48 @@ short getShort(const char *buffer, int start);
 class Serial
 {
     public:
+        /* Constants */
         static const int INVALID;
         static const int IDLE;
         static const int SEEKING;
         static const int READING;
+        static const int WRITING;
+        static const int MODE_ABORT; // abort read operation if timeout
+        static const int MODE_FINISH; // if timeout, return, but continue trying to read
 
+        /* Backend stuff */
         boost::asio::serial_port *port;
         boost::asio::deadline_timer *timer;
         bool read_error;
         int status;
 
+        /* User can access these directly */
+        void (*read_notify)(const boost::system::error_code &ec, std::size_t bytes_transferred);
+        void (*write_notify)(const boost::system::error_code &ec, std::size_t bytes_transferred);
         std::string header;
         char * data;
         int len;
+        int mode;
 
+        /* Constructors and methods */
         Serial();
         ~Serial();
-        Serial(std::string port_name, int buffer_len, std::string header);
+        Serial(std::string port_name, int buffer_len, std::string header="");
         void reinit(std::string port_name);
         bool read(int nbytes, int timeout=-1);
+        void abort();
     private:
         bool blocking_read(int nbytes);
         void blocking_seek_header();
 
-        void seek_header_timeout();
-        void timeout_read(int nbytes, int timeout);
+        bool timeout_read(int nbytes, int timeout);
+        void async_next(const boost::system::error_code& error, std::size_t bytes_transferred);
+        void async_seek_header(int bytes_transferred);
+        void async_read(int nbytes, int bytes_transferred);
+        void time_out(const boost::system::error_code& error);
 
+        int seeker;
+        int nbytes;
 };
 
 /*class Serial
