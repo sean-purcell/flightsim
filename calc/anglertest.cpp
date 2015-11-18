@@ -5,7 +5,7 @@
 #include "angler.hpp"
 #include "rotation.hpp"
 #include "quaternion.hpp"
-#include "serialin.hpp"
+#include "serial.hpp"
 
 using namespace std;
 
@@ -76,21 +76,29 @@ int main()
             cout << "Serial port: ";
             cin >> port_name;
 
-            boost::asio::serial_port * port = initSerial(port_name);
-            if (port)
+            Serial port(port_name, 6, "\xFE\xFF");
+            try
             {
-               cout << "Opened serial port." << endl;
-               char data[6] = {0};
-               char header[] = "\xFE\xFF";
-               while (true)
-               {
-                   readSerial(port, data, 6, header);
-                   short x = getShort(data, 0);
-                   short y = getShort(data, 2);
-                   short z = getShort(data, 4);
-                   cout << "Change in pitch: " << jpitch(x, y, z) << endl;
-                   cout << "Change in roll: " << jroll(x, y, z) << endl;
-               }
+                if (port.status == 0)
+                {
+                   cout << "Opened serial port." << endl;
+                   while (1)
+                   {
+                       cin >> port_name;
+                       port.read(6);
+                       short x = getShort(port.data, 0);
+                       short y = getShort(port.data, 2);
+                       short z = getShort(port.data, 4);
+                       cout << ">>> Input: " << x << " " << y << " " << z << endl;
+                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                   }
+                }
+            }
+            catch (const boost::system::system_error &ex)
+            {
+                std::cout << ex.what() << "\n";
+                std::cout << "Error: Could not open serial port.\n";
             }
         }
         else
