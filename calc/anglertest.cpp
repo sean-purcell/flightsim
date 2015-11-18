@@ -85,13 +85,15 @@ int main()
                    while (1)
                    {
                        cin >> port_name;
-                       port.read(6);
-                       short x = getShort(port.data, 0);
-                       short y = getShort(port.data, 2);
-                       short z = getShort(port.data, 4);
-                       cout << ">>> Input: " << x << " " << y << " " << z << endl;
-                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
-                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                       if (port.read(6))
+                       {
+                           short x = getShort(port.data, 0);
+                           short y = getShort(port.data, 2);
+                           short z = getShort(port.data, 4);
+                           cout << ">>> Input: " << x << " " << y << " " << z << endl;
+                           cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+                           cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                       }
                    }
                 }
             }

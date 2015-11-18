@@ -4,24 +4,35 @@
 #include <boost/asio.hpp>
 
 short getShort(const char *buffer, int start);
-bool readSerial(boost::asio::serial_port * port, char * data, int len, const char header[]);
-boost::asio::serial_port * initSerial(std::string port_name);
 
 class Serial
 {
     public:
+        static const int INVALID;
+        static const int IDLE;
+        static const int SEEKING;
+        static const int READING;
+
         boost::asio::serial_port *port;
+        boost::asio::deadline_timer *timer;
+        bool read_error;
+        int status;
+
         std::string header;
         char * data;
         int len;
-        int status;
 
         Serial();
+        ~Serial();
         Serial(std::string port_name, int buffer_len, std::string header);
-        void init(std::string port_name);
-        bool read(int nbytes);
+        void reinit(std::string port_name);
+        bool read(int nbytes, int timeout=-1);
     private:
-        void seek_header();
+        bool blocking_read(int nbytes);
+        void blocking_seek_header();
+
+        void seek_header_timeout();
+        void timeout_read(int nbytes, int timeout);
 
 };
 
