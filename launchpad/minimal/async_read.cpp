@@ -7,7 +7,8 @@ using namespace std;
 boost::asio::serial_port *port = NULL;
 boost::asio::deadline_timer *timer = NULL;
 string status = "waiting";
-char data[2] = {0};
+char * data = new char[16];
+int len = 16;
 
 void time_out(const boost::system::error_code& error)
 {
@@ -30,16 +31,20 @@ void read_complete(const boost::system::error_code& error, std::size_t bytes_tra
     if (error == boost::asio::error::operation_aborted)
     /* Read timed out. */
     {
-        printf("    Read did not complete.\n");
+        cout << "    Read did not complete. Only " << bytes_transferred << " bytes read: ";
     }
     else
     /* Read finished. Cancel the timeout timer if necessary. */
     {
         timer->cancel();
         cout << "    Read complete: ";
-        unsigned short a = ((data[0] << 8) | (data[1]));
-        cout << a << endl;
     }
+    for (int i = 0; i < bytes_transferred / 2; ++i)
+    {
+        unsigned short a = ((data[2*i] << 8) | (data[2*i+1]));
+        cout << a << " ";
+    }
+    cout << endl;
     status = "waiting";
 }
 
@@ -75,18 +80,23 @@ int main()
 
         // Open
 
-        std::cout << "Opened serial port. Type in timeout duration, or -2 to quit.\n";
+        std::cout << "Opened serial port. Type in [number of shorts to read] and [timeout duration].\n";
 
         // Input loop
 
-        int timeout = 0;
+        int timeout = 0, num = 0;
 
         while (true)
         {
             std::cout << ">>> ";
-            std::cin >> timeout;
+            std::cin >> num >> timeout;
             if (timeout < -2)
                 break;
+            if (num < 1)
+                break;
+
+            if (2*num > len)
+                data = new char[2*num];
 
             // Read short
 
@@ -99,7 +109,7 @@ int main()
                 timer->expires_from_now(boost::posix_time::milliseconds(timeout));
                 boost::asio::async_read
                 (
-                    *port, boost::asio::buffer(data, 2),
+                    *port, boost::asio::buffer(data, 2*num),
                     boost::bind
                     (
                         &read_complete,
