@@ -15,7 +15,7 @@ class Serial
         static const int READING;
         static const int WRITING;
         static const int ABORT;
-        static const int MODE_ABORT; // abort read operation if timeout
+        static const int MODE_ABORT; // abort read operation if timeout (default behaviour)
         static const int MODE_FINISH; // if timeout, return, but continue trying to read
 
         /* Constructors and methods */
@@ -26,12 +26,11 @@ class Serial
         bool read(int nbytes, int timeout=-1);
         int get_status();
         int poll();
+        void flush();
         void abort();
         ~Serial();
 
         /* User can access these directly */
-        void (*read_notify)(const boost::system::error_code &ec, std::size_t bytes_transferred);
-        void (*write_notify)(const boost::system::error_code &ec, std::size_t bytes_transferred);
         std::string header;
         char * data;
         int len;

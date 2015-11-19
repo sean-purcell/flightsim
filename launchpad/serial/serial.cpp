@@ -5,10 +5,25 @@
 #include <cstdlib>
 #include "serial.hpp"
 
-// TODO: destructor for new serial_port
-// TODO: timeout read with async read
-// TODO: flush?
-// Reference: http://www.ridgesolutions.ie/index.php/2012/12/13/boost-c-read-from-serial-port-with-timeout-example/
+//---------------------------------------------------------//
+//------------------- Helper functions --------------------//
+//---------------------------------------------------------//
+
+/** Convert bytes to a short, assuming big endian (MSB first).
+ *
+ * Args:
+ *      buffer (char *): array of bytes as chars
+ *      start (int): index of the first byte in the short that we want to extract
+ */
+short getShort(const char *buffer, int start)
+{
+    short result = (buffer[start] << 8) | (buffer[start+1]);
+    return result;
+}
+
+//---------------------------------------------------------//
+//--------------------- Serial Class ----------------------//
+//---------------------------------------------------------//
 
 const int Serial::INVALID = -1;
 const int Serial::IDLE = 0;
@@ -16,9 +31,11 @@ const int Serial::SEEKING = 1;
 const int Serial::READING = 2;
 const int Serial::WRITING = 3;
 const int Serial::ABORT = 4;
-const int Serial::MODE_ABORT = 42;
+
+const int Serial::MODE_ABORT = 42;  // default behaviour
 const int Serial::MODE_FINISH = 43;
 
+/** Reference: http://www.ridgesolutions.ie/index.php/2012/12/13/boost-c-read-from-serial-port-with-timeout-example/ */
 Serial::Serial(){};
 
 /** Construct a new serial port handler.
@@ -41,8 +58,6 @@ Serial::Serial(std::string port_name, int buffer_len, std::string header, int mo
     this->header = header;
     data = new char[buffer_len];
     len = buffer_len;
-    read_notify = NULL;
-    write_notify = NULL;
 
     // Private stuff
     status = INVALID;
@@ -130,6 +145,7 @@ void Serial::reinit(std::string port_name)
  */
 bool Serial::write(const char * bytes, int n)
 {
+    if (status == ABORT) status = IDLE;
     if (status != IDLE) return false;
     return blocking_write(bytes, n);
 }
@@ -311,8 +327,6 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      */
     {
         timer->cancel();
-        if (read_notify)
-            read_notify(error, bytes_transferred);
     }
 }
 
@@ -422,6 +436,19 @@ int Serial::poll()
     return 0;
 }
 
+/** Empties incoming buffer.
+ *
+ * Accomplishes this by reading from serial port until there is no more data.
+ */
+void Serial::flush()
+{
+    int temp = mode;
+    mode = MODE_ABORT;
+    abort();
+    while (read(len, 1)){std::cout << "q";}
+    mode = temp;
+}
+
 /** Cancel any ongoing async operations.
  */
 void Serial::abort()
@@ -434,16 +461,4 @@ void Serial::abort()
         nbytes = 0;
         status = IDLE;
     }
-}
-
-/** Convert bytes to a short, assuming big endian (MSB first).
- *
- * Args:
- *      buffer (char *): array of bytes as chars
- *      start (int): index of the first byte in the short that we want to extract
- */
-short getShort(const char *buffer, int start)
-{
-    short result = (buffer[start] << 8) | (buffer[start+1]);
-    return result;
 }
