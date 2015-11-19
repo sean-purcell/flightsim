@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
 #include <cstdlib>
 #include "serial.hpp"
@@ -31,12 +32,12 @@ Serial::Serial(){};
  *      buffer_len (int): Length of internal buffer.
  *      header (std::string): Default is "", which causes no stream syncing to occur
  */
-Serial::Serial(std::string port_name, int buffer_len, std::string header)
+Serial::Serial(std::string port_name, int buffer_len, std::string header, int mode)
 {
     // Public stuff
     port = NULL;
     timer = NULL;
-    mode = MODE_FINISH;
+    this->mode = mode;
     this->header = header;
     data = new char[buffer_len];
     len = buffer_len;
@@ -56,13 +57,25 @@ Serial::Serial(std::string port_name, int buffer_len, std::string header)
  */
 Serial::~Serial()
 {
-    if (!port)
+    if (port)
     {
         port->close();
+        delete port;
+        port = NULL;
+    }
+    if (timer)
+    {
         timer->cancel();
         delete timer;
-        delete port;
+        timer = NULL;
     }
+}
+
+/** Return the current status of this serial port.
+ */
+int Serial::get_status()
+{
+    return status;
 }
 
 /** Reopen the serial port to the specified port name.
@@ -93,12 +106,12 @@ void Serial::reinit(std::string port_name)
     try
     {
         port = new boost::asio::serial_port(*io, port_name);
+        timer = new boost::asio::deadline_timer(port->get_io_service());
         port->set_option( BAUD );
         port->set_option( CHARSIZE );
         port->set_option( FLOW );
         port->set_option( PARITY );
         port->set_option( STOP );
-        timer = new boost::asio::deadline_timer(port->get_io_service());
         status = IDLE;
     }
     catch (const boost::system::system_error &ex)
@@ -109,13 +122,46 @@ void Serial::reinit(std::string port_name)
     }
 }
 
+/** Write n bytes from char array to serial port.
+ *
+ * This operation will be blocking because we don't really need
+ * the complexity of timeout writes. Return true if bytes
+ * were written successfully ; false otherwise.
+ */
+bool Serial::write(char * bytes, int n)
+{
+    if (status != IDLE) return false;
+    return blocking_write(bytes, n);
+}
+
+
+/** Write char array into serial port.
+ * Return true if n are written. Return false if error.
+ * Method will block until writing operation is complete.
+ */
+bool Serial::blocking_write(char * bytes, int n)
+{
+    try
+    {
+        boost::asio::write(*port, boost::asio::buffer(bytes, n));
+    }
+    catch (const boost::system::system_error &ex)
+    {
+        std::cout << ex.what() << "\n";
+        std::cout << "Error: Could not open serial port.\n";
+        return false;
+    }
+    return true;
+}
+
 /** Read nbytes from serial port into data char array.
  *
  * If [timeout] is negative, method will block until all bytes are read.
  * Otherwise, method will return when either all bytes have been read or if operation times out.
  * If operation times out in MODE_ABORT, method will cancel read and reset seeker.
  * If operation times out in MODE_FINISH, method will return, but read operation will
- * continue in the background until it is completed.
+ * continue in the background until it is completed. Internal status will update on the next
+ * call of poll or read.
  *
  * Method will return true if read completed, and false otherwise.
  * Regardless, method is guaranteed to return in less than or equal to [timeout] milliseconds.
@@ -126,19 +172,11 @@ void Serial::reinit(std::string port_name)
  */
 bool Serial::read(int nbytes, int timeout)
 {
-    port->get_io_service().poll();
-    if (status == ABORT)
-        status = IDLE;
-
-    if (status != IDLE)
-        return false;
-
-    if (timeout < 0)
-        return blocking_read(nbytes);
-
-    printf(">>> Entering.\n");
-
-    return timeout_read(nbytes, timeout);
+    if (status == ABORT) status = IDLE;
+    if (status != IDLE) poll();
+    if (status != IDLE) return false;
+    if (timeout < 0) return blocking_read(nbytes);
+    else return timeout_read(nbytes, timeout);
 }
 
 /** Read from serial port until header is found.
@@ -193,20 +231,14 @@ bool Serial::timeout_read(int nbytes, int timeout)
 {
     // Start seeking thread
 
-    printf("   status: %d\n", status);
     status = SEEKING;
-    printf("   status: %d\n", status);
     this->nbytes = nbytes;
-    printf("   nbytes: %d\n", nbytes);
     port->get_io_service().reset();
-    printf("   RESET\n", nbytes);
     async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
-    printf("   ENTER\n", nbytes);
 
     // Start timeout timer
 
-    /*timer->expires_from_now(boost::posix_time::milliseconds(timeout));
-    printf("   SET EXPIRE %p\n", timer);
+    timer->expires_from_now(boost::posix_time::milliseconds(timeout));
     timer->async_wait
     (
         boost::bind
@@ -215,10 +247,23 @@ bool Serial::timeout_read(int nbytes, int timeout)
             boost::asio::placeholders::error
         )
     );
-    printf("   ASYNC WAIT\n", nbytes);*/
-
-    //port->get_io_service().run(); // TODO: Wait, if time_out doesn't cancel reading operations, wouldn't this block until those are done?
-    //printf("   RUN\n", nbytes);
+    if (mode == MODE_ABORT)
+    /* Set async timer and run io_service. This method will return when
+     * either all bytes have been read, or if the read timed out.
+     */
+    {
+        port->get_io_service().run();
+    }
+    else if (mode == MODE_FINISH)
+    /* Perform blocking wait. This method will return when either all bytes have
+     * been read (timer gets cancelled), or if the read timed out. */
+    {
+        boost::posix_time::time_duration zero = boost::posix_time::milliseconds(0);
+        while (status != IDLE && timer->expires_from_now() > zero)
+        {
+            port->get_io_service().run_one();
+        }
+    }
 
     return status == IDLE;
 }
@@ -232,12 +277,9 @@ bool Serial::timeout_read(int nbytes, int timeout)
  */
 void Serial::async_next(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-    printf("   -- Async %s %d\n", error.message().c_str(), bytes_transferred);
-    printf("      Status %d\n", status);
     if (error == boost::asio::error::operation_aborted)
     /* Read timed out, so reset seeker and return. */
     {
-        printf("      ABORT\n");
         status = ABORT;
         seeker = 0;
         return;
@@ -254,7 +296,6 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * Go on to the next byte.
      */
     {
-        printf("      SEEK\n");
         async_seek_header(bytes_transferred);
     }
     else if (status == READING)
@@ -262,7 +303,6 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * the important bytes into the data char array.
      */
     {
-        printf("      READ\n");
         async_read(this->nbytes, bytes_transferred);
     }
     else if (status == IDLE)
@@ -270,7 +310,6 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
      * If there is a notify function set for reading operations, invoke it.
      */
     {
-        printf("      FINISH\n");
         timer->cancel();
         if (read_notify)
             read_notify(error, bytes_transferred);
@@ -291,14 +330,12 @@ void Serial::async_seek_header(int bytes_transferred)
     if (bytes_transferred)
     /* Check if byte correspondings with header. */
     {
-        printf("          + seek > compare\n");
         if (data[0] == header[seeker]) ++seeker;
         else seeker = 0;
     }
     if (seeker < header.length())
     /* We're not done finding the header yet. Read the next byte. */
     {
-        printf("          + seek > async_read\n");
         boost::asio::async_read
         (
             *port, boost::asio::buffer(data, 1),
@@ -313,7 +350,6 @@ void Serial::async_seek_header(int bytes_transferred)
     else
     /* We found the header. Go on to the data reading operation. */
     {
-        printf("          + seek > end\n");
         seeker = 0;
         status = READING;
         async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
@@ -374,15 +410,30 @@ void Serial::time_out(const boost::system::error_code& error)
     }
 }
 
+/** Poll io service for any ongoing operations.
+ *
+ * Any ready handlers will immediately be executed.
+ * Return the number of handlers executed.
+ */
+int Serial::poll()
+{
+    if (port)
+        return port->get_io_service().poll();
+    return 0;
+}
+
 /** Cancel any ongoing async operations.
  */
 void Serial::abort()
 {
-    timer->cancel();
-    port->cancel();
-    seeker = 0;
-    nbytes = 0;
-    status = IDLE;
+    if (status != INVALID)
+    {
+        timer->cancel();
+        port->cancel();
+        seeker = 0;
+        nbytes = 0;
+        status = IDLE;
+    }
 }
 
 /** Convert bytes to a short, assuming big endian (MSB first).

@@ -17,6 +17,16 @@ int screenwidth=1000;
 int screenheight=850;
 sf::Vector2i size(screenwidth, screenheight);
 
+void printAngles(Serial *port)
+{
+    short x = getShort(port->data, 0);
+    short y = getShort(port->data, 2);
+    short z = getShort(port->data, 4);
+    printf("    Input: %d %d %d\n", x, y, z);
+    cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+    cout << "    Change in roll: " << jroll(x, y, z) << endl;
+}
+
 int main()
 {
     check_asserts();
@@ -84,28 +94,25 @@ int main()
             Serial port(port_name, 6, "\x80\x80");
             try
             {
-                if (port.status == Serial::IDLE)
+                if (port.get_status() == Serial::IDLE)
                 {
                    int input;
                    cout << "Opened serial port. Type in number of packets to try and read.\n";
 
                    do
                    {
+                       cout << ">>> ";
                        cin >> input;
                        for (int i = 0; i < input; ++i)
                        {
                            if (port.read(6))
                            {
-                               short x = getShort(port.data, 0);
-                               short y = getShort(port.data, 2);
-                               short z = getShort(port.data, 4);
-                               printf(">>> Input: %d %d %d\n", x, y, z);
-                               cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
-                               cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                               printAngles(&port);
                            }
                        }
                    }
                    while (input > 0);
+                   delete &port;
                 }
             }
             catch (const boost::system::system_error &ex)
@@ -121,7 +128,7 @@ int main()
             cin >> port_name;
 
             Serial port(port_name, 6, "\x80\x80");
-            if (port.status == Serial::IDLE)
+            if (port.get_status() == Serial::IDLE)
             {
                int input;
                cout << "Opened serial port. Type in timeout duration in milliseconds, or -2 to quit.\n";
@@ -130,32 +137,29 @@ int main()
 
                do
                {
+                   cout << ">>> ";
                    cin >> input;
                    if (port.read(6, input))
                    {
-                       short x = getShort(port.data, 0);
-                       short y = getShort(port.data, 2);
-                       short z = getShort(port.data, 4);
-                       printf(">>> Input: %d %d %d\n", x, y, z);
-                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
-                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                       printAngles(&port);
                    }
                    else
                    {
-                       cout << ">>> TIMEOUT" << endl;
+                       cout << "    TIMEOUT" << endl;
                    }
                }
                while (input > -2);
+               delete &port;
             }
         }
         else if (in == '6')
         {
-             string port_name;
+            string port_name;
             cout << "Serial port: ";
             cin >> port_name;
 
             Serial port(port_name, 6, "\x80\x80");
-            if (port.status == Serial::IDLE)
+            if (port.get_status() == Serial::IDLE)
             {
                int input;
                cout << "Opened serial port. Type in timeout duration in milliseconds, or -2 to quit.\n";
@@ -164,22 +168,25 @@ int main()
 
                do
                {
+                   cout << ">>> ";
                    cin >> input;
+                   if (port.get_status() != Serial::IDLE)
+                   {
+                       if (port.poll())
+                            if (port.get_status() == Serial::IDLE)
+                                printAngles(&port);
+                   }
                    if (port.read(6, input))
                    {
-                       short x = getShort(port.data, 0);
-                       short y = getShort(port.data, 2);
-                       short z = getShort(port.data, 4);
-                       printf(">>> Input: %d %d %d\n", x, y, z);
-                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
-                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                       printAngles(&port);
                    }
                    else
                    {
-                       cout << ">>> TIMEOUT" << endl;
+                       cout << "    Read ongoing..." << endl;
                    }
                }
                while (input > -2);
+               delete &port;
             }
         }
         else
