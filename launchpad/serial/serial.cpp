@@ -53,7 +53,7 @@ Serial::Serial(std::string port_name, int buffer_len, std::string header, int mo
     reinit(port_name);
 }
 
-/** Delete Serial object
+/** Deconstruct Serial object
  */
 Serial::~Serial()
 {
@@ -128,7 +128,7 @@ void Serial::reinit(std::string port_name)
  * the complexity of timeout writes. Return true if bytes
  * were written successfully ; false otherwise.
  */
-bool Serial::write(char * bytes, int n)
+bool Serial::write(const char * bytes, int n)
 {
     if (status != IDLE) return false;
     return blocking_write(bytes, n);
@@ -139,7 +139,7 @@ bool Serial::write(char * bytes, int n)
  * Return true if n are written. Return false if error.
  * Method will block until writing operation is complete.
  */
-bool Serial::blocking_write(char * bytes, int n)
+bool Serial::blocking_write(const char * bytes, int n)
 {
     try
     {
@@ -211,7 +211,7 @@ bool Serial::blocking_read(int nbytes)
  */
 void Serial::blocking_seek_header()
 {
-    int m = 0;
+    std::size_t m = 0;
     while (m < header.length())
     {
         boost::asio::read(*port, boost::asio::buffer(data, 1));

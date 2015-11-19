@@ -22,7 +22,7 @@ class Serial
         Serial();
         Serial(std::string port_name, int buffer_len, std::string header="", int mode = MODE_ABORT);
         void reinit(std::string port_name);
-        bool write(char * bytes, int n);
+        bool write(const char * bytes, int n);
         bool read(int nbytes, int timeout=-1);
         int get_status();
         int poll();
@@ -47,7 +47,7 @@ class Serial
 
     private:
         /* Hidden stuff */
-        bool blocking_write(char * bytes, int n);
+        bool blocking_write(const char * bytes, int n);
         bool blocking_read(int nbytes);
         void blocking_seek_header();
 
@@ -55,8 +55,8 @@ class Serial
         void async_seek_header(int bytes_transferred);
         void async_read(int nbytes, int bytes_transferred);
 
-        int seeker;
-        int nbytes;
+        std::size_t seeker;
+        std::size_t nbytes;
         int status;
 };
 
