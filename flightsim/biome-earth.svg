@@ -17,7 +17,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="biome-earth.svg"
-   inkscape:export-filename="C:\Users\jasper\Dropbox\github\se101-lab\flightsim\biome-earth.png"
+   inkscape:export-filename="C:\Users\jasper\Dropbox\github\se101-lab\flightsim\resources\biome-earth.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -176,9 +176,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4"
-     inkscape:cx="85.655983"
-     inkscape:cy="45.79269"
+     inkscape:zoom="90.509668"
+     inkscape:cx="9.2597226"
+     inkscape:cy="-0.17292904"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -196,7 +196,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -347,6 +347,6 @@
        x="1"
        height="0.99999976"
        id="rect4852"
-       style="opacity:1;fill:#ae0900;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+       style="opacity:1;fill:#ae0900;fill-opacity:0.78431374;fill-rule:evenodd;stroke:none" />
   </g>
 </svg>
