@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+/** The derivation for the angle maths is in doc/derivations/angles.tex. */
+
 /* Assuming that everything is in R3.
  * Using arrays of 3 doubles to represent vectors.
  */

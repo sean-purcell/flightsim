@@ -1,6 +1,8 @@
 #ifndef JOYSTICK_HPP
 #define JOYSTICK_HPP
 
+#include "serial.hpp"
+
 class Joystick
 {
     public:
