@@ -126,6 +126,7 @@ void Serial::reinit(std::string port_name)
  */
 bool Serial::read(int nbytes, int timeout)
 {
+    port->get_io_service().poll();
     if (status == ABORT)
         status = IDLE;
 
@@ -204,7 +205,7 @@ bool Serial::timeout_read(int nbytes, int timeout)
 
     // Start timeout timer
 
-    timer->expires_from_now(boost::posix_time::milliseconds(timeout));
+    /*timer->expires_from_now(boost::posix_time::milliseconds(timeout));
     printf("   SET EXPIRE %p\n", timer);
     timer->async_wait
     (
@@ -214,9 +215,11 @@ bool Serial::timeout_read(int nbytes, int timeout)
             boost::asio::placeholders::error
         )
     );
-    printf("   ASYNC WAIT\n", nbytes);
-    port->get_io_service().run(); // TODO: Wait, if time_out doesn't cancel reading operations, wouldn't this block until those are done?
-    printf("   RUN\n", nbytes);
+    printf("   ASYNC WAIT\n", nbytes);*/
+
+    //port->get_io_service().run(); // TODO: Wait, if time_out doesn't cancel reading operations, wouldn't this block until those are done?
+    //printf("   RUN\n", nbytes);
+
     return status == IDLE;
 }
 

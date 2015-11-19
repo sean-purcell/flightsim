@@ -150,7 +150,37 @@ int main()
         }
         else if (in == '6')
         {
+             string port_name;
+            cout << "Serial port: ";
+            cin >> port_name;
 
+            Serial port(port_name, 6, "\x80\x80");
+            if (port.status == Serial::IDLE)
+            {
+               int input;
+               cout << "Opened serial port. Type in timeout duration in milliseconds, or -2 to quit.\n";
+
+               port.mode = Serial::MODE_FINISH;
+
+               do
+               {
+                   cin >> input;
+                   if (port.read(6, input))
+                   {
+                       short x = getShort(port.data, 0);
+                       short y = getShort(port.data, 2);
+                       short z = getShort(port.data, 4);
+                       printf(">>> Input: %d %d %d\n", x, y, z);
+                       cout << "    Change in pitch: " << jpitch(x, y, z) << endl;
+                       cout << "    Change in roll: " << jroll(x, y, z) << endl;
+                   }
+                   else
+                   {
+                       cout << ">>> TIMEOUT" << endl;
+                   }
+               }
+               while (input > -2);
+            }
         }
         else
             break;
