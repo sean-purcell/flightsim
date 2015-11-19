@@ -17,7 +17,8 @@
  */
 short getShort(const char *buffer, int start)
 {
-    short result = (buffer[start] << 8) | (buffer[start+1]);
+    short result = ((unsigned char)buffer[start] << 8) | ((unsigned char)buffer[start+1]);
+    printf("%x::%x ", buffer[start],buffer[start+1]);
     return result;
 }
 

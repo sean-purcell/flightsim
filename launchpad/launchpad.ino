@@ -75,7 +75,7 @@ char 	rgchWriteAccl[] = {0, 0};
 /*                            Loop                              */
 /* ------------------------------------------------------------ */
 
-#define DEBUG2
+#define DEBUG3
 
 void loop()
 {
@@ -102,7 +102,7 @@ void loop()
 		if (Serial.available())
 		{
 			Serial.read();
-			send(dataX, dataY, dataZ)
+			send(dataX, dataY, dataZ);
 		}
 	#endif
 

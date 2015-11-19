@@ -5,7 +5,7 @@
 #include "angler.hpp"
 
 const char Joystick::REQUEST = 'R'; // Character signalling a request for data
-const char * Joystick::HEADER = "\x80\x80"; // Sequence of bytes preceding each packet sent by Launchpad
+const char * Joystick::HEADER = "\xC0\x80"; // Sequence of bytes preceding each packet sent by Launchpad
 const int Joystick::LEN = 6; // Number of bytes per packet, excluding header
 
 Joystick::Joystick(){};
