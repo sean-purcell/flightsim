@@ -1,12 +1,9 @@
 #ifndef AIRCRAFT_HPP
 #define AIRCRAFT_HPP
 
-#include "drawable.hpp"
-#include "quaternion.hpp"
-#include <SFML/Graphics.hpp>
+#include "glmheaders.hpp"
 
-class Aircraft: public Drawable	//currently a hacked together proof of concept using a sphere.
-	//IT DOESN'T INHERIT FROM SPHERE BECAUSE IT WILL EVENTUALLY NOT BE A SPHERE (hopefully)
+class Aircraft
 {
 	public:
 		float g;
@@ -30,41 +27,32 @@ class Aircraft: public Drawable	//currently a hacked together proof of concept u
 		float rho;
 		float dragcoeff;
 		float rudderdampcoeff;
+		float rolldampcoeff;
 
-		Quaternion pos, facing, velocity, omega;
+		vec3 pos, velocity, omega;
+		quat facing;
 
 		void init_params();
 		
 		Aircraft();
 		
-		void predraw(Quaternion camerapos, Quaternion camerarotation);
-		
 		void update(float dt);
-		
-		void draw(sf::RenderWindow &window);
 
 		void applyForces(float dt);
 
-		Quaternion fGravity();
+		vec3 fGravity();
 
-		Quaternion fWing();
+		vec3 fWing();
 
-		Quaternion fThrust();
+		vec3 fThrust();
 
-		Quaternion fDrag();
+		vec3 fDrag();
 
 		float tAileron();
 
 		float tElevator();
 
 		float tRudder();
-		
-	private:
-		float radius;
-		float render_radius;
-		Quaternion draw_pos;
-		sf::Color color;
-		sf::CircleShape shape;
 };
 
 #endif
