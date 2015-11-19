@@ -84,7 +84,7 @@ const GLchar* fragmentSource =
 	"	} else {"
 	"		float alpha = texture(tex, Texcoord).a;"
 	"		outColor = hudColor;"
-	"		outColor.a = alpha;"
+	"		outColor.a *= alpha;"
 	//"		outColor = vec4(Texcoord.x, Texcoord.y, 0, 1);"
 	"	}"
 	"}";

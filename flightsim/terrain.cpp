@@ -243,7 +243,6 @@ void ChunkManager::loadChunk(IntPair key){
 	if (!isLoaded(key)){
 		loaded[key] = terrain.getChunk(key);
 		loadedChunks++;
-		std::cout << "adding chunk " << key.first << "," << key.second << std::endl;
 	}
 }
 
@@ -252,7 +251,6 @@ void ChunkManager::freeChunk(IntPair key){
 		loaded[key]->shouldRemove = true;
 		loaded.erase(key);
 		loadedChunks--;
-		std::cout << "deling chunk " << key.first << "," << key.second << std::endl;
 	}
 }
 
