@@ -109,10 +109,15 @@ GLuint initShaders() {
 void initProjmatrix() {
 	proj = infinitePerspective(45.f, w / (float)h, .1f);
 
-	vec4 v = proj * vec4(1.0, 0, 5.0, 1.0);
-	std::cout << v.x << " " << v.y << " " << v.z << " " << v.w << std::endl;
-
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
+}
+
+void initTextureUniform() {
+	glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+}
+
+void initHudColor(vec4 v) {
+	glUniform4fv(glGetUniformLocation(shader, "hudColor"), 1, value_ptr(v));
 }
 
 void selectMode(int mode) {
@@ -172,6 +177,6 @@ void updateHudVertexAttribs() {
 	glVertexAttribPointer(hudposloc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
 		(void*)0);
 	glVertexAttribPointer(texcoordloc, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat),
-		(void*)(2*sizeof(GLfloat)));
+		(void*)(3*sizeof(GLfloat)));
 }
 

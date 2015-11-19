@@ -62,6 +62,10 @@ const GLchar* fragmentSource =
 	"uniform vec3 FOG_COLOR;"
 	"uniform float horizon;"
 	"uniform float horizoncoeff;"
+
+	"uniform sampler2D tex;"
+	"uniform vec4 hudColor;"
+
 	"uniform int mode;"
 	"float coeff(float x) {"
 	"	return pow(x, 2) * horizoncoeff;"
@@ -78,7 +82,10 @@ const GLchar* fragmentSource =
 	"		alpha = min(alpha, 1);"
 	"		outColor = vec4(alpha * FOG_COLOR + (1-alpha) * tmp * Color, 1.0f);"
 	"	} else {"
-	"		outColor = vec4(1, 0, 0, 0.5);"
+	"		float alpha = texture(tex, Texcoord).a;"
+	"		outColor = hudColor;"
+	"		outColor.a = alpha;"
+	//"		outColor = vec4(Texcoord.x, Texcoord.y, 0, 1);"
 	"	}"
 	"}";
 

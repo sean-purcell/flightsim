@@ -23,3 +23,9 @@ vec3 getBiomeColor(float persistence, float amplitude, std::vector<unsigned char
 	return col;
 }
 
+vec4 getHudColor() {
+	int ind = 200 * 200 * 4 + 4;
+	std::vector<unsigned char> &image = biomeColors;
+	return vec4(image[ind + 0], image[ind + 1], image[ind + 2], image[ind + 3]) / 255.f;
+}
+

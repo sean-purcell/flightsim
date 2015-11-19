@@ -9,7 +9,9 @@ void initProjmatrix();
 void initVertexAttribs();
 void updateTerVertexAttribs();
 void updateHudVertexAttribs();
+void initTextureUniform();
 void selectMode(int mode);
 void terrainMode(bool on);
 void hudMode(bool on);
+void initHudColor(vec4 v);
 
