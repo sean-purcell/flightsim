@@ -14,6 +14,7 @@ const int Serial::IDLE = 0;
 const int Serial::SEEKING = 1;
 const int Serial::READING = 2;
 const int Serial::WRITING = 3;
+const int Serial::ABORT = 4;
 const int Serial::MODE_ABORT = 42;
 const int Serial::MODE_FINISH = 43;
 
@@ -39,6 +40,8 @@ Serial::Serial(std::string port_name, int buffer_len, std::string header)
     this->header = header;
     data = new char[buffer_len];
     len = buffer_len;
+    read_notify = NULL;
+    write_notify = NULL;
 
     // Private stuff
     status = INVALID;
@@ -74,7 +77,7 @@ void Serial::reinit(std::string port_name)
     boost::asio::serial_port_base::flow_control FLOW(  boost::asio::serial_port_base::flow_control::none );
     boost::asio::serial_port_base::parity PARITY(  boost::asio::serial_port_base::parity::none );
     boost::asio::serial_port_base::stop_bits STOP(  boost::asio::serial_port_base::stop_bits::one );
-    boost::asio::io_service io;
+    boost::asio::io_service *io = new boost::asio::io_service();
     if (port)
     {
         status = INVALID;
@@ -89,13 +92,13 @@ void Serial::reinit(std::string port_name)
     }
     try
     {
-        port = new boost::asio::serial_port(io, port_name);
-        timer = new boost::asio::deadline_timer(port->get_io_service());
+        port = new boost::asio::serial_port(*io, port_name);
         port->set_option( BAUD );
         port->set_option( CHARSIZE );
         port->set_option( FLOW );
         port->set_option( PARITY );
         port->set_option( STOP );
+        timer = new boost::asio::deadline_timer(port->get_io_service());
         status = IDLE;
     }
     catch (const boost::system::system_error &ex)
@@ -123,6 +126,9 @@ void Serial::reinit(std::string port_name)
  */
 bool Serial::read(int nbytes, int timeout)
 {
+    if (status == ABORT)
+        status = IDLE;
+
     if (status != IDLE)
         return false;
 
@@ -193,15 +199,13 @@ bool Serial::timeout_read(int nbytes, int timeout)
     printf("   nbytes: %d\n", nbytes);
     port->get_io_service().reset();
     printf("   RESET\n", nbytes);
-    //async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
-    //boost::asio::async_read(*port, boost::asio::buffer(data, 1), boost::bind(&dummy, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+    async_next(boost::system::errc::make_error_code(boost::system::errc::success), 0);
     printf("   ENTER\n", nbytes);
 
     // Start timeout timer
 
     timer->expires_from_now(boost::posix_time::milliseconds(timeout));
     printf("   SET EXPIRE %p\n", timer);
-    std::cout << "    XP = " << boost::posix_time::to_iso_string(timer->expires_at()) << std::endl;
     timer->async_wait
     (
         boost::bind
@@ -213,7 +217,6 @@ bool Serial::timeout_read(int nbytes, int timeout)
     printf("   ASYNC WAIT\n", nbytes);
     port->get_io_service().run(); // TODO: Wait, if time_out doesn't cancel reading operations, wouldn't this block until those are done?
     printf("   RUN\n", nbytes);
-
     return status == IDLE;
 }
 
@@ -232,7 +235,7 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
     /* Read timed out, so reset seeker and return. */
     {
         printf("      ABORT\n");
-        status = IDLE;
+        status = ABORT;
         seeker = 0;
         return;
     }
@@ -271,11 +274,6 @@ void Serial::async_next(const boost::system::error_code& error, std::size_t byte
     }
 }
 
-void dummy(const boost::system::error_code& error, std::size_t bytes_transferred)
-{
-    printf("        LLOLOLOLOKLOLOLOLOLOLOKOKOKFPKSFIJIOSJFIOJDIO\n");
-}
-
 /** Handler method invoked by async_next.
  *
  * If byte was read, compare byte with corresponding byte in header.
@@ -303,7 +301,7 @@ void Serial::async_seek_header(int bytes_transferred)
             *port, boost::asio::buffer(data, 1),
             boost::bind
             (
-                &dummy,
+                &Serial::async_next, this,
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred
             )
@@ -369,7 +367,7 @@ void Serial::time_out(const boost::system::error_code& error)
     {
         port->cancel();
         seeker = 0;
-        status = IDLE;
+        status = ABORT;
     }
 }
 

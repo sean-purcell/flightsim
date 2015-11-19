@@ -14,6 +14,7 @@ class Serial
         static const int SEEKING;
         static const int READING;
         static const int WRITING;
+        static const int ABORT;
         static const int MODE_ABORT; // abort read operation if timeout
         static const int MODE_FINISH; // if timeout, return, but continue trying to read
 

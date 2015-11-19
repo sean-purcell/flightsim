@@ -87,7 +87,7 @@ int main()
                 if (port.status == Serial::IDLE)
                 {
                    int input;
-                   cout << "Opened serial port. Type in number of bytes to try and read.\n";
+                   cout << "Opened serial port. Type in number of packets to try and read.\n";
 
                    do
                    {
