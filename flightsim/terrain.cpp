@@ -187,7 +187,7 @@ void TerrainChunk::initVertices() {
 void TerrainChunk::draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	updateVertexAttribs();
+	updateTerVertexAttribs();
 	glDrawElements(GL_TRIANGLES, CHUNKCOUNT * CHUNKCOUNT * 2 * 3,
 		GL_UNSIGNED_SHORT, 0);
 }

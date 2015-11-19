@@ -12,6 +12,7 @@
 #include "terrain.hpp"
 #include "aircraft.hpp"
 #include "biome-processor.hpp"
+#include "hudrender.hpp"
 
 GLint uniTrans;
 GLint uniView;
@@ -44,11 +45,13 @@ Aircraft aircraft;
 const char *biomeFile = "resources/biome-earth.png";
 
 void drawTerrain() {
+	terrainMode(true);
 	TerrainChunk *iter = chunks;
 	while(iter) {
 		iter->draw();
 		iter = iter->next;
 	}
+	terrainMode(false);
 }
 
 void updateTerrain() {
@@ -117,7 +120,7 @@ void init() // Called before main loop to set up the program
 	glUniform1f(horizon, horizonval);
 	glUniform1f(horizoncoeff, pow(horizonval, -2));
 
-	glEnable(GL_DEPTH_TEST);
+	initHud();
 
 	aircraft = Aircraft();
 	prevtime = std::chrono::high_resolution_clock::now();
@@ -169,7 +172,7 @@ void display()
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, value_ptr(view));
 
 	drawTerrain();
-	//drawHorizon();
+	drawHud(aircraft.pos, aircraft.facing, aircraft.velocity);
 
 	glutSwapBuffers();
 }

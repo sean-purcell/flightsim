@@ -9,6 +9,8 @@
 static GLuint shader;
 static GLint projloc;
 static GLint posloc, normloc, colloc;
+static GLint hudposloc, texcoordloc;
+static GLint modeloc;
 static mat4 proj;
 
 int w, h;
@@ -99,6 +101,7 @@ GLuint initShaders() {
 	glUseProgram(shaderProgram);
 
 	projloc = glGetUniformLocation(shaderProgram, "proj");
+	modeloc = glGetUniformLocation(shaderProgram, "mode");
 
 	return shader = shaderProgram;
 }
@@ -106,7 +109,45 @@ GLuint initShaders() {
 void initProjmatrix() {
 	proj = infinitePerspective(45.f, w / (float)h, .1f);
 
+	vec4 v = proj * vec4(1.0, 0, 5.0, 1.0);
+	std::cout << v.x << " " << v.y << " " << v.z << " " << v.w << std::endl;
+
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
+}
+
+void selectMode(int mode) {
+	glUniform1i(modeloc, mode);
+}
+
+void terrainMode(bool on) {
+	selectMode(0);
+
+	if(on) {
+		glEnable(GL_DEPTH_TEST);
+		glEnableVertexAttribArray(posloc);
+		glEnableVertexAttribArray(normloc);
+		glEnableVertexAttribArray(colloc);
+	} else {
+		glDisable(GL_DEPTH_TEST);
+		glDisableVertexAttribArray(posloc);
+		glDisableVertexAttribArray(normloc);
+		glDisableVertexAttribArray(colloc);
+	}
+}
+
+void hudMode(bool on) {
+	selectMode(1);
+	
+	if(on) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnableVertexAttribArray(hudposloc);
+		glEnableVertexAttribArray(texcoordloc);	
+	} else {
+		glDisable(GL_BLEND);
+		glDisableVertexAttribArray(hudposloc);
+		glDisableVertexAttribArray(texcoordloc);	
+	}
 }
 
 void initVertexAttribs() {
@@ -114,21 +155,23 @@ void initVertexAttribs() {
 	normloc = glGetAttribLocation(shader, "normal");
 	colloc = glGetAttribLocation(shader, "color");
 
-	glEnableVertexAttribArray(posloc);
-	glEnableVertexAttribArray(normloc);
-	glEnableVertexAttribArray(colloc);
+	hudposloc = glGetAttribLocation(shader, "hudPosition");
+	texcoordloc = glGetAttribLocation(shader, "texcoord");
 }
 
-void updateVertexAttribs() {
-	glEnableVertexAttribArray(posloc);
-	glEnableVertexAttribArray(normloc);
-	glEnableVertexAttribArray(colloc);
-
+void updateTerVertexAttribs() {
 	glVertexAttribPointer(posloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)0);
 	glVertexAttribPointer(normloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)(3 * sizeof(GLfloat)));
 	glVertexAttribPointer(colloc, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
 		(void*)(6 * sizeof(GLfloat)));
+}
+
+void updateHudVertexAttribs() {
+	glVertexAttribPointer(hudposloc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+		(void*)0);
+	glVertexAttribPointer(texcoordloc, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat),
+		(void*)(2*sizeof(GLfloat)));
 }
 
