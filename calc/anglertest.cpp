@@ -195,27 +195,30 @@ int main()
         }
         else if (in == '7')
         {
-            std::string port_name = "COM3";
+            std::string port_name = "COM5";
             int delay, timeout;
             Joystick ctrl(port_name);
-            cout << "Opened serial port. Type in [poll delay in ms] [timeout duration in ms]\n";
-            cin >> delay >> timeout;
-
-            ctrl.flush();
-            while (true)
+            if (ctrl.port->get_status() == Serial::IDLE)
             {
-                if (ctrl.update(timeout))
-                    cout << ">>> "; // Value changed
-                else
-                    cout << "||| "; // Value didn't change
+                cout << "Opened serial port. Type in [poll delay in ms] [timeout duration in ms]\n";
+                cin >> delay >> timeout;
 
-                short x = getShort(ctrl.port->data, 0);
-                short y = getShort(ctrl.port->data, 2);
-                short z = getShort(ctrl.port->data, 4);
-                printf("Input: %d %d %d\n", x, y, z);
-                cout << "    Change in pitch: " << ctrl.pitch << endl;
-                cout << "    Change in roll: " << ctrl.roll << endl;
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(delay));
+                ctrl.flush();
+                while (true)
+                {
+                    if (ctrl.update(timeout))
+                        cout << ">>> "; // Value changed
+                    else
+                        cout << "||| "; // Value didn't change
+
+                    short x = getShort(ctrl.port->data, 0);
+                    short y = getShort(ctrl.port->data, 2);
+                    short z = getShort(ctrl.port->data, 4);
+                    printf("Input: %d %d %d\n", x, y, z);
+                    cout << "    Change in pitch: " << ctrl.pitch << endl;
+                    cout << "    Change in roll: " << ctrl.roll << endl;
+                    boost::this_thread::sleep_for(boost::chrono::milliseconds(delay));
+                }
             }
         }
         else

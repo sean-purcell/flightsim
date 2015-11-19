@@ -7,8 +7,8 @@
 /** The derivation for the angle maths is in doc/derivations/angles.tex. */
 
  double STICK[] = {-1, 0, 0};       // direction of gravity when controller is in rest state
- double PITCH_AXIS[] = {0, 1, 0};   // direction of pitch axis when controller is in rest state
- double ROLL_AXIS[] = {0, 0, -1};   // direction of roll axis when controller is in rest state
+ double PITCH_AXIS[] = {0, 0, 1};   // direction of pitch axis when controller is in rest state
+ double ROLL_AXIS[] = {0, 1, 0};   // direction of roll axis when controller is in rest state
  double max_angle = acos(-1) / 2;   // clip angles above this value
  double min_angle = -acos(-1) / 2;  // clip angles below this value
 
@@ -36,8 +36,8 @@ double jpitch(short gx, short gy, short gz)
     double g_stick = dot(g, STICK);
     double g_roll = dot(g, ROLL_AXIS);
     double theta = atan2(g_roll, g_stick);
-    theta = theta > max_angle ? max_angle : theta;
-    theta = theta < min_angle ? min_angle : theta;
+    theta = theta > max_angle ? 0 : theta;
+    theta = theta < min_angle ? 0 : theta;
     return theta;
 }
 
@@ -52,8 +52,8 @@ double jroll(short gx, short gy, short gz)
     double g_stick = dot(g, STICK);
     double g_pitch = dot(g, PITCH_AXIS);
     double phi = atan2(-g_pitch, g_stick); // the angle of g wrt controller is the negative of the angle of the controller wrt g
-    phi = phi > max_angle ? max_angle : phi;
-    phi = phi < min_angle ? min_angle : phi;
+    phi = phi > max_angle ? 0 : phi;
+    phi = phi < min_angle ? 0 : phi;
     return phi;
 }
 
