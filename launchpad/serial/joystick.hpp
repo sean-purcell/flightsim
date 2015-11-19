@@ -10,13 +10,12 @@ class Joystick
 
         float pitch, roll;
         int num_pending;    // number of pending requests sent to Launchpad
+        Serial *port;
 
         Joystick();
         Joystick(std::string port_name);
         bool update(int timeout=-1);
+        void flush();
         ~Joystick();
-
-    private:
-        Serial *port;
 };
 #endif // JOYSTICK_HPP

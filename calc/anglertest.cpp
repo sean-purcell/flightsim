@@ -201,6 +201,7 @@ int main()
             cout << "Opened serial port. Type in [poll delay in ms] [timeout duration in ms]\n";
             cin >> delay >> timeout;
 
+            ctrl.flush();
             while (true)
             {
                 if (ctrl.update(timeout))
@@ -208,7 +209,11 @@ int main()
                 else
                     cout << "||| "; // Value didn't change
 
-                cout << "Change in pitch: " << ctrl.pitch << endl;
+                short x = getShort(ctrl.port->data, 0);
+                short y = getShort(ctrl.port->data, 2);
+                short z = getShort(ctrl.port->data, 4);
+                printf("Input: %d %d %d\n", x, y, z);
+                cout << "    Change in pitch: " << ctrl.pitch << endl;
                 cout << "    Change in roll: " << ctrl.roll << endl;
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(delay));
             }

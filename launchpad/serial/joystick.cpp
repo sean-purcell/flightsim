@@ -63,3 +63,11 @@ bool Joystick::update(int timeout)
 
     return true;
 }
+
+/** Empty serial port input buffer.
+ */
+void Joystick::flush()
+{
+    num_pending = 0;
+    port->flush();
+}
