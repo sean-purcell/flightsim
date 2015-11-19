@@ -2,10 +2,13 @@
 #include <cstdio>
 #include <SFML/System.hpp>
 #include <boost/asio.hpp>
+#include <boost/chrono.hpp>
+#include <boost/thread/thread.hpp>
 #include "angler.hpp"
 #include "rotation.hpp"
 #include "quaternion.hpp"
 #include "serial.hpp"
+#include "joystick.hpp"
 
 using namespace std;
 
@@ -42,6 +45,7 @@ int main()
         cout << "4. Blocking Serial Read" << endl;
         cout << "5. Timeout Serial Read Abort" << endl;
         cout << "6. Timeout Serial Read Finish" << endl;
+        cout << "7. Joystick Class" << endl;
         cout << "0. Exit" << endl;
         cin >> in;
 
@@ -187,6 +191,26 @@ int main()
                }
                while (input > -2);
                delete &port;
+            }
+        }
+        else if (in == '7')
+        {
+            std::string port_name = "COM3";
+            int delay, timeout;
+            Joystick ctrl(port_name);
+            cout << "Opened serial port. Type in [poll delay in ms] [timeout duration in ms]\n";
+            cin >> delay >> timeout;
+
+            while (true)
+            {
+                if (ctrl.update(timeout))
+                    cout << ">>> "; // Value changed
+                else
+                    cout << "||| "; // Value didn't change
+
+                cout << "Change in pitch: " << ctrl.pitch << endl;
+                cout << "    Change in roll: " << ctrl.roll << endl;
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(delay));
             }
         }
         else
