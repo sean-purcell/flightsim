@@ -196,8 +196,6 @@ ChunkManager::ChunkManager(Terrain _terrain):
 	terrain(_terrain)
 	{}
 
-int len(Drawable *d);
-
 TerrainChunk* ChunkManager::getNewChunks(float x, float z, int chunksAround){
 	//x,z are the coordinates of the player
 	//distanceToLoad is the range around the player that you want to load chunks in

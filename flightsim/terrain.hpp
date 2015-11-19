@@ -1,10 +1,9 @@
 #ifndef TERRAIN_HPP
 #define TERRAIN_HPP
 
+#include <map>
 #include <utility>
 
-#include "drawable.hpp"
-#include "shapes.hpp"
 #include "simplexnoise.hpp"
 #include "openglheaders.hpp"
 

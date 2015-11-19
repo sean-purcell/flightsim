@@ -1,4 +1,4 @@
-SOURCES=$(filter-out test.cpp opengltest.cpp quaterniontest.cpp movingtestground.cpp terraintest.cpp planetest.cpp flightsimulate.cpp, $(wildcard *.cpp))
+SOURCES=$(wildcard *.cpp)
 OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
 LIB=-Iinc/ $(EXTRALIB)
@@ -15,18 +15,12 @@ ifeq ($(UNAME_S),Darwin)
 	LFLAGS+= -framework OpenGL -framework GLUT
 endif
 
-.PHONY: all planetest opengltest terraintest
+.PHONY: all bin/planetest
 
-all: planetest
+all: bin/planetest
 
-planetest: bin bin/planetest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/aircraft.o bin/util.o bin/biome-processor.o bin/lodepng.o bin/hudrender.o
+bin/planetest: bin $(OBJECTS)
 	g++ -o bin/planetest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
-
-terraintest: bin bin/terraintest.o $(OBJECTS)
-	g++ -o bin/terraintest $(word 2,$^) $(OBJECTS) $(LIB) $(FLAGS) $(LFLAGS) -flto
-
-opengltest: bin bin/opengltest.o bin/openglutil.o bin/openglshaders.o bin/terrain.o bin/simplexnoise.o bin/biome-processor.o bin/lodepng.o
-	g++ -o bin/opengltest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)
