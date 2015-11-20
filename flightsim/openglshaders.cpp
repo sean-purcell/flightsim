@@ -41,6 +41,7 @@ const GLchar* vertexSource =
 
 	"uniform mat4 proj;"
 	"uniform mat4 view;"
+	"uniform mat4 hudTrans;"
 	"uniform int mode;"
 	"void main() {"
 	"	if(mode == 0) {"
@@ -51,7 +52,7 @@ const GLchar* vertexSource =
 	"		Position = position;"
 	"	} else {"
 	"		Texcoord = texcoord;"
-	"		gl_Position = proj * vec4(hudPosition, 1.0);"
+	"		gl_Position = proj * hudTrans * vec4(hudPosition, 1.0);"
 	"	}"
 	"}";
 

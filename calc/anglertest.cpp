@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdio>
-#include <SFML/System.hpp>
 #include <boost/asio.hpp>
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>

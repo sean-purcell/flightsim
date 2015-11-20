@@ -25,7 +25,7 @@ void initializeGLWindow(int argc, char **argv, int _w, int _h) {
 	glutInit(&argc, argv); // Initializes glut
 
 	// Sets up a double buffer with RGBA components and a depth component
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA | GLUT_MULTISAMPLE
 #ifdef __APPLE__
 	 | GLUT_3_2_CORE_PROFILE
 #endif
@@ -117,12 +117,16 @@ void initProjmatrix() {
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
 }
 
-void initTextureUniform() {
+void initHudUniforms(vec4 color) {
 	glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-}
+	glUniform4fv(glGetUniformLocation(shader, "hudColor"), 1,
+		value_ptr(color));
 
-void initHudColor(vec4 v) {
-	glUniform4fv(glGetUniformLocation(shader, "hudColor"), 1, value_ptr(v));
+	mat4 trans(1.f);
+	trans[2][2] = -1;
+
+	glUniformMatrix4fv(glGetUniformLocation(shader, "hudTrans"),
+		1, GL_FALSE, value_ptr(trans));
 }
 
 void selectMode(int mode) {
