@@ -14,19 +14,8 @@ se101-lab
 	- Annotate stuff	
 	
 #### Dependencies
-
-_Launchpad Side_
-
-1. Energia 16:
-	- For Launchpad Tiva C TM4C123
-	- Download: http://energia.nu/download/
-	- Installation: Easy
-2. Orbit Booster Pack:
-	- For accelerometer and other stuff
-	- Download: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1314193/View?ou=220517 or https://www.digilentinc.com/Products/Detail.cfm?NavPath=2,396,1181&Prod=ORBIT-BOOSTER 
-	- Installation: Extract contents of zip file into `%ENERGIA_PATH%/Contents/Resources/Java/hardware/lm4f/libraries/OrbitBoosterPack`.
 	
-_C++ Side_
+__C++ Side__
 
 1. Boost:
 	- Specifically `boost::asio`, for serial port stuffs
@@ -46,7 +35,7 @@ _C++ Side_
 	- Compiling (Code::Blocks):
 		- Locate includes: Build options -> Search directories -> Compiler: Add `%BOOST_PATH%/include/boost-1_59` or something like that. There should be a `boost` folder in here.
 		- Locate libraries: Build options -> Search directories -> Linker: Add `%BOOST_PATH%/lib`. There should be a bunch of `.a` files in this directory.
-		- Link libraries: Build options -> Linker settings -> Add `libboost_system-mgw47-mt-1_59` and any other libraries that are needed. (Names might be something simpler, like `boost_system`. Need to match the filenames.) The order is important: Libs must come before any libs that they depend on.  
+		- Link libraries: Build options -> Linker settings -> Add `libboost_system-mgw47-mt-1_59` and any other libraries that are needed. (Names might be something simpler, like `boost_system`. They need to match the filenames.) The order is important: Libs must come before any libs that they depend on.  
 			- In Windows, you also have to link `wsock32` for asio to work.
 		- Should be more or less the same with other IDEs.
 		- With command line/makefile: 
@@ -76,7 +65,7 @@ _C++ Side_
 	- Compiling (Code::Blocks):
 		- Include directories: We put the includes in Code::Block's default include path, so we don't need to do anything.
 		- Library directories: We put the libraries in Code::Block's default library search path, so we don't need to do anything.
-		- Link libraries: With Windows, link: `freeglut`, `opengl32`, `glu32`, `winmm`, `gdi32`.
+		- Link libraries: If Windows, link: `freeglut`, `opengl32`, `glu32`, `winmm`, `gdi32`.
 3. GLEW:
 	- OpenGL Extension Wrangler Library, for cross-platform C++ extension loading
 	- Download: http://glew.sourceforge.net/
@@ -99,6 +88,17 @@ _C++ Side_
 	- C++ graphics
 	- Download: http://www.sfml-dev.org/download/sfml/2.3.2/
 	- Actually, it looks like we're not using this anymore. It's not included in any of the code.
+	
+__Launchpad Side__
+
+1. Energia 16:
+	- For Launchpad Tiva C TM4C123
+	- Download: http://energia.nu/download/
+	- Installation: Easy
+2. Orbit Booster Pack:
+	- For accelerometer and other stuff
+	- Download: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1314193/View?ou=220517 or https://www.digilentinc.com/Products/Detail.cfm?NavPath=2,396,1181&Prod=ORBIT-BOOSTER 
+	- Installation: Extract contents of zip file into `%ENERGIA_PATH%/Contents/Resources/Java/hardware/lm4f/libraries/OrbitBoosterPack`.
 						
 #### References
 - Lab 2 specifications: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1313255/View?ou=220517
