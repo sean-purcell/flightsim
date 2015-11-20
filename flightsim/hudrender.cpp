@@ -5,9 +5,109 @@
 #include "hudrender.hpp"
 #include "openglutil.hpp"
 #include "biome-processor.hpp"
+#include "util.hpp"
 
 static GLuint vbo, ebo;
 static GLuint tex;
+
+#define min(x, y) ((x) < (y) ? (x) : (y))
+static void setColors(std::vector<GLfloat> &vertices, char c) {
+	const char C[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'N', 'E', 'S', 'W', 'D', 'F' };
+	int num = sizeof(C)/sizeof(C[0]);
+	float topleft = 0.0f;
+	float width = 1.f / num;
+	int i;
+	for(i = 0; i < num; i++) {
+		if(C[i] == c) {
+			break;
+		}
+	}
+	topleft = (float)min(i, num - 1) * width;
+
+	int ind = vertices.size() - 20;
+	vertices[ind + 3] = topleft;
+	vertices[ind + 4] = 0.0f;
+	ind += 5;
+	vertices[ind + 3] = topleft + width;
+	vertices[ind + 4] = 0.0f;
+	ind += 5;
+	vertices[ind + 3] = topleft + width;
+	vertices[ind + 4] = 1.0f;
+	ind += 5;
+	vertices[ind + 3] = topleft;
+	vertices[ind + 4] = 1.0f;
+}
+
+static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
+#define quad() do {\
+	int start = vertices.size() / 5 - 4;\
+	indices.push_back(start + 0);\
+	indices.push_back(start + 1);\
+	indices.push_back(start + 3);\
+	indices.push_back(start + 2);\
+	indices.push_back(start + 1);\
+	indices.push_back(start + 3);\
+} while(0)
+
+#define vertex(v) do {\
+	vertices.push_back((v).x);\
+	vertices.push_back((v).y);\
+	vertices.push_back((v).z);\
+	vertices.push_back(0.f);\
+	vertices.push_back(0.f);\
+} while(0)
+
+#define colors(c) do {\
+	setColors(vertices, c);\
+} while(0)
+
+	std::vector<GLfloat> vertices;
+	std::vector<GLushort> indices;
+
+	vec3 X = facing * vec3(1, 0, 0);
+	vec3 Y = facing * vec3(0, 1, 0);
+	vec3 Z = facing * vec3(0, 0, 1);
+	float pitcha = atan2(Z.y, sqrt(Z.x * Z.x + Z.z * Z.z));
+	float rolla = atan2(X.y, sqrt(X.x * X.x + X.z * X.z));
+
+	quat roll = angleAxis(rolla, vec3(0, 0, 1));
+	vec3 right = roll * vec3(1, 0, 0);
+	vec3 rperp = roll * vec3(0, 1, 0);
+
+	quat pitch = angleAxis(pitcha, right);
+
+	vec3 forw = pitch * vec3(0, 0, 1);
+
+	vec3 vec = forw * 5.f;
+
+	for(int i = 0, a = 0; i < 36; i++, a += 10) {
+		vec3 v1 = vec + rperp * -0.01f - right / 2.f;
+		vec3 v4 = vec + rperp * 0.01f  - right / 2.f;
+		vec3 v2 = v1 + right;
+		vec3 v3 = v4 + right;
+
+		vertex(v1);
+		vertex(v2);
+		vertex(v3);
+		vertex(v4);
+		colors('F');
+		quad();
+
+		quat rot = angleAxis((float)M_PI/18, right);
+		vec = rot * vec;
+	}
+
+#undef quad
+#undef vertex
+#undef colors
+
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
+		&vertices[0], GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort),
+		&indices[0], GL_DYNAMIC_DRAW);
+	return indices.size();
+}
 
 void drawHud(vec3 pos, quat facing, vec3 vel) {
 	hudMode(true);
@@ -17,7 +117,8 @@ void drawHud(vec3 pos, quat facing, vec3 vel) {
 
 	updateHudVertexAttribs();
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	int num = updateHudVertices(pos, facing, vel);
+	glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_SHORT, 0);
 
 	hudMode(false);
 }
@@ -27,10 +128,10 @@ void initHud() {
 	glGenBuffers(1, &ebo);
 
 	GLfloat vertices[] = {
-		-20.f, -4.f, -100.f, 0.f, 1.f,
-		-20.f,  4.f, -100.f, 0.f, 0.f,
-		 20.f, -4.f, -100.f, 1.f, 1.f,
-		 20.f,  4.f, -100.f, 1.f, 0.f,
+		-20.f, -4.f, 100.f, 0.f, 1.f,
+		-20.f,  4.f, 100.f, 0.f, 0.f,
+		 20.f, -4.f, 100.f, 1.f, 1.f,
+		 20.f,  4.f, 100.f, 1.f, 0.f,
 	};
 
 	GLushort indices[] = {
@@ -41,7 +142,7 @@ void initHud() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	/* load and buffer the texture */
@@ -56,7 +157,6 @@ void initHud() {
 	if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &image[0]);
-	initTextureUniform();
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -64,7 +164,8 @@ void initHud() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	vec4 hudColor = getHudColor();
-	initHudColor(hudColor);
 	std::cout << hudColor.r << " " << hudColor.g << " " << hudColor.b << " " << hudColor.a << std::endl;
+
+	initHudUniforms(hudColor);
 }
 

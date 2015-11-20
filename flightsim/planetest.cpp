@@ -97,6 +97,8 @@ void initTerrain() {
 
 void init() // Called before main loop to set up the program
 {
+	glEnable(GL_MULTISAMPLE);
+
 // Create Vertex Array Object
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
