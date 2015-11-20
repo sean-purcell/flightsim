@@ -1,24 +1,13 @@
 #include <iostream>
 #include <cstdio>
-#include <SFML/System.hpp>
 #include <boost/asio.hpp>
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
 #include "angler.hpp"
-#include "rotation.hpp"
-#include "quaternion.hpp"
 #include "serial.hpp"
 #include "joystick.hpp"
 
 using namespace std;
-
-// Dummy values for windowinfo.hpp
-
-int fov=90;
-float ratio=std::tan(fov/2.0);
-int screenwidth=1000;
-int screenheight=850;
-sf::Vector2i size(screenwidth, screenheight);
 
 void printAngles(Serial *port)
 {
@@ -40,12 +29,10 @@ int main()
     while (1)
     {
         cout << "1. Joystick" << endl;
-        cout << "2. Euler to quaternion" << endl;
-        cout << "3. Quaternion to Euler" << endl;
-        cout << "4. Blocking Serial Read" << endl;
-        cout << "5. Timeout Serial Read Abort" << endl;
-        cout << "6. Timeout Serial Read Finish" << endl;
-        cout << "7. Joystick Class" << endl;
+        cout << "2. Blocking Serial Read" << endl;
+        cout << "3. Timeout Serial Read Abort" << endl;
+        cout << "4. Timeout Serial Read Finish" << endl;
+        cout << "5. Joystick Class" << endl;
         cout << "0. Exit" << endl;
         cin >> in;
 
@@ -62,34 +49,6 @@ int main()
             }
         }
         else if (in == '2')
-        {
-            cout << "Input roll, pitch, yaw. Input yaw = 360 to exit." << endl;
-            while (1)
-            {
-                cin >> a >> b >> c;
-                if (c == 360)
-                    break;
-                a = radians(a);
-                b = radians(b);
-                c = radians(c);
-                Quaternion q = Euler(a, b, c).toQuaternion();
-                cout << "Quaternion: " << toString(q) << endl;
-            }
-
-        }
-        else if (in == '3')
-        {
-            cout << "Input quaternion comonents. Input all 0 to exit." << endl;
-            while (1)
-            {
-                cin >> a >> b >> c >> d;
-                if (a == b && b == c && c == d && d == 0)
-                    break;
-                Euler e = Euler::fromRotation(Quaternion(a, b, c, d));
-                cout << "Tait-Bryan angles: " << e.toString() << endl;
-            }
-        }
-        else if (in == '4')
         {
             string port_name;
             cout << "Serial port: ";
@@ -125,7 +84,7 @@ int main()
                 std::cout << "Error: Could not open serial port.\n";
             }
         }
-        else if (in == '5')
+        else if (in == '3')
         {
             string port_name;
             cout << "Serial port: ";
@@ -156,7 +115,7 @@ int main()
                delete &port;
             }
         }
-        else if (in == '6')
+        else if (in == '4')
         {
             string port_name;
             cout << "Serial port: ";
@@ -193,7 +152,7 @@ int main()
                delete &port;
             }
         }
-        else if (in == '7')
+        else if (in == '5')
         {
             std::string port_name = "COM5";
             int delay, timeout;
