@@ -12,8 +12,8 @@ static GLuint tex;
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
 static void setColors(std::vector<GLfloat> &vertices, char c) {
-	const char C[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		'N', 'E', 'S', 'W', 'D', 'F' };
+	const char C[] = { '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'N', 'E', 'S', 'W', 'D', 'C', 'F' };
 	int num = sizeof(C)/sizeof(C[0]);
 	float topleft = 0.0f;
 	float width = 1.f / num;
@@ -62,6 +62,19 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	setColors(vertices, c);\
 } while(0)
 
+#define digit(tl, r, d, c) do {\
+	vertex(tl); \
+	vertex(tl + r); \
+	vertex(tl + r + d); \
+	vertex(tl + d); \
+	colors(c); \
+	quad(); \
+} while(0)
+
+#define rect(tl, r, d, c) do {\
+	digit(tl, r, d, c);\
+} while(0)
+
 	std::vector<GLfloat> vertices;
 	std::vector<GLushort> indices;
 
@@ -71,7 +84,9 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	float pitcha = atan2(Z.y, sqrt(Z.x * Z.x + Z.z * Z.z));
 	float rolla = atan2(X.y, sqrt(X.x * X.x + X.z * X.z));
 
-	quat roll = angleAxis(rolla, vec3(0, 0, 1));
+	std::cout << pitcha << " " << rolla << std::endl;
+
+	quat roll = normalize(quat(facing.w, 0, 0, facing.z));//angleAxis(rolla, vec3(0, 0, 1));
 	vec3 right = roll * vec3(1, 0, 0);
 	vec3 rperp = roll * vec3(0, 1, 0);
 
@@ -81,11 +96,21 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 
 	vec3 vec = forw * 5.f;
 
+	float width = 0.75f;
+
+	vec3 mid = vec3(0, 0, 5.f);
+
+	/* draw a cross hair */
+	rect(-0.1f * right + 0.01 * rperp + mid, 0.2 * right,
+		-0.02 * rperp, 'F');
+	rect(-0.01f * , vec3(0.02f, 0.f, 0.f),
+		vec3(0.f, 0.1f, 0.f), 'F');
+
 	for(int i = 0, a = 0; i < 36; i++, a += 10) {
-		vec3 v1 = vec + rperp * -0.01f - right / 2.f;
-		vec3 v4 = vec + rperp * 0.01f  - right / 2.f;
-		vec3 v2 = v1 + right;
-		vec3 v3 = v4 + right;
+		vec3 v1 = vec + rperp * -0.01f - right / 2.f * width;
+		vec3 v4 = vec + rperp * 0.01f  - right / 2.f * width;
+		vec3 v2 = v1 + right * width;
+		vec3 v3 = v4 + right * width;
 
 		vertex(v1);
 		vertex(v2);
@@ -94,7 +119,21 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 		colors('F');
 		quad();
 
-		quat rot = angleAxis((float)M_PI/18, right);
+		vec3 dr = 0.075f * right;
+		vec3 dd = -0.1f * rperp;
+		vec3 L = (v1 + v4) / 2.f;
+		vec3 R = (v3 + v2) / 2.f;
+		if(a / 100) {
+			digit(L - dr * 3.f - dd * 0.5f, dr, dd, a / 100 + '0');
+			digit(R - dd * 0.5f, dr, dd, a / 100 + '0');
+			R += dr;
+		}
+		digit(L - dr * 2.f - dd * 0.5f, dr, dd, (a % 100) / 10 + '0');
+		digit(L - dr * 1.f - dd * 0.5f, dr, dd, '0');
+		digit(R + dr * 0.f - dd * 0.5f, dr, dd, (a % 100) / 10 + '0');
+		digit(R + dr * 1.f - dd * 0.5f, dr, dd, '0');
+
+		quat rot = angleAxis(-(float)M_PI/18, right);
 		vec = rot * vec;
 	}
 
