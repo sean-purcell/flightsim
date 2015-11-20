@@ -1,5 +1,6 @@
 #include "openglheaders.hpp"
 
+#include <cstdlib>
 #include <ctime>
 #include <chrono>
 #include <cmath>
