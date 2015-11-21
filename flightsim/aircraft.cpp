@@ -72,7 +72,7 @@ void Aircraft::applyForces(float dt) {
 		facing = normalize(facing);
 	}
 
-	std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing * (vec3(0, 0, 1))) << std::endl;
+	//std::cout << "s:" << this->pos << ", v:" << this->velocity << ", a:" << accel << ", f:" << (facing * (vec3(0, 0, 1))) << std::endl;
 }
 
 vec3 Aircraft::fGravity() {

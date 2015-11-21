@@ -16,6 +16,14 @@
 #define VERSION "#version 150 core\n"
 #endif
 
+#ifdef __MINGW32__
+#define INV "in "
+#define OUTV "out "
+#define INF "in "
+#define OUTF "out "
+#define VERSION "#version 150 core\n"
+#endif
+
 // Shader sources
 const GLchar* vertexSource =
 	VERSION
@@ -54,7 +62,7 @@ const GLchar* fragmentSource =
 	INF "vec3 Normal;"
 	INF "float dist;"
 	INF "vec3 Position;"
-	
+
 	INF "vec2 Texcoord;"
 
 	OUTF "vec4 outColor;"

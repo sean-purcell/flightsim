@@ -44,7 +44,12 @@ void initializeGLWindow(int argc, char **argv, int _w, int _h) {
 	glewInit();
 #endif
 
-	std::printf("%s\n%s\n", 
+#ifdef __MINGW32__
+	glewExperimental = GL_TRUE;
+	glewInit();
+#endif
+
+	std::printf("%s\n%s\n",
 		glGetString(GL_RENDERER),  // e.g. Intel HD Graphics 3000 OpenGL Engine
 		glGetString(GL_VERSION)    // e.g. 3.2 INTEL-8.0.61
 		);
@@ -146,16 +151,16 @@ void terrainMode(bool on) {
 
 void hudMode(bool on) {
 	selectMode(1);
-	
+
 	if(on) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnableVertexAttribArray(hudposloc);
-		glEnableVertexAttribArray(texcoordloc);	
+		glEnableVertexAttribArray(texcoordloc);
 	} else {
 		glDisable(GL_BLEND);
 		glDisableVertexAttribArray(hudposloc);
-		glDisableVertexAttribArray(texcoordloc);	
+		glDisableVertexAttribArray(texcoordloc);
 	}
 }
 

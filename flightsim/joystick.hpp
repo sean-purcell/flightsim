@@ -19,5 +19,11 @@ class Joystick
         bool update(int timeout=-1);
         void flush();
         ~Joystick();
+
+    private:
+        bool update_mode_abort(int timeout);
+        bool update_mode_finish(int timeout);
+        bool write_request();
+        void recalc_angles();
 };
 #endif // JOYSTICK_HPP

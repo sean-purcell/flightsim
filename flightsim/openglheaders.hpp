@@ -18,5 +18,11 @@
 # include <GLUT/glut.h>
 #endif
 
+#ifdef __MINGW32__
+#  define GLEW_STATIC
+#  include <GL/glew.h>
+#  include <GL/glut.h>
+#endif
+
 #include "glmheaders.hpp"
 

@@ -1,5 +1,8 @@
+#include "joystick.hpp"
+#include "serial.hpp"
 #include "openglheaders.hpp"
 
+#include <cstdlib>
 #include <ctime>
 #include <chrono>
 #include <cmath>
@@ -12,7 +15,6 @@
 #include "terrain.hpp"
 #include "aircraft.hpp"
 #include "biome-processor.hpp"
-#include "joystick.hpp"
 #include "hudrender.hpp"
 
 GLint uniTrans;
@@ -142,7 +144,10 @@ void tick() {
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
 	if(joystick) {
-		ctrl->update(100);
+		if (ctrl->update(10))
+            std::cout << ">>> ";
+        else
+            std::cout << "||| ";
 		float pitch = ctrl->pitch;
 		float roll = ctrl->roll;
 
@@ -154,7 +159,8 @@ void tick() {
 			left = roll;
 			right = 0;
 		}
-		std::cout << pitch << " " << roll << std::endl;
+		std::cout << getShort(ctrl->port->data, 0) << " " << getShort(ctrl->port->data, 2) << " " << getShort(ctrl->port->data, 4) << "\n";
+		//std::cout << pitch << " " << roll << std::endl;
 	}
 
 	auto time = high_resolution_clock::now();

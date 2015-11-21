@@ -6,6 +6,7 @@
 #include "openglutil.hpp"
 #include "biome-processor.hpp"
 #include "util.hpp"
+#include "rotation.hpp"
 
 static GLuint vbo, ebo;
 static GLuint tex;
@@ -81,6 +82,13 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 X = facing * vec3(1, 0, 0);
 	vec3 Y = facing * vec3(0, 1, 0);
 	vec3 Z = facing * vec3(0, 0, 1);
+
+	Euler angles = Euler::fromRotation(facing); // This method automatically converts the coordinates. See rotation.cpp.
+	//std::cout << angles.toString() << std::endl;
+	//std::cout << "Direction vector: (" << Z.x << "," << Z.y << "," << Z.z << ")" << std::endl;
+
+	//std::cout << pitcha << " " << rolla << std::endl;
+
 	float pitcha = atan2(Z.y, sqrt(Z.x * Z.x + Z.z * Z.z));
 	float rolla = atan2(X.y, sqrt(X.x * X.x + X.z * X.z));
 
