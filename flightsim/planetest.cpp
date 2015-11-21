@@ -12,6 +12,7 @@
 #include "terrain.hpp"
 #include "aircraft.hpp"
 #include "biome-processor.hpp"
+#include "joystick.hpp"
 #include "hudrender.hpp"
 
 GLint uniTrans;
@@ -41,6 +42,9 @@ const float HORIZON_DIST = chunksAround * 10 * CHUNKWIDTH;
 auto prevtime = std::chrono::high_resolution_clock::now();
 
 Aircraft aircraft;
+
+Joystick *ctrl;
+bool joystick = false;
 
 const char *biomeFile = "resources/biome-earth.png";
 
@@ -137,8 +141,23 @@ void tick() {
 	ang += 0.05f;
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
+	if(joystick) {
+		ctrl->update(100);
+		float pitch = ctrl->pitch;
+		float roll = ctrl->roll;
+
+		if(pitch != 0.0) {
+			down = pitch;
+		}
+		if(roll != 0.0) {
+			right = roll;
+		}
+		std::cout << pitch << " " << roll << std::endl;
+	}
+
 	auto time = high_resolution_clock::now();
-	aircraft.update(duration_cast<duration<float> >(time - prevtime).count());
+	float dt = duration_cast<duration<float> >(time - prevtime).count();
+	aircraft.update(dt);
 	prevtime = time;
 
 	/*
@@ -217,8 +236,23 @@ void mouseMoveFunc(int x, int y) {
 	my = y;
 }
 
+void initJoystick() {
+	std::cout << "joystick port (hit enter to use keyboard controls): " << std::flush;
+	std::string port;
+	std::getline(std::cin, port);
+	if(port != "") {
+		ctrl = new Joystick(port);
+		if (ctrl->port->get_status() != Serial::IDLE) return;
+		//boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+		ctrl->flush();
+		joystick = true;
+	}
+}
+
 int main(int argc, char **argv)
 {
+	initJoystick();
+
 	initializeGLWindow(argc, argv, 800, 600);
 
 	for(int i = 0; i < argc; i++) {

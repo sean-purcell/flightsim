@@ -84,8 +84,6 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	float pitcha = atan2(Z.y, sqrt(Z.x * Z.x + Z.z * Z.z));
 	float rolla = atan2(X.y, sqrt(X.x * X.x + X.z * X.z));
 
-	std::cout << pitcha << " " << rolla << std::endl;
-
 	quat roll = normalize(quat(facing.w, 0, 0, facing.z));//angleAxis(rolla, vec3(0, 0, 1));
 	vec3 right = roll * vec3(1, 0, 0);
 	vec3 rperp = roll * vec3(0, 1, 0);
@@ -101,10 +99,10 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 mid = vec3(0, 0, 5.f);
 
 	/* draw a cross hair */
-	rect(-0.1f * right + 0.01 * rperp + mid, 0.2 * right,
-		-0.02 * rperp, 'F');
-	rect(-0.01f * , vec3(0.02f, 0.f, 0.f),
-		vec3(0.f, 0.1f, 0.f), 'F');
+	rect(-0.1f * right + 0.01f * rperp + mid, 0.2f * right,
+		-0.02f * rperp, 'F');
+	rect(-0.01f * right + mid, 0.02f * right,
+		0.1f * rperp, 'F');
 
 	for(int i = 0, a = 0; i < 36; i++, a += 10) {
 		vec3 v1 = vec + rperp * -0.01f - right / 2.f * width;

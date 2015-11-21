@@ -3,8 +3,8 @@ OBJECTS=$(patsubst %.cpp, bin/%.o, $(SOURCES))
 
 LIB=-Iinc/ $(EXTRALIB)
 
-FLAGS=-O3 -std=c++11 -Wno-deprecated-declarations
-LFLAGS= -lsfml-window -lsfml-system -lsfml-graphics -L/usr/local/lib
+FLAGS=-g -O3 -std=c++11 -Wno-deprecated-declarations
+LFLAGS= -L/usr/local/lib -lboost_system -lboost_system-mt
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
