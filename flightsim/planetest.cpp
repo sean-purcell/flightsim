@@ -1,4 +1,5 @@
 #include "joystick.hpp"
+#include "serial.hpp"
 #include "openglheaders.hpp"
 
 #include <cstdlib>
@@ -143,7 +144,10 @@ void tick() {
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
 	if(joystick) {
-		ctrl->update(100);
+		if (ctrl->update(10))
+            std::cout << ">>> ";
+        else
+            std::cout << "||| ";
 		float pitch = ctrl->pitch;
 		float roll = ctrl->roll;
 
@@ -153,7 +157,8 @@ void tick() {
 		if(roll != 0.0) {
 			right = roll;
 		}
-		std::cout << pitch << " " << roll << std::endl;
+		std::cout << getShort(ctrl->port->data, 0) << " " << getShort(ctrl->port->data, 2) << " " << getShort(ctrl->port->data, 4) << "\n";
+		//std::cout << pitch << " " << roll << std::endl;
 	}
 
 	auto time = high_resolution_clock::now();

@@ -447,6 +447,7 @@ void Serial::flush()
     abort();
     while (read(len, 1)){std::cout << "q";}
     mode = temp;
+    status = IDLE;
 }
 
 /** Cancel any ongoing async operations.

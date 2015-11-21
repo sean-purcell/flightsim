@@ -20,7 +20,7 @@ class Serial
 
         /* Constructors and methods */
         Serial();
-        Serial(std::string port_name, int buffer_len, std::string header="", int mode = MODE_ABORT);
+        Serial(std::string port_name, int buffer_len, std::string header="", int mode = MODE_FINISH);
         void reinit(std::string port_name);
         bool write(const char * bytes, int n);
         bool read(int nbytes, int timeout=-1);

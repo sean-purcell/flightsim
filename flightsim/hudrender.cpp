@@ -84,7 +84,7 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 Z = facing * vec3(0, 0, 1);
 
 	Euler angles = Euler::fromRotation(facing); // This method automatically converts the coordinates. See rotation.cpp.
-	std::cout << angles.toString() << std::endl;
+	//std::cout << angles.toString() << std::endl;
 	//std::cout << "Direction vector: (" << Z.x << "," << Z.y << "," << Z.z << ")" << std::endl;
 
 	//std::cout << pitcha << " " << rolla << std::endl;
