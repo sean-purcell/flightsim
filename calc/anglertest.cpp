@@ -154,7 +154,7 @@ int main()
         }
         else if (in == '5')
         {
-            std::string port_name = "COM5";
+            std::string port_name = "/dev/tty.usbmodem0E215ED1";
             int delay, timeout;
             Joystick ctrl(port_name);
             if (ctrl.port->get_status() == Serial::IDLE)

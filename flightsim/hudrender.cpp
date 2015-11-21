@@ -83,7 +83,7 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 Y = facing * vec3(0, 1, 0);
 	vec3 Z = facing * vec3(0, 0, 1);
 
-	Euler angles = Euler::fromRotation(facing);
+	Euler angles = Euler::fromRotation(facing); // This method automatically converts the coordinates. See rotation.cpp.
 	std::cout << angles.toString() << std::endl;
 	//std::cout << "Direction vector: (" << Z.x << "," << Z.y << "," << Z.z << ")" << std::endl;
 
@@ -109,8 +109,8 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	/* draw a cross hair */
 	rect(-0.1f * right + 0.01f * rperp + mid, 0.2f * right,
 		-0.02f * rperp, 'F');
-	rect(-0.01f * rperp, vec3(0.02f, 0.f, 0.f),
-		vec3(0.f, 0.1f, 0.f), 'F');
+	rect(-0.01f * right + mid, 0.02f * right,
+		0.1f * rperp, 'F');
 
 	for(int i = 0, a = 0; i < 36; i++, a += 10) {
 		vec3 v1 = vec + rperp * -0.01f - right / 2.f * width;
