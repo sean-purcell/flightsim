@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 
 short getShort(const char *buffer, int start);
+int getInt(const char *buffer, int start);
 
 class Serial
 {

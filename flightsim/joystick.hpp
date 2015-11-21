@@ -11,7 +11,7 @@ class Joystick
         static const int LEN;
 
         float pitch, roll;
-        int num_pending;    // number of pending requests sent to Launchpad
+        int throttle;
         Serial *port;
 
         Joystick();
@@ -25,5 +25,6 @@ class Joystick
         bool update_mode_finish(int timeout);
         bool write_request();
         void recalc_angles();
+        int num_pending;    // number of pending requests sent to Launchpad
 };
 #endif // JOYSTICK_HPP
