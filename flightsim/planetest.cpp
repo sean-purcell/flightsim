@@ -147,10 +147,12 @@ void tick() {
 		float roll = ctrl->roll;
 
 		if(pitch != 0.0) {
-			down = pitch;
+			down = pitch / M_PI * 4;
+			up = 0;
 		}
 		if(roll != 0.0) {
-			right = roll;
+			left = roll;
+			right = 0;
 		}
 		std::cout << pitch << " " << roll << std::endl;
 	}
