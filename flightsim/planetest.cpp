@@ -244,22 +244,26 @@ void mouseMoveFunc(int x, int y) {
 	my = y;
 }
 
-void initJoystick() {
+void initJoystick(int argc, char **argv) {
+	int i;
+	for(i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "-j") == 0) {
+			break;
+		}
+	}
+	if(i == argc) return;
 	std::cout << "joystick port (hit enter to use keyboard controls): " << std::flush;
 	std::string port;
 	std::getline(std::cin, port);
-	if(port != "") {
-		ctrl = new Joystick(port);
-		if (ctrl->port->get_status() != Serial::IDLE) return;
-		//boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
-		ctrl->flush();
-		joystick = true;
-	}
+	ctrl = new Joystick(port);
+	if (ctrl->port->get_status() != Serial::IDLE) return;
+	ctrl->flush();
+	joystick = true;
 }
 
 int main(int argc, char **argv)
 {
-	initJoystick();
+	initJoystick(argc, argv);
 
 	initializeGLWindow(argc, argv, 800, 600);
 
