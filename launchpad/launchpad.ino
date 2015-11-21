@@ -94,22 +94,22 @@ void loop()
 		Serial.print(',');
 		Serial.print(dataY, DEC);
 		Serial.print(',');
-		Serial.println(dataZ, DEC);
+		Serial.print(dataZ, DEC);
+                Serial.print(',');
+                Serial.println(ulAIN0, DEC);
 	#endif
 
 	#ifdef DEBUG2
-		send(dataX, dataY, dataZ);
+		send(dataX, dataY, dataZ, ulAIN0);
 	#endif
 
 	#ifdef DEBUG3
 		if (Serial.available())
 		{
 			Serial.read();
-			send(dataX, dataY, dataZ);
-                        sendPot(ulAIN0);
+			send(dataX, dataY, dataZ, ulAIN0);
 		}
 	#endif
-
 }
 
 /** Get info from accelerometer.
