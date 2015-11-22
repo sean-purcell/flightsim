@@ -84,37 +84,71 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 Z = facing * vec3(0, 0, 1);
 
 	Euler angles = Euler::fromRotation(facing); // This method automatically converts the coordinates. See rotation.cpp.
-	//std::cout << angles.toString() << std::endl;
-	//std::cout << "Direction vector: (" << Z.x << "," << Z.y << "," << Z.z << ")" << std::endl;
+	std::cout << angles.toString() << std::endl;
 
-	//std::cout << pitcha << " " << rolla << std::endl;
-
-	float pitcha = atan2(Z.y, sqrt(Z.x * Z.x + Z.z * Z.z));
-	float rolla = atan2(X.y, sqrt(X.x * X.x + X.z * X.z));
-
-	quat roll = normalize(quat(facing.w, 0, 0, facing.z));//angleAxis(rolla, vec3(0, 0, 1));
+	quat roll = angleAxis(angles.roll, vec3(0, 0, 1));
 	vec3 right = roll * vec3(1, 0, 0);
 	vec3 rperp = roll * vec3(0, 1, 0);
 
-	quat pitch = angleAxis(pitcha, right);
-
+	quat pitch = angleAxis(angles.pitch, right);
 	vec3 forw = pitch * vec3(0, 0, 1);
 
-	vec3 vec = forw * 5.f;
+	/* draw a cross hair representing velocity direction */
+	{
+		vec3 cright = right;
+		vec3 cup = rperp;
+		quat velfix = angleAxis(-angles.yaw, vec3(0, 1, 0)) *
+			angleAxis(-angles.pitch, vec3(1, 0, 0)) *
+			angleAxis(-angles.roll, vec3(0, 0, 1));
+		vec3 vels = normalize(vel) * velfix;
+		vels = vels - 2 * dot(vels, right) * right;
+		//vels = angleAxis(-angles.yaw, vec3(0, 1, 0)) * vels;
+		rect(-0.1f * cright + 0.01f * cup + vels * 5.f, 0.2f * cright,
+			-0.02f * cup, 'F');
+		rect(-0.01f * cright + vels * 5.f, 0.02f * cright,
+			0.1f * cup, 'F');
+		//rect(vec3(-1, 0.01, 0), vels * 5.f - vec3(-1, 0.01, 0), vec3(0, -0.02, 0), 'F');
+		//rect(vec3(1, 0.01, 0), vels * 5.f - vec3(1, 0.01, 0), vec3(0, -0.02, 0), 'F');
+		//rect(vec3(0.01, 1, 0), vels * 5.f - vec3(0.01, 1, 0), vec3(-0.02, 0, 0), 'F');
 
-	float width = 0.75f;
+		std::cout << vel << " " <<  vels << std::endl;
+	}
 
-	vec3 mid = vec3(0, 0, 5.f);
+	/* draw an arrow in the middle */
+	{
+		vec3 start(0, 0, 5.f);
+		vec3 dr = vec3(0.15f, -0.06f, 0); vec3 drp(-dr.y, dr.x, 0);
+		vec3 dl = dr; dl.x = -dl.x;       vec3 dlp(-dl.y, dl.x, 0);
+		vec3 ur = vec3(dl.x + 0.01f, 0.12f, 0);   vec3 urp(-ur.y, ur.x, 0);
+		vec3 ul = vec3(dr.x + 0.01f, ur.y, 0);    vec3 ulp(-ul.y, ul.x, 0);
 
-	/* draw a cross hair */
-	rect(-0.1f * right + 0.01f * rperp + mid, 0.2f * right,
-		-0.02f * rperp, 'F');
-	rect(-0.01f * right + mid, 0.02f * right,
-		0.1f * rperp, 'F');
+		drp = normalize(drp);
+		dlp = normalize(dlp);
+		urp = normalize(urp);
+		ulp = normalize(ulp);
 
-	for(int i = 0, a = 0; i < 36; i++, a += 10) {
-		vec3 v1 = vec + rperp * -0.01f - right / 2.f * width;
-		vec3 v4 = vec + rperp * 0.01f  - right / 2.f * width;
+		rect(start - 0.01f * drp, dr, drp * 0.02f, 'F');
+		rect(start - 0.01f * dlp, dl, dlp * 0.02f, 'F');
+		rect(start + dr - 0.01f * urp, ur, urp * 0.02f, 'F');
+		rect(start + dl - 0.01f * ulp, ul, ulp * 0.02f, 'F');
+	}
+
+	vec3 vec = forw * 1.f;
+	float linewidth = 0.75f;
+	quat rot = angleAxis(-(float)M_PI/36, right);
+	for(int a = 0; a < 360; a += 5, vec = rot * vec) {
+		if(acos(dot(vec, vec3(0, 0, 1))) > 15 * M_PI / 180.f) {
+			continue;
+		}
+
+		float width;
+		if(a % 10 == 5) {
+			width = linewidth / 2;
+		} else {
+			width = linewidth;
+		}
+		vec3 v1 = vec * 5.f + rperp * -0.01f - right / 2.f * width;
+		vec3 v4 = vec * 5.f + rperp * 0.01f  - right / 2.f * width;
 		vec3 v2 = v1 + right * width;
 		vec3 v3 = v4 + right * width;
 
@@ -125,22 +159,28 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 		colors('F');
 		quad();
 
+		int ang;
+		if(a <= 90) {
+			ang = a;
+		} else if(a <= 270) {
+			ang = 180 - a;
+		} else {
+			ang = a - 360;
+		}
 		vec3 dr = 0.075f * right;
 		vec3 dd = -0.1f * rperp;
 		vec3 L = (v1 + v4) / 2.f;
 		vec3 R = (v3 + v2) / 2.f;
-		if(a / 100) {
-			digit(L - dr * 3.f - dd * 0.5f, dr, dd, a / 100 + '0');
-			digit(R - dd * 0.5f, dr, dd, a / 100 + '0');
+		if(ang < 0) {
+			digit(L - dr * 3.f - dd * 0.5f, dr, dd, '-');
+			digit(R - dd * 0.5f, dr, dd, '-');
 			R += dr;
+			ang = -ang;
 		}
-		digit(L - dr * 2.f - dd * 0.5f, dr, dd, (a % 100) / 10 + '0');
-		digit(L - dr * 1.f - dd * 0.5f, dr, dd, '0');
-		digit(R + dr * 0.f - dd * 0.5f, dr, dd, (a % 100) / 10 + '0');
-		digit(R + dr * 1.f - dd * 0.5f, dr, dd, '0');
-
-		quat rot = angleAxis(-(float)M_PI/18, right);
-		vec = rot * vec;
+		digit(L - dr * 2.f - dd * 0.5f, dr, dd, (ang % 100) / 10 + '0');
+		digit(L - dr * 1.f - dd * 0.5f, dr, dd, (ang % 10) + '0');
+		digit(R + dr * 0.f - dd * 0.5f, dr, dd, (ang % 100) / 10 + '0');
+		digit(R + dr * 1.f - dd * 0.5f, dr, dd, (ang % 10) + '0');
 	}
 
 #undef quad
