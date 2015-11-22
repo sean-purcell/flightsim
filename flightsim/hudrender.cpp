@@ -84,7 +84,6 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 	vec3 Z = facing * vec3(0, 0, 1);
 
 	Euler angles = Euler::fromRotation(facing); // This method automatically converts the coordinates. See rotation.cpp.
-	std::cout << angles.toString() << std::endl;
 
 	quat roll = angleAxis(angles.roll, vec3(0, 0, 1));
 	vec3 right = roll * vec3(1, 0, 0);
@@ -107,11 +106,6 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 			-0.02f * cup, 'F');
 		rect(-0.01f * cright + vels * 5.f, 0.02f * cright,
 			0.1f * cup, 'F');
-		//rect(vec3(-1, 0.01, 0), vels * 5.f - vec3(-1, 0.01, 0), vec3(0, -0.02, 0), 'F');
-		//rect(vec3(1, 0.01, 0), vels * 5.f - vec3(1, 0.01, 0), vec3(0, -0.02, 0), 'F');
-		//rect(vec3(0.01, 1, 0), vels * 5.f - vec3(0.01, 1, 0), vec3(-0.02, 0, 0), 'F');
-
-		std::cout << vel << " " <<  vels << std::endl;
 	}
 
 	/* draw an arrow in the middle */
@@ -181,6 +175,111 @@ static int updateHudVertices(vec3 pos, quat facing, vec3 vel) {
 		digit(L - dr * 1.f - dd * 0.5f, dr, dd, (ang % 10) + '0');
 		digit(R + dr * 0.f - dd * 0.5f, dr, dd, (ang % 100) / 10 + '0');
 		digit(R + dr * 1.f - dd * 0.5f, dr, dd, (ang % 10) + '0');
+	}
+
+	/* draw the heading */
+	float tickwidth = 10.f / 360.f;
+	float tickheight = 0.1f;
+	float headwidth = tickwidth * 90.f;
+	vec3 basis((360 -angles.yawd()) * tickwidth, 2.f, 5.f);
+	vec3 mov(tickwidth, 0, 0);
+	vec = basis;
+
+	for(int a = 0; a < 360; a+=5, vec += 5.f*mov) {
+		if(vec.x > headwidth / 2.f) {
+			vec.x -= 360 * tickwidth;
+		}
+		if(vec.x < -headwidth / 2.f) continue;
+
+		if(a % 90 == 0) {
+			vec3 right(tickheight, 0, 0);
+			vec3 down(0, -tickheight / 0.75f, 0);
+			char c = a == 0 ? 'N' : (a == 90 ? 'E' : (a == 180 ? 'S' : 'W'));
+			digit(vec - 0.5f * right - tickheight / 2.f - down.y / 2.f, right, down, c);
+			continue;
+		}
+		vec3 right(0.02f, 0, 0);
+		vec3 down(0, -tickheight, 0);
+		if(a % 10 == 0) {
+			rect(vec - 0.5f*right, right, down, 'F');
+		} else {
+			rect(vec - 0.5f*right+0.25f*down, right, 0.5f*down, 'F');
+		}
+	}
+
+	/* draw airspeed indicator */
+	float airspeed = length(vel);
+	float asheight = 2.f;
+
+	vec3 asbasis(-2.f, 0.f, 5.f);
+	vec3 astickh(0.f, asheight/50.f, 0.f);
+	vec3 astickw(-0.3f, 0, 0);
+	rect(asbasis - vec3(0, asheight / 2.f, 0), vec3(0.02f, 0, 0), vec3(0, asheight, 0),
+		'F');
+	//rect(asbasis, vec3(0.1f, 0.1f, 0.f), normalize(vec3(1, -1, 0)) * 0.02f, 'F');
+	//rect(asbasis, vec3(0.1f, -0.1f, 0.f), normalize(vec3(1, 1, 0)) * 0.02f, 'F');
+	rect(asbasis-vec3(0,0.01f,0), vec3(0.1f, 0, 0), vec3(0, 0.02f, 0), 'F');
+
+	int asiv = (int) (airspeed - 50); asiv = asiv - asiv % 10;
+	asiv = max(0, asiv);
+	for(int v = asiv; v - airspeed <= 50; v += 5) {
+		vec3 yvec = astickh * (v - airspeed);
+		if(yvec.y > asheight / 2. || yvec.y < -asheight / 2.) continue;
+
+		if(v % 10 == 0) {
+			rect(asbasis + yvec - vec3(0, 0.01f, 0), astickw, vec3(0, 0.02f, 0), 'F');
+			vec3 L = asbasis + yvec + astickw;
+			int d = v;
+			vec3 dr = 0.075f * vec3(1, 0, 0);
+			vec3 dd = 0.1f * vec3(0, -1, 0);
+			while(d) {
+				rect(L - dr - 0.5f*dd, dr, dd, '0' + d % 10);
+				d = d / 10;
+				L -= dr;
+			}
+		} else {
+			rect(asbasis + yvec - vec3(0, 0.01f, 0), astickw / 1.5f, vec3(0, 0.02f, 0), 'F');
+		}
+	}
+
+	float alheight = asheight;
+	vec3 albasis(2.f, 0.f, 5.f);
+	vec3 altickh(0.f, alheight/500.f, 0.f);
+	vec3 altickw(0.3f, 0, 0);
+	rect(albasis - vec3(0, alheight / 2.f, 0), vec3(0.02f, 0, 0), vec3(0, asheight, 0),
+		'F');
+	rect(albasis-vec3(0,0.01f,0), vec3(-0.1f, 0, 0), vec3(0, 0.02f, 0), 'F');
+	int aliv = (int) (pos.y - 250); aliv = aliv - aliv % 50;
+	for(int v = aliv; v - pos.y <= 250; v += 50) {
+		vec3 yvec = altickh * (v - pos.y);
+		if(yvec.y > alheight / 2. || yvec.y < -alheight / 2.) continue;
+
+		if(v % 100 == 0) {
+			rect(albasis + yvec - vec3(0, 0.01f, 0), altickw, vec3(0, 0.02f, 0), 'F');
+			vec3 R = albasis + yvec + altickw;
+			int d = v;
+			vec3 dr = 0.075f * vec3(1, 0, 0);
+			vec3 dd = 0.1f * vec3(0, -1, 0);
+			if(d == 0) {
+				rect(R - 0.5f * dd, dr, dd, '0');
+			}
+			if(d < 0) {
+				d = -d;
+				rect(R - 0.5f * dd, dr, dd, '-');
+				R += dr;
+			}
+			int i = 1;
+			while(d >= i) i *= 10;
+			i/=10;
+			while(i) {
+				rect(R - 0.5f*dd, dr, dd, '0' + (d / i));
+				d = d % i;
+				i /= 10;
+				R += dr;
+			}
+		} else {
+			rect(albasis + yvec - vec3(0, 0.01f, 0), altickw / 1.5f, vec3(0, 0.02f, 0), 'F');
+		}
 	}
 
 #undef quad
