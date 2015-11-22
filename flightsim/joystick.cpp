@@ -6,7 +6,7 @@
 
 const char Joystick::REQUEST = 'R'; // Character signalling a request for data
 const char * Joystick::HEADER = "\xC0\x80"; // Sequence of bytes preceding each packet sent by Launchpad
-const int Joystick::LEN = 6; // Number of bytes per packet, excluding header
+const int Joystick::LEN = 10; // Number of bytes per packet, excluding header
 
 Joystick::Joystick(){};
 
@@ -16,6 +16,7 @@ Joystick::Joystick(std::string port_name)
 {
     pitch = 0;
     roll = 0;
+    throttle = 0;   // TODO: Check default value. Might have offset binary here.
     num_pending = 0;
     port = new Serial(port_name, LEN, HEADER, Serial::MODE_FINISH);
 }
@@ -143,6 +144,7 @@ void Joystick::recalc_angles()
     short z = getShort(port->data, 4);
     roll = jroll(x, y, z);
     pitch = jpitch(x, y, z);
+    throttle = getInt(port->data, 6);
 }
 
 

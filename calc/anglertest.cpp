@@ -176,6 +176,7 @@ int main()
                     printf("Input: %d %d %d\n", x, y, z);
                     cout << "    Change in pitch: " << ctrl.pitch << endl;
                     cout << "    Change in roll: " << ctrl.roll << endl;
+                    cout << "    Throttle: " << ctrl.throttle << endl;
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(delay));
                 }
             }

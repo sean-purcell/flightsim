@@ -71,6 +71,8 @@ char 	chZ0Addr = 0x36;
 char 	rgchReadAccl[] = {0, 0, 0};
 char 	rgchWriteAccl[] = {0, 0};
 
+uint32_t	ulAIN0;
+
 /* ------------------------------------------------------------ */
 /*                            Loop                              */
 /* ------------------------------------------------------------ */
@@ -80,6 +82,7 @@ char 	rgchWriteAccl[] = {0, 0};
 void loop()
 {
 	readAccel();
+	readPot();
 	delay(50);
 
 	#ifdef DEBUG0
@@ -91,21 +94,22 @@ void loop()
 		Serial.print(',');
 		Serial.print(dataY, DEC);
 		Serial.print(',');
-		Serial.println(dataZ, DEC);
+		Serial.print(dataZ, DEC);
+                Serial.print(',');
+                Serial.println(ulAIN0, DEC);
 	#endif
 
 	#ifdef DEBUG2
-		send(dataX, dataY, dataZ);
+		send(dataX, dataY, dataZ, ulAIN0);
 	#endif
 
 	#ifdef DEBUG3
 		if (Serial.available())
 		{
 			Serial.read();
-			send(dataX, dataY, dataZ);
+			send(dataX, dataY, dataZ, ulAIN0);
 		}
 	#endif
-
 }
 
 /** Get info from accelerometer.
@@ -128,6 +132,16 @@ void readAccel()
 	rgchReadAccl[0] = chZ0Addr;
 	I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
 	dataZ = (rgchReadAccl[2] << 8) | rgchReadAccl[1];	
+}
+
+/** Get info from potentiometer, and put the
+ * values into the global uint32_t variable ulAIN0.
+ */
+void readPot()
+{
+    ADCProcessorTrigger(ADC0_BASE, 0);
+    while(!ADCIntStatus(ADC0_BASE, 0, false));
+    ADCSequenceDataGet(ADC0_BASE, 0, &ulAIN0);
 }
 
 /* ------------------------------------------------------------ */

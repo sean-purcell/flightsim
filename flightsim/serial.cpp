@@ -21,6 +21,20 @@ short getShort(const char *buffer, int start)
     return result;
 }
 
+/** Convert bytes to a int, assuming big endian (MSB first).
+ *
+ * Args:
+ *      buffer (char *): array of bytes as chars
+ *      start (int): index of the first byte in the short that we want to extract
+ */
+int getInt(const char *buffer, int start)
+{
+    int result = ((unsigned char)buffer[start] << 24)
+                 | ((unsigned char)buffer[start+1] << 16)
+                 | ((unsigned char)buffer[start+2] << 8)
+                 | ((unsigned char)buffer[start+3]);
+    return result;
+}
 //---------------------------------------------------------//
 //--------------------- Serial Class ----------------------//
 //---------------------------------------------------------//
