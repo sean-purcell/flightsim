@@ -7,8 +7,8 @@
 /** The derivation for the angle maths is in doc/derivations/angles.tex. */
 
  double STICK[] = {-1, 0, 0};       // direction of gravity when controller is in rest state
- double PITCH_AXIS[] = {0, 0, 1};   // direction of pitch axis when controller is in rest state
- double ROLL_AXIS[] = {0, 1, 0};   // direction of roll axis when controller is in rest state
+ double PITCH_AXIS[] = {0, 0, -1};   // direction of pitch axis when controller is in rest state
+ double ROLL_AXIS[] = {0, -1, 0};   // direction of roll axis when controller is in rest state
  double max_angle = acos(-1) / 2;   // clip angles above this value
  double min_angle = -acos(-1) / 2;  // clip angles below this value
 

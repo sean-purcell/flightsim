@@ -7,6 +7,8 @@
 
 extern float up, down, left, right;
 
+const float Aircraft::MAX_THRUST = 792000 * 2;
+
 void Aircraft::init_params() {
 	g = -9.8;
 	mass = 16770;

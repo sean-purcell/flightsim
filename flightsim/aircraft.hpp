@@ -6,6 +6,8 @@
 class Aircraft
 {
 	public:
+	    static const float MAX_THRUST;
+
 		float g;
 		float mass;
 		float thrust;
@@ -33,9 +35,9 @@ class Aircraft
 		quat facing;
 
 		void init_params();
-		
+
 		Aircraft();
-		
+
 		void update(float dt);
 
 		void applyForces(float dt);

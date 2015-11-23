@@ -144,10 +144,10 @@ void tick() {
 	if(ang > 2 * M_PI) ang -= 2 * M_PI;
 
 	if(joystick) {
-		if (ctrl->update(10))
-            std::cout << ">>> ";
-        else
-            std::cout << "||| ";
+		ctrl->update(10); //if (ctrl->update(10))
+        //    std::cout << ">>> ";
+        //else
+        //    std::cout << "||| ";
 		float pitch = ctrl->pitch;
 		float roll = ctrl->roll;
 
@@ -156,10 +156,11 @@ void tick() {
 			up = 0;
 		}
 		if(roll != 0.0) {
-			left = roll;
+			left = -roll;
 			right = 0;
 		}
-		std::cout << getShort(ctrl->port->data, 0) << " " << getShort(ctrl->port->data, 2) << " " << getShort(ctrl->port->data, 4) << "\n";
+		aircraft.thrust = Aircraft::MAX_THRUST * (4098 - ctrl->throttle) / 4095;
+		//std::cout << getShort(ctrl->port->data, 0) << " " << getShort(ctrl->port->data, 2) << " " << getShort(ctrl->port->data, 4) << "\n";
 		//std::cout << pitch << " " << roll << std::endl;
 	}
 
