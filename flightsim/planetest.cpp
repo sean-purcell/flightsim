@@ -156,9 +156,10 @@ void tick() {
 			up = 0;
 		}
 		if(roll != 0.0) {
-			left = roll;
+			left = -roll;
 			right = 0;
 		}
+		aircraft.thrust = Aircraft::MAX_THRUST * ctrl->throttle / 4095;
 		std::cout << getShort(ctrl->port->data, 0) << " " << getShort(ctrl->port->data, 2) << " " << getShort(ctrl->port->data, 4) << "\n";
 		//std::cout << pitch << " " << roll << std::endl;
 	}
