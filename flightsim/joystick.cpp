@@ -16,7 +16,7 @@ Joystick::Joystick(std::string port_name)
 {
     pitch = 0;
     roll = 0;
-    throttle = 4095;
+    throttle = 0;
     num_pending = 0;
     port = new Serial(port_name, LEN, HEADER, Serial::MODE_FINISH);
 }
