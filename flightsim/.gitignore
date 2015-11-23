@@ -6,6 +6,6 @@ planetest
 *.*~
 *.cpp.*
 *.o
-flightsimulate
+flightsim
 *.gch
 geany_run_script.sh

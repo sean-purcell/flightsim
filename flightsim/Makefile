@@ -15,12 +15,10 @@ ifeq ($(UNAME_S),Darwin)
 	LFLAGS+= -framework OpenGL -framework GLUT
 endif
 
-.PHONY: all bin/planetest
+.PHONY: all flightsim
 
-all: bin/planetest
-
-bin/planetest: bin $(OBJECTS)
-	g++ -o bin/planetest $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
+flightsim: bin $(OBJECTS)
+	g++ -o $@ $(filter-out $(word 1, $^), $^) $(LIB) $(FLAGS) $(LFLAGS) -flto
 
 bin/%.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(LIB)
