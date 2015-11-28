@@ -97,11 +97,9 @@ __Launchpad Side__
 	- Installation: Easy
 2. Orbit Booster Pack:
 	- For accelerometer and other stuff
-	- Download: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1314193/View?ou=220517 or https://www.digilentinc.com/Products/Detail.cfm?NavPath=2,396,1181&Prod=ORBIT-BOOSTER 
 	- Installation: Extract contents of zip file into `%ENERGIA_PATH%/Contents/Resources/Java/hardware/lm4f/libraries/OrbitBoosterPack`.
 						
 #### References
-- Lab 2 specifications: https://learn.uwaterloo.ca/d2l/le/content/220517/viewContent/1313255/View?ou=220517
 - TM4C123 guide: http://energia.nu/pin-maps/guide_tm4c123launchpad/
 - ADXL345 data sheet: http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf
 - ADXL345 angle maths: http://www.analog.com/media/en/technical-documentation/application-notes/AN-1057.pdf
@@ -113,29 +111,3 @@ __Launchpad Side__
 - Euler angles: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 - Orientation, Rotation, Velocity and Acceleration, and the SRM: http://www.sedris.org/wg8home/Documents/WG80485.pdf
 
-#### Finished
-1. Write proposal.
-	- Full name, ID numbers, and quest IDs
-	- Timeline showing breakdown of milestones leading up to project completion.
-	- Detailed description of hardware components
-	- Expected challenges
-2. Launchpad integration.
-	- Serial port reading program
-	- Serial port sending program (ino)
-	- Encoding to bytes / decoding from bytes
-	- Data transmission rate?
-	- How to deal with packet loss
-3. Angles maths.
-	- Intepreting accelerometer input (16-bit twos complement)
-	- Determining orientation in space
-	- Mapping acceleration to pitch and roll angle
-	
-#### Schedule
-- Oct 16, 2015 23:59: Proposal due.
-- Oct 26, 2015: Launchpad output demo "due"
-- Oct 26, 2015: Javarobot demo "due"
-- Oct 29, 2015: Booster pack angle demo "due"
-- Oct 29, 2015: Proposal feedback.
-- Nov 02, 2015: C++ serial port reader demo "due"
-- Nov 18, 2015: We didn't really follow this at all, did we. Oh well.
-- Nov 26, 2015: Project demo due.
