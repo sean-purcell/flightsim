@@ -1,4 +1,4 @@
-se101-lab
+Flight Simulator with Tiva Launchpad Joystick
 ======
 
 #### To do
