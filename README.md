@@ -1,18 +1,6 @@
 Flight Simulator with Tiva Launchpad Joystick
 ======
 
-#### To do
-1. Flight simulator. (Jasper, Sean)
-	- Time clocking
-	- HUD
-2. Potentiometer as throttle.
-3. Testing and debugging
-	- Angle maths
-	- Joystick response
-	- etc.
-4. Documentation
-	- Annotate stuff	
-	
 #### Dependencies
 	
 __C++ Side__
