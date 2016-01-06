@@ -1,6 +1,8 @@
 Flight Simulator with Tiva Launchpad Joystick
 ======
 
+![Screenshot of the flight simulator in operator](screenshot/flightsim_cap.png)
+
 #### Dependencies
 	
 __C++ Side__
